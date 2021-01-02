@@ -1,0 +1,52 @@
+[INFO  - 2020-11-02T17:14:19.081Z] GhostDriver - Main - running on port 54130
+[INFO  - 2020-11-02T17:14:23.571Z] Session [da73dee0-1d2e-11eb-9e89-3b4c692406a1] - page.settings - {"XSSAuditingEnabled":false,"javascriptCanCloseWindows":true,"javascriptCanOpenWindows":true,"javascriptEnabled":true,"loadImages":true,"localToRemoteUrlAccessEnabled":false,"userAgent":"Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1","webSecurityEnabled":true}
+[INFO  - 2020-11-02T17:14:23.571Z] Session [da73dee0-1d2e-11eb-9e89-3b4c692406a1] - page.customHeaders:  - {}
+[INFO  - 2020-11-02T17:14:23.571Z] Session [da73dee0-1d2e-11eb-9e89-3b4c692406a1] - Session.negotiatedCapabilities - {"browserName":"phantomjs","version":"2.1.1","driverName":"ghostdriver","driverVersion":"1.2.0","platform":"windows-10-32bit","javascriptEnabled":true,"takesScreenshot":true,"handlesAlerts":false,"databaseEnabled":false,"locationContextEnabled":false,"applicationCacheEnabled":false,"browserConnectionEnabled":false,"cssSelectorsEnabled":true,"webStorageEnabled":false,"rotatable":false,"acceptSslCerts":false,"nativeEvents":true,"proxy":{"proxyType":"direct"}}
+[INFO  - 2020-11-02T17:14:23.571Z] SessionManagerReqHand - _postNewSessionCommand - New Session Created: da73dee0-1d2e-11eb-9e89-3b4c692406a1
+[ERROR - 2020-11-02T17:14:25.681Z] Session [da73dee0-1d2e-11eb-9e89-3b4c692406a1] - page.onError - msg: ReferenceError: Can't find variable: Map
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2020-11-02T17:14:25.681Z] Session [da73dee0-1d2e-11eb-9e89-3b4c692406a1] - page.onError - stack:
+  e (https://yads.c.yimg.jp/js/yads.js:1)
+  (anonymous function) (https://yads.c.yimg.jp/js/yads.js:1)
+  n (https://yads.c.yimg.jp/js/yads.js:1)
+  a (https://yads.c.yimg.jp/js/yads.js:1)
+  (anonymous function) (https://yads.c.yimg.jp/js/yads.js:1)
+  n (https://yads.c.yimg.jp/js/yads.js:1)
+  (anonymous function) (https://yads.c.yimg.jp/js/yads.js:1)
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2020-11-02T17:14:25.700Z] Session [da73dee0-1d2e-11eb-9e89-3b4c692406a1] - page.onError - msg: ReferenceError: Can't find variable: Map
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2020-11-02T17:14:25.700Z] Session [da73dee0-1d2e-11eb-9e89-3b4c692406a1] - page.onError - stack:
+  e (https://yads.c.yimg.jp/js/yads.js:1)
+  (anonymous function) (https://yads.c.yimg.jp/js/yads.js:1)
+  n (https://yads.c.yimg.jp/js/yads.js:1)
+  a (https://yads.c.yimg.jp/js/yads.js:1)
+  (anonymous function) (https://yads.c.yimg.jp/js/yads.js:1)
+  n (https://yads.c.yimg.jp/js/yads.js:1)
+  (anonymous function) (https://yads.c.yimg.jp/js/yads.js:1)
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2020-11-02T17:14:25.965Z] Session [da73dee0-1d2e-11eb-9e89-3b4c692406a1] - page.onError - msg: ReferenceError: Can't find variable: Map
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2020-11-02T17:14:25.965Z] Session [da73dee0-1d2e-11eb-9e89-3b4c692406a1] - page.onError - stack:
+  e (https://yads.c.yimg.jp/js/yads.js:1)
+  (anonymous function) (https://yads.c.yimg.jp/js/yads.js:1)
+  n (https://yads.c.yimg.jp/js/yads.js:1)
+  a (https://yads.c.yimg.jp/js/yads.js:1)
+  (anonymous function) (https://yads.c.yimg.jp/js/yads.js:1)
+  n (https://yads.c.yimg.jp/js/yads.js:1)
+  (anonymous function) (https://yads.c.yimg.jp/js/yads.js:1)
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2020-11-02T17:14:26.599Z] Session [da73dee0-1d2e-11eb-9e89-3b4c692406a1] - page.onError - msg: TypeError: undefined is not a constructor (evaluating 'new b')
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2020-11-02T17:14:26.599Z] Session [da73dee0-1d2e-11eb-9e89-3b4c692406a1] - page.onError - stack:
+  (anonymous function) (https://cdn.ampproject.org/rtv/012010200130000/amp4ads-v0.js:59)
+  (anonymous function) (https://cdn.ampproject.org/rtv/012010200130000/amp4ads-v0.js:59)
+
+  phantomjs://platform/console++.js:263 in error
