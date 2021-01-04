@@ -60,7 +60,7 @@ def Line_bot(message):  # lineチャットボット
 
 #**********************前回との比率計算*****************
 def ratio_calc(after, before):
-    res = after / before * 0.1  # 例 110/100 = 1.1
+    res = (after / before * 100) - 100 # 例 110/100 = 1.1
     res = round(res, 4)
     return res
 
@@ -71,12 +71,12 @@ def ratio_calc(after, before):
 #driver.get(FX_SCREENER)  # URLに遷移
 
 DT_NOW = datetime.datetime.now().strftime('%Y/%m/%d/ %H:%M:%S')  # 現在時刻
-list_max = 10  # (list_max × sleep) の周期で監視する
+list_max = 15  # (list_max × sleep) の周期で監視する
 list = list_max + 1 # 要素数
 list_push = 0
 warn_diff = 0.15 # 警報を出す基準値
 warn_diff2 = -0.15 # 警報を出す基準値
-sleep = 90  # スリーブ時間(秒)
+sleep = 60  # スリーブ時間(秒)
 minute = (list_max)*sleep/60
 second = (list_max)*sleep
 # 警報は(list_max * sleep)秒前時になる
@@ -127,8 +127,8 @@ time.sleep(1)
 
 with open('為替情報.csv',mode='a',encoding='shift_jis') as f:
     # **********************雑処理定義*********************
-    writer_line = csv.writer(f, lineterminator='\n')
-    writer = csv.writer(f, lineterminator=',')
+    writer_line = csv.writer(f, lineterminator='\n')  # 書き込み時末尾が改行
+    writer = csv.writer(f, lineterminator=',')  # 書き込み時末尾がカンマ
     # **********************雑処理定義*********************
     while True:
         try:
@@ -203,14 +203,15 @@ with open('為替情報.csv',mode='a',encoding='shift_jis') as f:
 
         #*******************--分後の為替(目的変数)を書きこみ*******
             if write_flag:  # 2行目以降書き込み
-                writer_line.writerow([usdjpy_before, gbpjpy_before])  # sleep秒後のドル円、ポンド円として前回の行に書き込む
+                writer.writerow([usdjpy_before, gbpjpy_before])  # (sleep×list数)秒前のドル円、ポンド円として前回の行に書き込む
+                writer_line.writerow([USDJPY_RATE, GBPJPY_RATE])  # sleep秒後のドル円、ポンド円として前回の行に書き込む
                 f.flush()  # 無限ループ中はflushで強制書き込みを行う
         #*******************--分後の為替(目的変数)を書きこみ*******
 
         #**********************オシレーター移動平均取得ドル円*******
             driver.switch_to.window(driver.window_handles[1])  # ドル円テクニカルタブに切り替える
             driver.refresh()
-            TECHNICALS_1MIN_BTN = driver.find_element_by_css_selector(TECHNICALS_15MIN_BTN_CSS)
+            TECHNICALS_1MIN_BTN = driver.find_element_by_css_selector(TECHNICALS_1MIN_BTN_CSS)
             driver.implicitly_wait(3)
             TECHNICALS_1MIN_BTN.click()  # あらかじめ取得範囲にボタンを設定しておく
             driver.implicitly_wait(3)
@@ -229,7 +230,7 @@ with open('為替情報.csv',mode='a',encoding='shift_jis') as f:
         # **********************オシレーター移動平均取得ポンド円*****
             driver.switch_to.window(driver.window_handles[2])  # ポンド円テクニカルタブに切り替える
             driver.refresh()
-            TECHNICALS_1MIN_BTN = driver.find_element_by_css_selector(TECHNICALS_15MIN_BTN_CSS)
+            TECHNICALS_1MIN_BTN = driver.find_element_by_css_selector(TECHNICALS_1MIN_BTN_CSS)
             driver.implicitly_wait(3)
             TECHNICALS_1MIN_BTN.click()  # あらかじめ取得範囲にボタンを設定しておく
             driver.implicitly_wait(3)
