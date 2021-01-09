@@ -1,2 +1,10 @@
 【Python,FX】OANDA APIを使って為替データを取得する _ たぬきねこのAI＆FX研究室.html
 https://www.tcom242242.net/entry/fx-begin/%e7%82%ba%e6%9b%bf%e3%83%87%e3%83%bc%e3%82%bf%e3%82%92%e5%8f%96%e5%be%97%e3%81%99%e3%82%8b/
+機械学習でFX：Oanda APIを使ってPythonから自動売買する - Qiita.html
+https://qiita.com/THERE2/items/f716565c884e7750c6c1
+価格設定.html
+https://developer.oanda.com/rest-live-v20/pricing-ep/
+FX BOT 2： Python ✕ OANDA API V20　12の基本操作と関連情報まとめ - Investment Tech Hack.html
+https://investment.abbamboo.com/trading-tools/fx-bot-python-oanda-api-v20/
+The oandapyV20 REST-V20 API wrapper documentation — OANDA REST V20 API Wrapper 0.6.3 documentation.html
+https://oanda-api-v20.readthedocs.io/en/latest/index.html
