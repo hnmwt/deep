@@ -1,13 +1,19 @@
 import pandas as pd
 from pandas.io.json import json_normalize
 import numpy as np
-import json
+import datetime
 from oandapyV20 import API
 import oandapyV20.endpoints.instruments as instruments
 import oandapyV20.endpoints.accounts as accounts
-from oandapyV20.endpoints.pricing import PricingStream
+import oandapyV20.endpoints.pricing as pricing
 #numpy配列を省略しないようにする
 np.set_printoptions(threshold=np.inf)
+
+def DATE():
+    dt_now = datetime.datetime.now()
+    dt_now = dt_now.strftime('%Y年%m月%d日 %H:%M:%S')
+    print(dt_now)
+    return dt_now
 
 access_token_production = 'ff123428dffcc26c50a1991605df24b7-85946fa231df46d2ac24bf30e1e424b2'
 accountID = '101-009-17604085-001'
@@ -19,7 +25,8 @@ params = {
     "count": 1,         # 取得する件数
     "price": "B",        # Bid (売り)
 }
-instrument = "USD_JPY"   # 通貨ペア
+
+instrument = "USD_JPY"
 
 def api_response(request): # リクエストをdef化
     api.request(request)
@@ -32,31 +39,65 @@ def to_csv(f, name):
 
 def json_to_csv(json, name):
     df = pd.json_normalize(json)
-    df.to_csv(name, mode='a' , encoding='shift_jis', header=False)
+    df.to_csv(name, mode='a' , encoding='shift_jis', header=False, index=False)
 
 #  アカウント情報取得
-account_summary = accounts.AccountSummary(accountID)  # アカウント情報取得
-response = api_response(account_summary)  # レスポンス送信
-json_to_csv(response,'.\output\AccountSummary.csv')  # csv化
+AccountSummary_filename = '.\output\AccountSummary.csv'
+def AccountSummary():
+    account_summary = accounts.AccountSummary(accountID)  # アカウント情報取得
+    response = api_response(account_summary)  # レスポンス送信
+    json_to_csv(response, AccountSummary_filename)  # csv化
 
 #  過去5分間の為替情報取得
-instruments_candles = instruments.InstrumentsCandles(instrument=instrument, params=params)  # 為替情報取得
-response = api_response(instruments_candles)  # レスポンス送信
-json_to_csv(response['candles'], '.\output\instruments_candles.csv')  # csv化
+InstrumentsCandles_filename = '.\output\instruments_candles.csv'
+def InstrumentsCandles():
+    instruments_candles = instruments.InstrumentsCandles(instrument=instrument, params=params)  # 為替情報取得
+    response = api_response(instruments_candles)  # レスポンス送信
+    json_to_csv(response['candles'], InstrumentsCandles_filename)  # csv化
 
 # リアルタイムレート取得
-pricing_stream = PricingStream(accountID, params)
-response = api_response(account_summary)  # レスポンス送信
-json_to_csv(response,'.\output\pricing_stream.csv')  # csv化
+PricingStream_filename = '.\output\pricing_stream.csv'
+def PricingStream():
+    pricing_stream = pricing.PricingStream(accountID=accountID, params=params)
+    response = api_response(pricing_stream)  # レスポンス送信
+    json_to_csv(response, PricingStream_filename)  # csv化
 
 # 現在のオープンポジション取得
-instruments_order_book = instruments.InstrumentsOrderBook(instrument=instrument,params=params)
-response = api_response(account_summary)  # レスポンス送信
-json_to_csv(response,'.\output\instruments_order_book.csv')  # csv化
+InstrumentsOrderBook_filename = '.\output\instruments_order_book.csv'
+def InstrumentsOrderBook():
+    instruments_order_book = instruments.InstrumentsOrderBook(instrument=instrument)
+    response = api_response(instruments_order_book)  # レスポンス送信
+    json_to_csv(response["orderBook"]["buckets"], InstrumentsOrderBook_filename)  # csv化
 
 # 現在のオーダーポジション取得
-instruments_position_book = instruments.InstrumentsPositionBook(instrument=instrument,params=params)
-response = api_response(account_summary)  # レスポンス送信
-json_to_csv(response,'.\output\instruments_position_book.csv')  # csv化
+InstrumentsPositionBook_filename = '.\output\instruments_position_book.csv'
+def InstrumentsPositionBook():
+    instruments_position_book = instruments.InstrumentsPositionBook(instrument=instrument)
+    response = api_response(instruments_position_book)  # レスポンス送信
+    json_to_csv(response["positionBook"]["buckets"], InstrumentsPositionBook_filename)  # csv化
 
-print('終了')
+# 現在のオーダーポジション取得データの整形
+InstrumentsPositionBook_shaping_filename = '.\output\InstrumentsPositionBook_shaping.csv'
+def InstrumentsPositionBook_shaping():
+    df = pd.read_csv(InstrumentsPositionBook_filename, encoding='shift_jis', index_col=0)
+    # longCountPercentとshortCountPercentを結合
+    df_shape = pd.concat([df['shortCountPercent'], df['longCountPercent']])  # shortCountPercent,longCountPercentを1つの行に結合
+    with open(InstrumentsPositionBook_shaping_filename ,mode='w' , encoding='shift_jis') as f:
+        for row in df_shape:
+            f.write(str(row) + ',')
+
+#AccountSummary()
+#InstrumentsCandles()
+#PricingStream()
+#InstrumentsOrderBook()
+#InstrumentsPositionBook()
+
+today = DATE()
+InstrumentsPositionBook_shaping()
+
+
+pd.read_csv(InstrumentsPositionBook_shaping_filename, encoding='shift_jis')
+pd.read_csv(InstrumentsCandles_filename, encoding='shift_jis')
+
+# ロング　= 買い
+# ショート = 売り
