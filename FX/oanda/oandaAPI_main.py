@@ -16,7 +16,7 @@ api = API(access_token=access_token, environment='practice')
 
 params = {
     "granularity": "M5",  # 取得する足 D=1日  M5=5分
-    "count": 50,         # 取得する件数
+    "count": 1,         # 取得する件数
     "price": "B",        # Bid (売り)
 }
 instrument = "USD_JPY"   # 通貨ペア
@@ -28,33 +28,35 @@ def api_response(request): # リクエストをdef化
 
 def to_csv(f, name):
     df = pd.DataFrame(f)
-    df.to_csv(name , encoding='shift_jis')
+    df.to_csv(name, mode='a', encoding='shift_jis', header=False)
 
 def json_to_csv(json, name):
-    df = json_normalize(json)
-    df.to_csv(name , encoding='shift_jis')
-
-#  為替情報取得
-instruments_candles = instruments.InstrumentsCandles(instrument=instrument, params=params)  # 為替情報取得
-response = api_response(instruments_candles)  # レスポンス送信
-json_to_csv(response['candles'], '.\output\param.csv')  # csv化
+    df = pd.json_normalize(json)
+    df.to_csv(name, mode='a' , encoding='shift_jis', header=False)
 
 #  アカウント情報取得
 account_summary = accounts.AccountSummary(accountID)  # アカウント情報取得
 response = api_response(account_summary)  # レスポンス送信
 json_to_csv(response,'.\output\AccountSummary.csv')  # csv化
 
+#  過去5分間の為替情報取得
+instruments_candles = instruments.InstrumentsCandles(instrument=instrument, params=params)  # 為替情報取得
+response = api_response(instruments_candles)  # レスポンス送信
+json_to_csv(response['candles'], '.\output\instruments_candles.csv')  # csv化
+
 # リアルタイムレート取得
 pricing_stream = PricingStream(accountID, params)
 response = api_response(account_summary)  # レスポンス送信
 json_to_csv(response,'.\output\pricing_stream.csv')  # csv化
 
-# オープンポジション取得
+# 現在のオープンポジション取得
 instruments_order_book = instruments.InstrumentsOrderBook(instrument=instrument,params=params)
 response = api_response(account_summary)  # レスポンス送信
 json_to_csv(response,'.\output\instruments_order_book.csv')  # csv化
 
-# オーダーポジション取得
+# 現在のオーダーポジション取得
 instruments_position_book = instruments.InstrumentsPositionBook(instrument=instrument,params=params)
 response = api_response(account_summary)  # レスポンス送信
 json_to_csv(response,'.\output\instruments_position_book.csv')  # csv化
+
+print('終了')
