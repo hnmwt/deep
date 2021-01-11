@@ -68,21 +68,21 @@ def PricingStream(instrument):
     response = api_response(pricing_stream)  # レスポンス送信
     json_to_csv_mode_W(response, PricingStream_filename)  # csv化
 
-# 現在のオープンポジション取得
+# 現在のオーダーポジション取得
 InstrumentsOrderBook_filename = '.\output\instruments_order_book.csv'
 def InstrumentsOrderBook(instrument):
     instruments_order_book = instruments.InstrumentsOrderBook(instrument=instrument)
     response = api_response(instruments_order_book)  # レスポンス送信
     json_to_csv_mode_W(response["orderBook"]["buckets"], InstrumentsOrderBook_filename)  # csv化
 
-# 現在のオーダーポジション取得
+# 現在のオープンポジション取得
 InstrumentsPositionBook_filename = '.\output\instruments_position_book.csv'
 def InstrumentsPositionBook(instrument):
     instruments_position_book = instruments.InstrumentsPositionBook(instrument=instrument)
     response = api_response(instruments_position_book)  # レスポンス送信
     json_to_csv_mode_W(response["positionBook"]["buckets"], InstrumentsPositionBook_filename)  # csv化
 
-# 現在のオーダーポジション取得データの整形
+# 現在のオープンポジション取得データの整形
 InstrumentsPositionBook_shaping_filename = '.\output\InstrumentsPositionBook_shaping.csv'
 def InstrumentsPositionBook_shaping():
     df = pd.read_csv(InstrumentsPositionBook_filename, encoding='shift_jis', index_col=0)
@@ -106,15 +106,6 @@ def train_data_create(today, filepath):
                 wf.write(join)
                 wf.write('\n')
 
-def job():
-    InstrumentsCandles("GBP_JPY", "H4")  # 過去5分のGBP_JPYのデータ取得
-    # PricingStream()
-    # InstrumentsOrderBook()
-    InstrumentsPositionBook("GBP_JPY")  # 現在のポジションデータ
-    InstrumentsPositionBook_shaping()  # 現在のポジションデータ整形
-    train_data_create(today, r".\shape\4H_GBP_JPY_X_train_data.csv")  # GBP_JPYのトレーニングデータ作成
-
-
 i = 0
 while True:
     AccountSummary()
@@ -136,7 +127,7 @@ while True:
     InstrumentsPositionBook_shaping()  # 現在のポジションデータ整形
     train_data_create(today, r".\shape\GBP_JPY_X_train_data.csv")  # GBP_JPYのトレーニングデータ作成
 
-
+    # 4時間毎にポジションデータ、ローソク足取得
     if i % 48 == 0:  # 4時間 = 5分×12回×4(時間)
         # 4時間毎のポジションデータ、ローソク足
         InstrumentsCandles("USD_JPY", "H4")  # 過去5分のGBP_JPYのデータ取得
