@@ -75,6 +75,25 @@ def InstrumentsOrderBook(instrument):
     response = api_response(instruments_order_book)  # レスポンス送信
     json_to_csv_mode_W(response["orderBook"]["buckets"], InstrumentsOrderBook_filename)  # csv化
 
+# 現在のオーダーポジション取得のデータ整形
+InstrumentsOrderBook_shaping_filename = '.\output\InstrumentsOrderBook_shaping.csv'
+def InstrumentsOrderBook_shaping():
+    df = pd.read_csv(InstrumentsOrderBook_filename, encoding='shift_jis')
+    row_count = len(df)
+    min = int(row_count * 0.4)  # 最小40%
+    max = int(row_count * 0.6)  # 最大60%
+
+    df_shortCountPercent = df.loc[min:max,['shortCountPercent']] # 40%~60%の値を取得
+    df_longCountPercent =df.loc[min:max,['longCountPercent']]
+
+    with open(InstrumentsOrderBook_shaping_filename, mode='w', encoding='shift_jis') as f:
+        for row in df_shortCountPercent['shortCountPercent']:
+            f.write(str(row) + ',')
+        for row in df_longCountPercent['longCountPercent']:
+            f.write(str(row) + ',')
+        f.write('\n')
+
+
 # 現在のオープンポジション取得
 InstrumentsPositionBook_filename = '.\output\instruments_position_book.csv'
 def InstrumentsPositionBook(instrument):
@@ -95,16 +114,20 @@ def InstrumentsPositionBook_shaping():
 
 # トレーニングデータ作成
 def train_data_create(today, filepath):
-    with open(InstrumentsPositionBook_shaping_filename, mode='r', encoding='shift_jis') as f:
-        with open(InstrumentsCandles_filename, mode='r', encoding='shift_jis', ) as ff:
-            row = f.readline()  # 文字列でファイル読み込み
-            row1 = ff.readlines()[1]  # 文字列でファイル読み込み
-            row = row.rstrip()
-            row1 = row1.rstrip()
-            join = today+ ',' + row + row1  # 文字列結合
-            with open(filepath, mode='a', encoding='shift_jis') as wf:
-                wf.write(join)
-                wf.write('\n')
+    with open(InstrumentsPositionBook_shaping_filename, mode='r', encoding='shift_jis') as f: # ポジションデータ
+        with open(InstrumentsCandles_filename, mode='r', encoding='shift_jis', ) as ff:  # ロウソク足データ
+            with open(InstrumentsOrderBook_shaping_filename, mode='r', encoding='shift_jis', ) as fff: # オーダーデータ
+                row = f.readline()  # 文字列でファイル読み込み
+                row1 = ff.readlines()[1]  # 文字列でファイル読み込み
+                row2 = fff.readline()
+                row = row.rstrip()
+                row1 = row1.rstrip()
+                row2 = row2.rstrip()
+                join = today+ ',' + row + row2 +row1 # 文字列結合
+
+                with open(filepath, mode='a', encoding='shift_jis') as wf:
+                    wf.write(join)
+                    wf.write('\n')
 
 i = 0
 while True:
@@ -114,7 +137,8 @@ while True:
     # 過去5分のデータ収集
     InstrumentsCandles("USD_JPY", "M5")  # 過去5分のUSD_JPYのデータ取得
     #PricingStream()
-    #InstrumentsOrderBook()
+    InstrumentsOrderBook("USD_JPY")  # 現在のオーダーデータ
+    InstrumentsOrderBook_shaping()  # 現在のオーダーデータ整形
     InstrumentsPositionBook("USD_JPY")  # 現在のポジションデータ
     InstrumentsPositionBook_shaping()   # 現在のポジションデータ整形
     train_data_create(today, r".\shape\USD_JPY_X_train_data.csv")  # USD_JPYのトレーニングデータ作成
@@ -122,7 +146,8 @@ while True:
     # 過去5分のデータ収集
     InstrumentsCandles("GBP_JPY", "M5")  # 過去5分のGBP_JPYのデータ取得
     #PricingStream()
-    #InstrumentsOrderBook()
+    InstrumentsOrderBook("GBP_JPY")  # 現在のオーダーデータ
+    InstrumentsOrderBook_shaping()  # 現在のオーダーデータ整形
     InstrumentsPositionBook("GBP_JPY")  # 現在のポジションデータ
     InstrumentsPositionBook_shaping()  # 現在のポジションデータ整形
     train_data_create(today, r".\shape\GBP_JPY_X_train_data.csv")  # GBP_JPYのトレーニングデータ作成
