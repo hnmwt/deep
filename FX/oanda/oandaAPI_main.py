@@ -77,14 +77,22 @@ def InstrumentsOrderBook(instrument):
 
 # 現在のオーダーポジション取得のデータ整形
 InstrumentsOrderBook_shaping_filename = '.\output\InstrumentsOrderBook_shaping.csv'
-def InstrumentsOrderBook_shaping():
+def InstrumentsOrderBook_shaping(min_row, max_row):  # 引数はオーダーポジションから行数決め打ち
     df = pd.read_csv(InstrumentsOrderBook_filename, encoding='shift_jis')
     row_count = len(df)
-    min = int(row_count * 0.4)  # 最小40%
-    max = int(row_count * 0.6)  # 最大60%
 
-    df_shortCountPercent = df.loc[min:max,['shortCountPercent']] # 40%~60%の値を取得
-    df_longCountPercent =df.loc[min:max,['longCountPercent']]
+    #min = int(row_count * 0.4)  # 最小40%  # カラム数がずれてしまうため行数は決め打ちにする21/01/13
+    #max = int(row_count * 0.6)  # 最大60%  # カラム数がずれてしまうため行数は決め打ちにする21/01/13
+
+    #df_shortCountPercent = df.loc[min:max,['shortCountPercent']] # 40%~60%の値を取得  21/01/12修正
+    #df_longCountPercent =df.loc[min:max,['longCountPercent']]  # 21/01/12修正
+    df_shortCountPercent = df.loc[min_row:max_row, ['shortCountPercent']]
+    df_longCountPercent = df.loc[min_row:max_row, ['longCountPercent']]
+
+    #print('min', min)  # カラムがずれたときのデバッグ用
+    #print('max', max)  # カラムがずれたときのデバッグ用
+    #print('df_shortCountPercent',df_shortCountPercent.shape)  # カラムがずれたときのデバッグ用
+    #print('df_longCountPercent', df_longCountPercent.shape)  # カラムがずれたときのデバッグ用
 
     with open(InstrumentsOrderBook_shaping_filename, mode='w', encoding='shift_jis') as f:
         for row in df_shortCountPercent['shortCountPercent']:
@@ -119,7 +127,7 @@ def train_data_create(today, filepath):
             with open(InstrumentsOrderBook_shaping_filename, mode='r', encoding='shift_jis', ) as fff: # オーダーデータ
                 row = f.readline()  # 文字列でファイル読み込み
                 row1 = ff.readlines()[1]  # 文字列でファイル読み込み
-                row2 = fff.readline()
+                row2 = fff.readline()  # 文字列でファイル読み込み
                 row = row.rstrip()
                 row1 = row1.rstrip()
                 row2 = row2.rstrip()
@@ -138,7 +146,7 @@ while True:
     InstrumentsCandles("USD_JPY", "M5")  # 過去5分のUSD_JPYのデータ取得
     #PricingStream()
     InstrumentsOrderBook("USD_JPY")  # 現在のオーダーデータ
-    InstrumentsOrderBook_shaping()  # 現在のオーダーデータ整形
+    InstrumentsOrderBook_shaping(674, 1012)  # 現在のオーダーデータ整形
     InstrumentsPositionBook("USD_JPY")  # 現在のポジションデータ
     InstrumentsPositionBook_shaping()   # 現在のポジションデータ整形
     train_data_create(today, r".\shape\USD_JPY_X_train_data.csv")  # USD_JPYのトレーニングデータ作成
@@ -147,7 +155,7 @@ while True:
     InstrumentsCandles("GBP_JPY", "M5")  # 過去5分のGBP_JPYのデータ取得
     #PricingStream()
     InstrumentsOrderBook("GBP_JPY")  # 現在のオーダーデータ
-    InstrumentsOrderBook_shaping()  # 現在のオーダーデータ整形
+    InstrumentsOrderBook_shaping(821, 1232)  # 現在のオーダーデータ整形
     InstrumentsPositionBook("GBP_JPY")  # 現在のポジションデータ
     InstrumentsPositionBook_shaping()  # 現在のポジションデータ整形
     train_data_create(today, r".\shape\GBP_JPY_X_train_data.csv")  # GBP_JPYのトレーニングデータ作成
