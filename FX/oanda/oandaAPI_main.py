@@ -1,3 +1,4 @@
+import  orderbook_column
 import pandas as pd
 from pandas.io.json import json_normalize
 import numpy as np
@@ -14,7 +15,6 @@ np.set_printoptions(threshold=np.inf)
 def DATE():
     dt_now = datetime.datetime.now()
     dt_now = dt_now.strftime('%Y-%m-%d-%A %H:%M:%S')
-    print(dt_now)
     return dt_now
 
 access_token_production = 'ff123428dffcc26c50a1991605df24b7-85946fa231df46d2ac24bf30e1e424b2'
@@ -77,30 +77,22 @@ def InstrumentsOrderBook(instrument):
 
 # 現在のオーダーポジション取得のデータ整形
 InstrumentsOrderBook_shaping_filename = '.\output\InstrumentsOrderBook_shaping.csv'
-def InstrumentsOrderBook_shaping(min_row, max_row):  # 引数はオーダーポジションから行数決め打ち
-    df = pd.read_csv(InstrumentsOrderBook_filename, encoding='shift_jis')
-    row_count = len(df)
+def InstrumentsOrderBook_shaping(column_list):  # 引数はオーダーポジションから行数決め打ち
+    df = pd.read_csv(InstrumentsOrderBook_filename, encoding='shift_jis', index_col=0)
 
-    #min = int(row_count * 0.4)  # 最小40%  # カラム数がずれてしまうため行数は決め打ちにする21/01/13
-    #max = int(row_count * 0.6)  # 最大60%  # カラム数がずれてしまうため行数は決め打ちにする21/01/13
-
-    #df_shortCountPercent = df.loc[min:max,['shortCountPercent']] # 40%~60%の値を取得  21/01/12修正
-    #df_longCountPercent =df.loc[min:max,['longCountPercent']]  # 21/01/12修正
-    df_shortCountPercent = df.loc[min_row:max_row, ['shortCountPercent']]
-    df_longCountPercent = df.loc[min_row:max_row, ['longCountPercent']]
-
-    #print('min', min)  # カラムがずれたときのデバッグ用
-    #print('max', max)  # カラムがずれたときのデバッグ用
-    #print('df_shortCountPercent',df_shortCountPercent.shape)  # カラムがずれたときのデバッグ用
-    #print('df_longCountPercent', df_longCountPercent.shape)  # カラムがずれたときのデバッグ用
-
+    min = column_list[0]  #dfのインデックスの最小値
+    max = column_list[-1]  #dfのインデックスの最大値
+    df_index_frame = pd.DataFrame(index=column_list, columns=[])  # dfのindexのみ作成
+    df_new = pd.concat([df_index_frame, df], axis=1)  # インデックスとオーダーブックの結果を結合
+    df_new = df_new.loc[min:max]  # 最小-最大までを抜き出す
+    df_new = df_new.fillna(0)  # 欠損値を0に置換
+    #df_new.to_csv(r'.\output\a.csv', encoding='shift_jis')
     with open(InstrumentsOrderBook_shaping_filename, mode='w', encoding='shift_jis') as f:
-        for row in df_shortCountPercent['shortCountPercent']:
+        for row in df_new['shortCountPercent']:
             f.write(str(row) + ',')
-        for row in df_longCountPercent['longCountPercent']:
+        for row in df_new['longCountPercent']:
             f.write(str(row) + ',')
         f.write('\n')
-
 
 # 現在のオープンポジション取得
 InstrumentsPositionBook_filename = '.\output\instruments_position_book.csv'
@@ -137,51 +129,69 @@ def train_data_create(today, filepath):
                     wf.write(join)
                     wf.write('\n')
 
+#**********************lineチャットボット***************
+line_notify_token = '2uRCEknoPXNnyy7PVPpBJDIxqXdnkSepWvErkVql0YC'  # lineチャットボット
+line_notify_api = 'https://notify-api.line.me/api/notify'  # lineチャットボット
+def Line_bot(message):  # lineチャットボット
+    payload = {'message': message}
+    headers = {'Authorization': 'Bearer ' + line_notify_token}  # 発行したトークン
+    line_notify = requests.post(line_notify_api, data=payload, headers=headers)
+#**********************lineチャットボット***************
+
+USD_JPY_order = orderbook_column.USD_JPY_order
+GBP_JPY_order = orderbook_column.GBP_JPY_order
+
 i = 0
 while True:
-    AccountSummary()
-    today = DATE()
+    try:
+        AccountSummary()
+        today = DATE()
 
-    # 過去5分のデータ収集
-    InstrumentsCandles("USD_JPY", "M5")  # 過去5分のUSD_JPYのデータ取得
-    #PricingStream()
-    InstrumentsOrderBook("USD_JPY")  # 現在のオーダーデータ
-    InstrumentsOrderBook_shaping(674, 1012)  # 現在のオーダーデータ整形
-    InstrumentsPositionBook("USD_JPY")  # 現在のポジションデータ
-    InstrumentsPositionBook_shaping()   # 現在のポジションデータ整形
-    train_data_create(today, r".\shape\USD_JPY_X_train_data.csv")  # USD_JPYのトレーニングデータ作成
-
-    # 過去5分のデータ収集
-    InstrumentsCandles("GBP_JPY", "M5")  # 過去5分のGBP_JPYのデータ取得
-    #PricingStream()
-    InstrumentsOrderBook("GBP_JPY")  # 現在のオーダーデータ
-    InstrumentsOrderBook_shaping(821, 1232)  # 現在のオーダーデータ整形
-    InstrumentsPositionBook("GBP_JPY")  # 現在のポジションデータ
-    InstrumentsPositionBook_shaping()  # 現在のポジションデータ整形
-    train_data_create(today, r".\shape\GBP_JPY_X_train_data.csv")  # GBP_JPYのトレーニングデータ作成
-
-    # 4時間毎にポジションデータ、ローソク足取得
-    if i % 48 == 0:  # 4時間 = 5分×12回×4(時間)
-        # 4時間毎のポジションデータ、ローソク足
-        InstrumentsCandles("USD_JPY", "H4")  # 過去5分のGBP_JPYのデータ取得
-        # PricingStream()
-        # InstrumentsOrderBook()
+        # 過去5分のデータ収集
+        InstrumentsCandles("USD_JPY", "M5")  # 過去5分のUSD_JPYのデータ取得
+        #PricingStream()
+        InstrumentsOrderBook("USD_JPY")  # 現在のオーダーデータ
+        InstrumentsOrderBook_shaping(USD_JPY_order)  # 現在のオーダーデータ整形
         InstrumentsPositionBook("USD_JPY")  # 現在のポジションデータ
-        InstrumentsPositionBook_shaping()  # 現在のポジションデータ整形
-        train_data_create(today, r".\shape\4H_USD_JPY_X_train_data.csv")  # GBP_JPYのトレーニングデータ作成
+        InstrumentsPositionBook_shaping()   # 現在のポジションデータ整形
+        train_data_create(today, r".\shape\USD_JPY_X_train_data.csv")  # USD_JPYのトレーニングデータ作成
 
-        # 4時間毎のポジションデータ、ローソク足
-        InstrumentsCandles("GBP_JPY", "H4")  # 過去5分のGBP_JPYのデータ取得
-        # PricingStream()
-        # InstrumentsOrderBook()
+        # 過去5分のデータ収集
+        InstrumentsCandles("GBP_JPY", "M5")  # 過去5分のGBP_JPYのデータ取得
+        #PricingStream()
+        InstrumentsOrderBook("GBP_JPY")  # 現在のオーダーデータ
+        InstrumentsOrderBook_shaping(GBP_JPY_order)  # 現在のオーダーデータ整形
         InstrumentsPositionBook("GBP_JPY")  # 現在のポジションデータ
         InstrumentsPositionBook_shaping()  # 現在のポジションデータ整形
-        train_data_create(today, r".\shape\4H_GBP_JPY_X_train_data.csv")  # GBP_JPYのトレーニングデータ作成
-        print('4時間毎のデータ作成')
+        train_data_create(today, r".\shape\GBP_JPY_X_train_data.csv")  # GBP_JPYのトレーニングデータ作成
+        print(today, '5min:DataCreate')
 
 
-    i += 1
-    time.sleep(300)
+        # 4時間毎にポジションデータ、ローソク足取得
+        if i % 48 == 0:  # 4時間 = 5分×12回×4(時間)
+            # 4時間毎のポジションデータ、ローソク足
+            InstrumentsCandles("USD_JPY", "H4")  # 過去5分のGBP_JPYのデータ取得
+            # PricingStream()
+            InstrumentsOrderBook("USD_JPY")
+            InstrumentsOrderBook_shaping(USD_JPY_order)  # 現在のオーダーデータ整形
+            InstrumentsPositionBook("USD_JPY")  # 現在のポジションデータ
+            InstrumentsPositionBook_shaping()  # 現在のポジションデータ整形
+            train_data_create(today, r".\shape\4H_USD_JPY_X_train_data.csv")  # GBP_JPYのトレーニングデータ作成
 
+            # 4時間毎のポジションデータ、ローソク足
+            InstrumentsCandles("GBP_JPY", "H4")  # 過去5分のGBP_JPYのデータ取得
+            # PricingStream()
+            InstrumentsOrderBook("GBP_JPY")
+            InstrumentsOrderBook_shaping(GBP_JPY_order)  # 現在のオーダーデータ整形
+            InstrumentsPositionBook("GBP_JPY")  # 現在のポジションデータ
+            InstrumentsPositionBook_shaping()  # 現在のポジションデータ整形
+            train_data_create(today, r".\shape\4H_GBP_JPY_X_train_data.csv")  # GBP_JPYのトレーニングデータ作成
+            print(today, '5hour:DataCreate')
+        i += 1
+        time.sleep(300)
+
+    except:
+        Line_bot('エラーが発生しました。')
+        time.sleep(60)  # 60秒待って繰り返しに戻る
 # ロング　= 買い
 # ショート = 売り
