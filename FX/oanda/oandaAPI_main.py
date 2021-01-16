@@ -1,4 +1,4 @@
-import  orderbook_column
+import orderbook_column
 import pandas as pd
 from pandas.io.json import json_normalize
 import numpy as np
@@ -145,8 +145,8 @@ i = 0
 while True:
     try:
         AccountSummary()
-        today = DATE()
 
+        today = DATE()
         # 過去5分のデータ収集
         InstrumentsCandles("USD_JPY", "M5")  # 過去5分のUSD_JPYのデータ取得
         #PricingStream()
@@ -155,6 +155,8 @@ while True:
         InstrumentsPositionBook("USD_JPY")  # 現在のポジションデータ
         InstrumentsPositionBook_shaping()   # 現在のポジションデータ整形
         train_data_create(today, r".\shape\USD_JPY_X_train_data.csv")  # USD_JPYのトレーニングデータ作成
+
+
 
         # 過去5分のデータ収集
         InstrumentsCandles("GBP_JPY", "M5")  # 過去5分のGBP_JPYのデータ取得
@@ -186,7 +188,7 @@ while True:
             InstrumentsPositionBook("GBP_JPY")  # 現在のポジションデータ
             InstrumentsPositionBook_shaping()  # 現在のポジションデータ整形
             train_data_create(today, r".\shape\4H_GBP_JPY_X_train_data.csv")  # GBP_JPYのトレーニングデータ作成
-            print(today, '5hour:DataCreate')
+            print(today, '4hour:DataCreate')
         i += 1
         time.sleep(300)
 
