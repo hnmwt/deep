@@ -9,6 +9,7 @@ from oandapyV20 import API
 import oandapyV20.endpoints.instruments as instruments
 import oandapyV20.endpoints.accounts as accounts
 import oandapyV20.endpoints.pricing as pricing
+import oandapyV20.endpoints.forexlabs as forexlabs
 
 #numpy配列を省略しないようにする
 np.set_printoptions(threshold=np.inf)
@@ -18,10 +19,9 @@ def DATE():
     dt_now = dt_now.strftime('%Y-%m-%d-%A %H:%M:%S')
     return dt_now
 
-access_token_production = 'ff123428dffcc26c50a1991605df24b7-85946fa231df46d2ac24bf30e1e424b2'
-accountID = '101-009-17604085-001'
-access_token = '8f700c7d32cfa05988fede188bac48f0-72b3bcf05a1a02fbd487f05dc22e6a6e'  # デモ口座
-api = API(access_token=access_token, environment='practice')
+accountID = '001-009-5536574-001'
+access_token = 'af316a68a351044bbbd4cb982713fa66-374475f11709874dd8502407f54437b2'  # 本番口座
+api = API(access_token=access_token, environment='live')
 
 instrument = "USD_JPY"
 
@@ -112,6 +112,44 @@ def InstrumentsPositionBook_shaping():
             f.write(str(row) + ',')
         f.write('\n')
 
+# オートチャーティストデータ取得
+forexlabsAutochartist_filename = r'.\output\forexlabs_autochartist.csv'
+def forexlabsAutochartist(instrument):
+    forexlabs_autochartist = forexlabs.Autochartist(params=instrument)
+    response = api_response(forexlabs_autochartist)  # レスポンス送信
+    #print(response)
+    json_to_csv_mode_W(response["signals"], forexlabsAutochartist_filename)  # csv化
+    data = pd.DataFrame(response)
+    print(data)
+
+# トレーダーの取引?
+CommitmentOfTraders_filename = '.\output\forexlabs_CommitmentOfTraders.csv'
+def forexlabs_CommitmentOfTraders(instrument):
+    forexlabs_commitmentoftraders = forexlabs.CommitmentsOfTraders(params=instrument)
+    response = api_response(forexlabs_commitmentoftraders)  # レスポンス送信
+    json_to_csv_mode_W(response[instrument], CommitmentOfTraders_filename)  # csv化
+
+# カレンダー
+calender_filename = r'.\output\forexlabs_calender.csv'
+def forexlabs_calender(instrument):
+    params ={"instrument": instrument,
+            "period": 604800
+            }
+    forexlabs_calender = forexlabs.Calendar(params=params)
+    response = api_response(forexlabs_calender)  # レスポンス送信
+    print(response)
+    json_to_csv_mode_W(response, calender_filename)  # csv化
+    data = pd.DataFrame(response)
+    print(data)
+
+# 過去のポジション比率
+HistoricalPositionRatios_filename = '.\output\forexlabs_HistoricalPositionRatios.csv'
+def forexlabs_HistoricalPositionRatios(instrument):
+    forexlabs_historicalpositionratios = forexlabs.HistoricalPositionRatios(params=instrument)
+    response = api_response(forexlabs_historicalpositionratios)  # レスポンス送信
+    json_to_csv_mode_W(response, HistoricalPositionRatios_filename)  # csv化
+
+
 # トレーニングデータ作成
 def train_data_create(today, filepath):
     with open(InstrumentsPositionBook_shaping_filename, mode='r', encoding='shift_jis') as f: # ポジションデータ
@@ -141,7 +179,7 @@ def Line_bot(message):  # lineチャットボット
 USD_JPY_order = orderbook_column.USD_JPY_order
 GBP_JPY_order = orderbook_column.GBP_JPY_order
 
-# データ取得
+# データ取得関数
 def create_train_data(pear, min, order, today, dir):
     # 過去5分のデータ収集
     InstrumentsCandles(pear, min)  # 過去5分のUSD_JPYのデータ取得
@@ -150,18 +188,24 @@ def create_train_data(pear, min, order, today, dir):
     InstrumentsOrderBook_shaping(order)  # 現在のオーダーデータ整形
     InstrumentsPositionBook(pear)  # 現在のポジションデータ
     InstrumentsPositionBook_shaping()  # 現在のポジションデータ整形
+    ####forexlabs_CommitmentOfTraders(instrument)  # トレーダーの取引?
+    #forexlabsAutochartist(pear)  # オートチャーティストデータ
+    ####forexlabs_HistoricalPositionRatios(instrument)  # 過去のポジション比率(現在は廃止されている)
+    #forexlabs_calender(pear)  # カレンダー
     train_data_create(today, dir)  # USD_JPYのトレーニングデータ作成
 
 i = 0
 while True:
-    try:
++    try:
         AccountSummary()
         today = DATE()
 
-        # USDJPYのデータ取得
-        create_train_data("USD_JPY", "M5", USD_JPY_order, today, r".\shape\USD_JPY_X_train_data.csv")
         # GBPJPYのデータ取得
         create_train_data("GBP_JPY", "M5", GBP_JPY_order, today, r".\shape\GBP_JPY_X_train_data.csv")
+        # USDJPYのデータ取得
+        create_train_data("USD_JPY", "M5", USD_JPY_order, today, r".\shape\USD_JPY_X_train_data.csv")
+
+
         print(today, '5min:DataCreate')
         # 1時間毎にLineに生存確認を行う
         if i % 12 == 0:
@@ -175,11 +219,12 @@ while True:
             create_train_data("GBP_JPY", "H4", GBP_JPY_order, today, r".\shape\4H_GBP_JPY_X_train_data.csv")
             print(today, '4hour:DataCreate')
 
-        # ループ終了時
+    # ループ終了時
         i += 1
         time.sleep(300)
 
     except:
+        print('エラーが発生しました。')
         Line_bot('エラーが発生しました。')
         time.sleep(60)  # 60秒待って繰り返しに戻る
 # ロング　= 買い
