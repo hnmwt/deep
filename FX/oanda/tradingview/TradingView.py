@@ -1,4 +1,5 @@
 import time
+#import predict
 from selenium import webdriver
 # Import your username and password of tradingview.com
 import credentials
@@ -15,13 +16,15 @@ password = 'hnm4264wtr@'
 chromedriver_path = "C://driver/chromedriver.exe"
 # This is the generic url that I mentioned before
 url = "https://jp.tradingview.com/chart/yLiKQdYg/#signin"
-file_name = r"C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview"
+get_csv_dir = r"C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview"
+train_data_name = r"C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview/train_data.csv"
+
 
 def open_browser(chromedriver_path):
     chrome_options = webdriver.ChromeOptions()
 
     preferences = {"download.prompt_for_download": False,
-                   "download.default_directory": file_name,
+                   "download.default_directory": get_csv_dir,
                    "download.directory_upgrade": True,
                    "profile.default_content_settings.popups": 0,
                    "profile.default_content_setting_values.notifications": 2,
@@ -76,6 +79,7 @@ if __name__ == '__main__':
     driver_1 = open_browser(chromedriver_path)
     driver_2 = site_login(username,password,url,driver_1)
     time.sleep(7)
-
     get_csv(driver_2)
     print('csvファイルダウンロード完了')
+
+    #df = predict.create_train_data(get_csv_name)  # df作成
