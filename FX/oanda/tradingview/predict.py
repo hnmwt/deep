@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 from sklearn import preprocessing
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import pickle
+
 
 get_csv_name = r"C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview\FX_GBPJPY, 60.csv"
 
@@ -32,14 +34,17 @@ df = create_train_data(get_csv_name)
 def read_model(dir, df):
     model = keras.models.load_model(dir +'\model.hdf5')  # モデルを読込み
     model.load_weights(dir +'\param.hdf5')  # 重みを読込み
-
+    X_train_save_scaler = pickle.load(open('../dump/X_train_scaler.sav', 'rb'))  # 正規化パラメータを読込み
+    y_train_save_scaler = pickle.load(open('../dump/y_train_scaler.sav', 'rb'))  # 正規化パラメータを読込み
     X_train_columns = len(df.columns) - 1  # 特徴量のカラム数
+
     df = df.loc[:, 'open':'time(weekday)']  # 全行 , 列名称(始まり):列名称(終わり)
-    df = mm.fit_transform(df)  # 正規化
+    df = X_train_save_scaler.transform(df)  # 予測結果の正規化をデコード
     X_train = df[-1:]  # 最終行のみ抜き出す
 
     X_train = np.array(X_train).reshape(1, X_train_columns, -1)  # 特徴量の形状(3次元)
     pred = model(X_train)  # 予測
+    pred = y_train_save_scaler.inverse_transform(pred)  # 予測結果の正規化をデコード
     print("予測:", pred)
     return pred
 

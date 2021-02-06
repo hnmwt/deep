@@ -196,7 +196,7 @@ def create_train_data(pear, min, order, today, dir):
 
 i = 0
 while True:
-+    try:
+    try:
         AccountSummary()
         today = DATE()
 
