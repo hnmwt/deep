@@ -11,12 +11,22 @@ from sklearn import preprocessing
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pickle
+import requests
 
 
 get_csv_name = r"C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview\FX_GBPJPY, 60.csv"
 
 train_data_name = r"C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview/train_data.csv"
 mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
+line_notify_token = '2uRCEknoPXNnyy7PVPpBJDIxqXdnkSepWvErkVql0YC'  # lineチャットボット
+line_notify_api = 'https://notify-api.line.me/api/notify'  # lineチャットボット
+
+
+# lineチャットボット
+def Line_bot(message):
+    payload = {'message': message}
+    headers = {'Authorization': 'Bearer ' + line_notify_token}  # 発行したトークン
+    line_notify = requests.post(line_notify_api, data=payload, headers=headers)
 
 # 特徴量データを取得
 def create_train_data(file_name):
@@ -28,7 +38,6 @@ def create_train_data(file_name):
     df['time(weekday)'] = df['time'].dt.dayofweek  # minuteをデータに追加
     df.to_csv(train_data_name, index=False)
     return df
-df = create_train_data(get_csv_name)
 
 # モデルデータから未来のレートを予測
 def read_model(dir, df):
@@ -45,33 +54,42 @@ def read_model(dir, df):
     X_train = np.array(X_train).reshape(1, X_train_columns, -1)  # 特徴量の形状(3次元)
     pred = model(X_train)  # 予測
     pred = y_train_save_scaler.inverse_transform(pred)  # 予測結果の正規化をデコード
-    print("予測:", pred)
+    #print("予測:", pred)
     return pred
 
-pred1h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_1h', df) # 1時間後の予測
-pred2h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_2h', df) # 2時間後の予測
-pred3h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_3h', df) # 3時間後の予測
-pred4h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_4h', df) # 4時間後の予測
-pred5h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_5h', df) # 5時間後の予測
-pred6h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_6h', df) # 6時間後の予測
-pred7h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_7h', df) # 7時間後の予測
-pred8h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_8h', df) # 8時間後の予測
-pred9h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_9h', df) # 9時間後の予測
-pred10h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_10h', df) # 10時間後の予測
-pred11h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_11h', df) # 11時間後の予測
-pred12h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_12h', df) # 12時間後の予測
-pred13h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_13h', df) # 13時間後の予測
-pred14h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_14h', df) # 14時間後の予測
-pred15h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_15h', df) # 15時間後の予測
-pred16h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_16h', df) # 16時間後の予測
-pred17h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_17h', df) # 17時間後の予測
-pred18h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_18h', df) # 18時間後の予測
-pred19h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_19h', df) # 19時間後の予測
-pred20h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_20h', df) # 20時間後の予測
-pred21h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_21h', df) # 21時間後の予測
-pred22h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_22h', df) # 22時間後の予測
-pred23h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_23h', df) # 23時間後の予測
-pred24h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_24h', df) # 24時間後の予測
+# 24時間までの予測
+def pred(df):
+    pred1h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_1h', df) # 1時間後の予測
+    pred2h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_2h', df) # 2時間後の予測
+    pred3h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_3h', df) # 3時間後の予測
+    pred4h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_4h', df) # 4時間後の予測
+    pred5h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_5h', df) # 5時間後の予測
+    pred6h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_6h', df) # 6時間後の予測
+    pred7h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_7h', df) # 7時間後の予測
+    pred8h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_8h', df) # 8時間後の予測
+    pred9h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_9h', df) # 9時間後の予測
+    pred10h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_10h', df) # 10時間後の予測
+    pred11h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_11h', df) # 11時間後の予測
+    pred12h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_12h', df) # 12時間後の予測
+    pred13h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_13h', df) # 13時間後の予測
+    pred14h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_14h', df) # 14時間後の予測
+    pred15h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_15h', df) # 15時間後の予測
+    pred16h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_16h', df) # 16時間後の予測
+    pred17h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_17h', df) # 17時間後の予測
+    pred18h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_18h', df) # 18時間後の予測
+    pred19h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_19h', df) # 19時間後の予測
+    pred20h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_20h', df) # 20時間後の予測
+    pred21h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_21h', df) # 21時間後の予測
+    pred22h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_22h', df) # 22時間後の予測
+    pred23h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_23h', df) # 23時間後の予測
+    pred24h = read_model(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\model\GBPJPY_24h', df) # 24時間後の予測
+    Line_bot(str(pred1h) + '\n' + str(pred2h) + '\n' + str(pred3h) + '\n' + str(pred4h) + '\n' + str(pred5h) + '\n' + str(pred6h) + '\n' +
+             str(pred7h) + '\n' + str(pred8h) + '\n' + str(pred9h) + '\n' + str(pred10h) + '\n' + str(pred11h) + '\n' + str(pred12h) + '\n' +
+             str(pred13h) + '\n' + str(pred14h) + '\n' + str(pred15h) + '\n' + str(pred16h) + '\n' + str(pred17h) + '\n' + str(pred18h) + '\n' +
+             str(pred19h) + '\n' + str(pred20h) + '\n' + str(pred21h) + '\n' + str(pred22h) + '\n' + str(pred23h) + '\n' + str(pred24h))
+
+
+
 
 
 
