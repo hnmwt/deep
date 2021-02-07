@@ -1,0 +1,15 @@
+# 現在のオーダーポジション取得のデータ整形
+InstrumentsOrderBook_shaping_filename = '.\output\InstrumentsOrderBook_shaping.csv'
+def InstrumentsOrderBook_shaping():
+    df = pd.read_csv(InstrumentsOrderBook_filename, encoding='shift_jis')
+    print(df)
+    row_count = len(df)
+    print(row_count)
+    min = int(row_count * 0.4)  # 最小40%
+    max = int(row_count * 0.6)  # 最大60%
+    df_range = df[min:max]
+    df_shape = pd.concat([df['shortCountPercent'], df['longCountPercent']])  # shortCountPercent,longCountPercentを1つの行に結合
+    with open(InstrumentsOrderBook_shaping_filename, mode='w', encoding='shift_jis') as f:
+        for row in df_shape:
+            f.write(str(row) + ',')
+        f.write('\n')

@@ -34,6 +34,6 @@ if __name__ == '__main__':
 
         time.sleep(3)
         df = predict.create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
-        predict.pred(df)  # 予測
+        predict.pred(df)  # 1-24時間後まで予測
         print('予測完了')
         time.sleep(3650)
