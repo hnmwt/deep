@@ -13,11 +13,11 @@ password = 'hnm4264wtr@'
 
 
 #    # You should download chromedriver and place it in a high hierarchy folder
-chromedriver_path = "C://driver/chromedriver.exe"
+#chromedriver_path = "C://driver/chromedriver.exe"
 #    # This is the generic url that I mentioned before
 #url = "https://jp.tradingview.com/chart/KQZh8MjI/#signin"
 get_csv_dir = r"C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview"
-train_data_name = r"C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview/train_data.csv"
+train_data_name = ".\Intermediate\train_data.csv"
 
 #get_csv_name = r"C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview\FX_GBPJPY, 60.csv"
 #mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
@@ -36,7 +36,7 @@ def open_browser(chromedriver_path):
                    "profile.default_content_setting_values.automatic_downloads": 1
                    }
     chrome_options.add_experimental_option("prefs", preferences)
-    #chrome_options.add_argument('--headless')
+ #   chrome_options.add_argument('--headless')
     driver = webdriver.Chrome(executable_path=chromedriver_path,
                           chrome_options=chrome_options)
     return driver
