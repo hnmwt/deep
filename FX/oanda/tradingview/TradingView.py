@@ -36,7 +36,7 @@ def open_browser(chromedriver_path):
                    "profile.default_content_setting_values.automatic_downloads": 1
                    }
     chrome_options.add_experimental_option("prefs", preferences)
- #   chrome_options.add_argument('--headless')
+#    chrome_options.add_argument('--headless')
     driver = webdriver.Chrome(executable_path=chromedriver_path,
                           chrome_options=chrome_options)
     return driver

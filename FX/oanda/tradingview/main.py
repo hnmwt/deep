@@ -21,6 +21,8 @@ url = "https://jp.tradingview.com/chart/KQZh8MjI/#signin"
 get_csv_name = ".\FX_GBPJPY, 60.csv"
 
 mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
+syukai_flag = False
+
 
 if __name__ == '__main__':
     driver_1 = TradingView.open_browser(chromedriver_path)
@@ -38,19 +40,14 @@ if __name__ == '__main__':
 
         time.sleep(4)
         df = predict.create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
-        predict.pred(df)  # 1-24時間後まで予測
+        syukai_flag, pred1h, pred8h, pred16h, pred24h = \
+            predict.pred(df, syukai_flag, predict.pred1h, predict.pred8h, predict.pred16h, predict.pred24h) # 1-24時間後まで予測
         print('予測完了')
 
 
-        time.sleep(1200)
-
-        driver_2.find_element_by_css_selector(
-            'body > div.js-rootresizer__contents > div.layout__area--topleft > div > div > '
-            'div > div > svg').click()
-
-        time.sleep(1200)
-
-        driver_2.find_element_by_css_selector(
-            'body > div.js-rootresizer__contents > div.layout__area--topleft > div > div > '
-            'div > div > svg').click()
+        #time.sleep(1200)
+        time.sleep(600)
+        driver_2.refresh()
+        time.sleep(600)
+        driver_2.refresh()
         time.sleep(1190)

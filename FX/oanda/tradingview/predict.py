@@ -21,6 +21,10 @@ mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
 line_notify_token = '2uRCEknoPXNnyy7PVPpBJDIxqXdnkSepWvErkVql0YC'  # lineチャットボット
 line_notify_api = 'https://notify-api.line.me/api/notify'  # lineチャットボット
 
+pred1h = 0
+pred8h = 0
+pred16h = 0
+pred24h = 0
 
 # lineチャットボット
 def Line_bot(message):
@@ -62,18 +66,41 @@ def read_model(dir, df, hour):
     after_time = "{0:%Y-%m-%d %H:%M}".format(after_time)  # 書式作成
 
     pred_time = {str(after_time) : str(pred)}  # 時間、予測レートを辞書化
-    return pred_time
+    return pred_time ,pred
 
-# 24時間までの予測
-def pred(df):
-    pred1h = read_model('.\model\GBPJPY_1h', df, 1) # 1時間後の予測
+# 前回の予測値を変数に格納
+def last_pred():
+    last_pred1h = pred1h
+    last_pred8h = pred8h
+    last_pred16h = pred16h
+    last_pred24h = pred24h
+    return last_pred1h, last_pred8h, last_pred16h, last_pred24h
+
+# 前回の予測と今回の予測の差
+def rate_diff():
+    diff_1h = last_pred1h - pred1h
+    diff_8h = last_pred8h - pred8h
+    diff_16h = last_pred16h - pred16h
+    diff_24h = last_pred24h - pred24h
+
+# 24時間後までの予測
+def pred(df, syukai_flag, pred1h, pred8h, pred16h, pred24h):
+
+    # 2週目以降は前回の予測値を変数に格納  ※処理1/2
+    if syukai_flag == True:
+        last_pred1h = pred1h
+        last_pred8h = pred8h
+        last_pred16h = pred16h
+        last_pred24h = pred24h
+
+    dict_pred1h, pred1h = read_model('.\model\GBPJPY_1h', df, 1) # 1時間後の予測
 #    pred2h = read_model('.\model\GBPJPY_2h', df, 2) # 2時間後の予測
 #    pred3h = read_model('.\model\GBPJPY_3h', df, 3) # 3時間後の予測
 #    pred4h = read_model('.\model\GBPJPY_4h', df, 4) # 4時間後の予測
 #    pred5h = read_model('.\model\GBPJPY_5h', df, 5) # 5時間後の予測
 #    pred6h = read_model('.\model\GBPJPY_6h', df, 6) # 6時間後の予測
 #    pred7h = read_model('.\model\GBPJPY_7h', df, 7) # 7時間後の予測
-    pred8h = read_model('.\model\GBPJPY_8h', df, 8) # 8時間後の予測
+    dict_pred8h, pred8h = read_model('.\model\GBPJPY_8h', df, 8) # 8時間後の予測
 #    pred9h = read_model('.\model\GBPJPY_9h', df, 9) # 9時間後の予測
 #    pred10h = read_model('.\model\GBPJPY_10h', df, 10) # 10時間後の予測
 #    pred11h = read_model('.\model\GBPJPY_11h', df, 11) # 11時間後の予測
@@ -81,7 +108,7 @@ def pred(df):
 #    pred13h = read_model('.\model\GBPJPY_13h', df, 13) # 13時間後の予測
 #    pred14h = read_model('.\model\GBPJPY_14h', df, 14) # 14時間後の予測
 #    pred15h = read_model('.\model\GBPJPY_15h', df, 15) # 15時間後の予測
-    pred16h = read_model('.\model\GBPJPY_16h', df, 16) # 16時間後の予測
+    dict_pred16h, pred16h = read_model('.\model\GBPJPY_16h', df, 16) # 16時間後の予測
 #    pred17h = read_model('.\model\GBPJPY_17h', df, 17) # 17時間後の予測
 #    pred18h = read_model('.\model\GBPJPY_18h', df, 18) # 18時間後の予測
 #    pred19h = read_model('.\model\GBPJPY_19h', df, 19) # 19時間後の予測
@@ -89,19 +116,35 @@ def pred(df):
 #    pred21h = read_model('.\model\GBPJPY_21h', df, 21) # 21時間後の予測
 #    pred22h = read_model('.\model\GBPJPY_22h', df, 22) # 22時間後の予測
 #    pred23h = read_model('.\model\GBPJPY_23h', df, 23) # 23時間後の予測
-    pred24h = read_model('.\model\GBPJPY_24h', df, 24) # 24時間後の予測
+    dict_pred24h, pred24h = read_model('.\model\GBPJPY_24h', df, 24) # 24時間後の予測
 #    Line_bot(str(pred1h) + '\n' + str(pred2h) + '\n' + str(pred3h) + '\n' + str(pred4h) + '\n' + str(pred5h) + '\n' + str(pred6h) + '\n' +
 #             str(pred7h) + '\n' + str(pred8h) + '\n' + str(pred9h) + '\n' + str(pred10h) + '\n' + str(pred11h) + '\n' + str(pred12h) + '\n' +
 #             str(pred13h) + '\n' + str(pred14h) + '\n' + str(pred15h) + '\n' + str(pred16h) + '\n' + str(pred17h) + '\n' + str(pred18h) + '\n' +
 #             str(pred19h) + '\n' + str(pred20h) + '\n' + str(pred21h) + '\n' + str(pred22h) + '\n' + str(pred23h) + '\n' + str(pred24h))
-    Line_bot('\n1h' + str(pred1h) + '\n8h' + str(pred8h) + '\n16h' + str(pred16h) + '\n24h' + str(pred24h))
+    Line_bot('\n1h' + str(dict_pred1h) + '\n8h' + str(dict_pred8h) + '\n16h' + str(dict_pred16h) + '\n24h' + str(dict_pred24h))
+    print('\n1h' + str(dict_pred1h) + '\n8h' + str(dict_pred8h) + '\n16h' + str(dict_pred16h) + '\n24h' + str(dict_pred24h))
+
+# 2週目以降は前回の予測と今回の予測の差を計算  ※処理2/2
+    if syukai_flag == True:
+        diff_1h = float(last_pred1h) - float(pred1h)
+        diff_8h = float(last_pred8h) - float(pred8h)
+        diff_16h = float(last_pred16h) - float(pred16h)
+        diff_24h = float(last_pred24h) - float(pred24h)
+
+        Line_bot('\n1h差額' + str(diff_1h) + '\n8h差額' + str(diff_8h) + '\n16h差額' + str(diff_16h) + '\n24h差額' + str(diff_24h))
+        print('\n1h差額' + str(diff_1h) + '\n8h差額' + str(diff_8h) + '\n16h差額' + str(diff_16h) + '\n24h差額' + str(diff_24h))
+
+    syukai_flag = True
+    return syukai_flag, pred1h, pred8h, pred16h, pred24h
 
 # デバッグ用
 if __name__ == '__main__':
-    df = create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
-    pred(df)
-    print('完了')
-
+    syukai_flag = False
+    while True:
+        df = create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
+        syukai_flag, pred1h, pred8h, pred16h, pred24h = pred(df, syukai_flag, pred1h, pred8h, pred16h, pred24h)
+        print('完了')
+        time.sleep(5)
 
 
 
