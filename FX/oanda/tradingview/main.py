@@ -40,4 +40,17 @@ if __name__ == '__main__':
         df = predict.create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
         predict.pred(df)  # 1-24時間後まで予測
         print('予測完了')
-        time.sleep(1790)
+
+
+        time.sleep(1200)
+
+        driver_2.find_element_by_css_selector(
+            'body > div.js-rootresizer__contents > div.layout__area--topleft > div > div > '
+            'div > div > svg').click()
+
+        time.sleep(1200)
+
+        driver_2.find_element_by_css_selector(
+            'body > div.js-rootresizer__contents > div.layout__area--topleft > div > div > '
+            'div > div > svg').click()
+        time.sleep(1190)
