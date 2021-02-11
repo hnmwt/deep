@@ -45,8 +45,8 @@ if __name__ == '__main__':
 
 
         #time.sleep(1200)
-    #    time.sleep(600)
+        time.sleep(6)
         driver_2.refresh()
-    #    time.sleep(600)
-        driver_2.refresh()
-   #     time.sleep(1190)
+   #     time.sleep(6)
+   #     driver_2.refresh()
+   #     time.sleep(11)

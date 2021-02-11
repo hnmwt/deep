@@ -43,6 +43,10 @@ def create_train_data(file_name):
     df.to_csv(train_data_name, index=False)
     return df
 
+def format(num):
+    num = "{:.3f}".format(float(num))  # 書式編集
+    return num
+
 # モデルデータから未来のレートを予測
 def read_model(dir, df, hour):
     model = keras.models.load_model(dir +'\model.hdf5')  # モデルを読込み
@@ -63,7 +67,7 @@ def read_model(dir, df, hour):
     pred = "{:.3f}".format(float(pred))  # 書式編集
     #print(time)
     after_time = time + datetime.timedelta(hours=hour+9)  # 日本時間を計算
-    after_time = "{0:%Y-%m-%d %H:%M}".format(after_time)  # 書式作成
+    after_time = "{0:%Y-%m-%d %H:%M}".format(after_time)
 
     pred_time = {str(after_time) : str(pred)}  # 時間、予測レートを辞書化
     return pred_time ,pred
@@ -127,9 +131,13 @@ def pred(df, syukai_flag, pred1h, pred8h, pred16h, pred24h):
 # 2週目以降は前回の予測と今回の予測の差を計算  ※処理2/2
     if syukai_flag == True:
         diff_1h = float(last_pred1h) - float(pred1h)
+        diff_1h = format(diff_1h)
         diff_8h = float(last_pred8h) - float(pred8h)
+        diff_8h = format(diff_8h)
         diff_16h = float(last_pred16h) - float(pred16h)
+        diff_16h = format(diff_16h)
         diff_24h = float(last_pred24h) - float(pred24h)
+        diff_24h = format(diff_24h)
 
         Line_bot('\n1h差額' + str(diff_1h) + '\n8h差額' + str(diff_8h) + '\n16h差額' + str(diff_16h) + '\n24h差額' + str(diff_24h))
         print('\n1h差額' + str(diff_1h) + '\n8h差額' + str(diff_8h) + '\n16h差額' + str(diff_16h) + '\n24h差額' + str(diff_24h))
