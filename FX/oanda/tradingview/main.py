@@ -40,14 +40,13 @@ if __name__ == '__main__':
 
         time.sleep(4)
         df = predict.create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
-        syukai_flag, pred1h, pred8h, pred16h, pred24h = \
-            predict.pred(df, syukai_flag, predict.pred1h, predict.pred8h, predict.pred16h, predict.pred24h) # 1-24時間後まで予測
+        syukai_flag, predict.pred1h, predict.pred8h, predict.pred16h, predict.pred24h = predict.pred(df, syukai_flag, predict.pred1h, predict.pred8h, predict.pred16h, predict.pred24h) # 1-24時間後まで予測
         print('予測完了')
 
 
         #time.sleep(1200)
-        time.sleep(600)
+    #    time.sleep(600)
         driver_2.refresh()
-        time.sleep(600)
+    #    time.sleep(600)
         driver_2.refresh()
-        time.sleep(1190)
+   #     time.sleep(1190)
