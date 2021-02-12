@@ -56,17 +56,17 @@ def read_model(dir, df, hour):
     y_train_save_scaler = pickle.load(open(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview\dump\y_train_scaler.sav', 'rb'))  # 正規化パラメータを読込み
     X_train_columns = len(df.columns) - 1  # 特徴量のカラム数
 
-    time = df.iloc[-1,0]  # 時間を変数に代入して避難する
+    time = df.iloc[-2,0]  # 時間を変数に代入して避難する
     df = df.loc[:, 'open':'time(weekday)']  # 全行 , 列名称(始まり):列名称(終わり)
     df = X_train_save_scaler.transform(df)  # 予測結果の正規化をデコード
-    X_train = df[-1:]  # 最終行のみ抜き出す
+    X_train = df[-2:-1]  # 最終行のみ抜き出す
 
     X_train = np.array(X_train).reshape(1, X_train_columns, -1)  # 特徴量の形状(3次元)
     pred = model(X_train)  # 予測
     pred = y_train_save_scaler.inverse_transform(pred)  # 予測結果の正規化をデコード
     pred = "{:.3f}".format(float(pred))  # 書式編集
     #print(time)
-    after_time = time + datetime.timedelta(hours=hour+9)  # 日本時間を計算
+    after_time = time + datetime.timedelta(hours=hour+9+1)  # 日本時間を計算、予測値は59分59秒≒1時間
     after_time = "{0:%Y-%m-%d %H:%M}".format(after_time)
 
     pred_time = {str(after_time) : str(pred)}  # 時間、予測レートを辞書化
@@ -130,13 +130,13 @@ def pred(df, syukai_flag, pred1h, pred8h, pred16h, pred24h):
 
 # 2週目以降は前回の予測と今回の予測の差を計算  ※処理2/2
     if syukai_flag == True:
-        diff_1h = float(last_pred1h) - float(pred1h)
+        diff_1h = float(pred1h) - float(last_pred1h)
         diff_1h = format(diff_1h)
-        diff_8h = float(last_pred8h) - float(pred8h)
+        diff_8h = float(pred8h) - float(last_pred8h)
         diff_8h = format(diff_8h)
-        diff_16h = float(last_pred16h) - float(pred16h)
+        diff_16h = float(pred16h) - float(last_pred16h)
         diff_16h = format(diff_16h)
-        diff_24h = float(last_pred24h) - float(pred24h)
+        diff_24h = float(pred24h) - float(last_pred24h)
         diff_24h = format(diff_24h)
 
         Line_bot('\n1h差額' + str(diff_1h) + '\n8h差額' + str(diff_8h) + '\n16h差額' + str(diff_16h) + '\n24h差額' + str(diff_24h))

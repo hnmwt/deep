@@ -7,6 +7,7 @@ from sklearn import preprocessing
 from tensorflow import keras
 import pandas as pd
 import numpy as np
+import datetime
 import os
 
 username = 'hnmwtr999'
@@ -27,26 +28,31 @@ syukai_flag = False
 if __name__ == '__main__':
     driver_1 = TradingView.open_browser(chromedriver_path)
     driver_2 = TradingView.site_login(username, password, url, driver_1)
+    try:
+        while True:
+            dt_now = datetime.datetime.now()
+            # 前回のcsvがあるとき削除
+            if os.path.isfile(get_csv_name):
+                os.remove(get_csv_name)
 
-    while True:
-        # 前回のcsvがあるとき削除
-        if os.path.isfile(get_csv_name):
-            os.remove(get_csv_name)
+#            driver_2 = TradingView.site_login(username, password, url, driver_2)
+            time.sleep(6)
+            TradingView.get_csv(driver_2)
+            print('csvファイルダウンロード完了')
 
-#        driver_2 = TradingView.site_login(username, password, url, driver_2)
-        time.sleep(6)
-        TradingView.get_csv(driver_2)
-        print('csvファイルダウンロード完了')
-
-        time.sleep(4)
-        df = predict.create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
-        syukai_flag, predict.pred1h, predict.pred8h, predict.pred16h, predict.pred24h = predict.pred(df, syukai_flag, predict.pred1h, predict.pred8h, predict.pred16h, predict.pred24h) # 1-24時間後まで予測
-        print('予測完了')
+            time.sleep(4)
+            df = predict.create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
+            syukai_flag, predict.pred1h, predict.pred8h, predict.pred16h, predict.pred24h = predict.pred(df, syukai_flag, predict.pred1h, predict.pred8h, predict.pred16h, predict.pred24h) # 1-24時間後まで予測
+            print(str(dt_now) + '予測完了')
 
 
-        #time.sleep(1200)
-        time.sleep(6)
-        driver_2.refresh()
-   #     time.sleep(6)
-   #     driver_2.refresh()
-   #     time.sleep(11)
+            #time.sleep(1200)
+            time.sleep(1800)
+            driver_2.refresh()
+            time.sleep(1000)
+            driver_2.refresh()
+            time.sleep(790)
+
+    except Exception as e:
+        predict.Line_bot(str(dt_now) + 'エラー発生' + str(e))
+        print(str(dt_now) + 'エラー発生' + str(e))
