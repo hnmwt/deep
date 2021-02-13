@@ -47,9 +47,22 @@ if mt5.initialize():
         # 取引リクエストを送信する
         result = mt5.order_send(request)
         # 実行結果を確認する
-        print("1. order_send(): by {} {} lots at {} with deviation={} points".format(symbol, lot, price, deviation));
+        print("1. order_send(): by {} {} lots at {} with deviation={} points".format(symbol, lot, price, deviation))
+
         if result.retcode != mt5.TRADE_RETCODE_DONE:
             print("2. order_send failed, retcode={}".format(result.retcode))
+
+        else:
+            print("4. position #{} closed, {}".format(position_id, result))
+            # 結果をディクショナリとしてリクエストし、要素ごとに表示する
+            result_dict = result._asdict()
+            for field in result_dict.keys():
+                print("   {}={}".format(field, result_dict[field]))
+                # これが取引リクエスト構造体の場合は要素ごとに表示する
+                if field == "request":
+                    traderequest_dict = result_dict[field]._asdict()
+                for tradereq_filed in traderequest_dict:
+                    print("       traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
 
 # 接続不可能→End
 else:
