@@ -15,11 +15,12 @@ password = 'hnm4264wtr@'
 # You should download chromedriver and place it in a high hierarchy folder
 chromedriver_path = "C://driver/chromedriver.exe"
 # This is the generic url that I mentioned before
-url = "https://jp.tradingview.com/chart/KQZh8MjI/#signin"
+#url = "https://jp.tradingview.com/chart/KQZh8MjI/#signin"
+url = "https://jp.tradingview.com/chart/wznernFp/#signin"
 #get_csv_dir = r"C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview"
 #train_data_name = r"C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview/train_data.csv"
-#get_csv_name = r"C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview\Intermediate\FX_GBPJPY, 60.csv"
-get_csv_name = ".\FX_GBPJPY, 60.csv"
+#get_csv_name = r"C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview\Intermediate\FX_GBPJPY, 30.csv"
+get_csv_name = ".\FX_GBPJPY, 30.csv"
 
 mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
 syukai_flag = False
@@ -42,16 +43,16 @@ if __name__ == '__main__':
 
             time.sleep(4)
             df = predict.create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
-            syukai_flag, predict.pred1h, predict.pred8h, predict.pred16h, predict.pred24h = predict.pred(df, syukai_flag, predict.pred1h, predict.pred8h, predict.pred16h, predict.pred24h) # 1-24時間後まで予測
+            syukai_flag, predict.pred30m = predict.pred(df, syukai_flag, predict.pred30m)
             print(str(dt_now) + '予測完了')
 
 
             #time.sleep(1200)
-            time.sleep(1800)
+            time.sleep(900)
             driver_2.refresh()
-            time.sleep(1000)
+            time.sleep(500)
             driver_2.refresh()
-            time.sleep(790)
+            time.sleep(395)
 
     except Exception as e:
         predict.Line_bot(str(dt_now) + 'エラー発生' + str(e))

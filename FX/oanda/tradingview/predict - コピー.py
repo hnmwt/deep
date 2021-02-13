@@ -48,7 +48,7 @@ def format(num):
     return num
 
 # モデルデータから未来のレートを予測
-def read_model(dir, df, hour, column_start, column_end):
+def read_model(dir, df, hour, column_A, column_B):
     model = keras.models.load_model(dir +'\model.hdf5')  # モデルを読込み
     model.load_weights(dir +'\param.hdf5')  # 重みを読込み
     #X_train_save_scaler = pickle.load(open('../dump/X_train_scaler.sav', 'rb'))  # 正規化パラメータを読込み
@@ -56,14 +56,13 @@ def read_model(dir, df, hour, column_start, column_end):
     y_train_save_scaler = pickle.load(open(r'C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview\dump\y_train_scaler.sav', 'rb'))  # 正規化パラメータを読込み
     X_train_columns = len(df.columns) - 1  # 特徴量のカラム数
 
-    time = df.iloc[column_start, 0]  # 時間を変数に代入して避難する
+    time = df.iloc[column_A, 0]  # 時間を変数に代入して避難する
     df = df.loc[:, 'open':'time(weekday)']  # 全行 , 列名称(始まり):列名称(終わり)
-    df = X_train_save_scaler.transform(df)  # 予測結果の正規化
-    X_train = df#[column_start:column_end]  # 最終行から2番目のみ抜き出す
+    df = X_train_save_scaler.transform(df)  # 予測結果の正規化をデコード
+    X_train = df[column_A:column_B]  # 最終行から2番目のみ抜き出す
 
-    X_train = np.array(X_train).reshape(-1, X_train_columns, 1)  # 特徴量の形状(3次元)
+    X_train = np.array(X_train).reshape(1, X_train_columns, -1)  # 特徴量の形状(3次元)
     pred = model(X_train)  # 予測
-    pred = pred[column_start:column_end]
     pred = y_train_save_scaler.inverse_transform(pred)  # 予測結果の正規化をデコード
     pred = "{:.3f}".format(float(pred))  # 書式編集
     #print(time)
