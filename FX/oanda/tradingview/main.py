@@ -44,11 +44,17 @@ if __name__ == '__main__':
 
             time.sleep(4)
             df = predict.create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
-            syukai_flag, predict.pred30m = predict.pred(df, syukai_flag, predict.pred30m)
-            print(str(dt_now) + '予測完了')
+            syukai_flag, predict.pred30m, diff_30m = predict.pred(df, syukai_flag, predict.pred30m)  # 値を予測
+            print(str(dt_now) + '：予測完了')
+
+            # 予測値が一定以上の場合→買い注文
+            if 0.2 < diff_30m:
+                limit_rate = predict.pred30m - 0.05  #  リミット価格は予測-0.05
+
+            # 予測値が一定以下の場合→売り注文
+            elif diff_30m < -0.2:
 
 
-            #time.sleep(1200)
             time.sleep(900)
             driver_2.refresh()
             time.sleep(500)

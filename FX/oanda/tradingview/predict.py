@@ -132,6 +132,7 @@ def pred(df, syukai_flag, pred30m):
         before_pred30m, before_pred_one30m = read_model('.\model\GBPJPY_30m', df, 0.5, -3, -2)  # 0.5時間後の予測
         Line_bot('前回の予測' + str(before_pred30m))
         print('前回の予測' + str(before_pred30m))
+        diff_30m = 0  # 初回は0固定
     # 2週目以降は前回の予測と今回の予測の差を計算  ※処理2/2
     elif syukai_flag == True:
         diff_30m = float(pred30m) - float(last_pred30m)
@@ -167,14 +168,14 @@ def pred(df, syukai_flag, pred30m):
               )
 
     syukai_flag = True
-    return syukai_flag, pred30m
+    return syukai_flag, pred30m, diff_30m
 
 # デバッグ用
 if __name__ == '__main__':
     syukai_flag = False
     while True:
         df = create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
-        syukai_flag, pred30m = pred(df, syukai_flag, pred30m)
+        syukai_flag, pred30m, diff_30m = pred(df, syukai_flag, pred30m)
         print('完了')
         time.sleep(5)
 
