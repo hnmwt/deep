@@ -1,29 +1,8 @@
 import time
 import predict
 from selenium import webdriver
-# Import your username and password of tradingview.com
-import credentials
-#credentials = credentials.get_credentials()
-#username = credentials['hnmwtr999']
-#password = credentials['hnm4264wtr@']
 
-username = 'hnmwtr999'
-password = 'hnm4264wtr@'
-
-
-
-#    # You should download chromedriver and place it in a high hierarchy folder
-#chromedriver_path = "C://driver/chromedriver.exe"
-#    # This is the generic url that I mentioned before
-#url = "https://jp.tradingview.com/chart/KQZh8MjI/#signin"
 get_csv_dir = r"C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview"
-train_data_name = ".\Intermediate\train_data.csv"
-
-#get_csv_name = r"C:\Users\hnmwt\PycharmProjects\deep\FX\oanda\tradingview\FX_GBPJPY, 60.csv"
-#mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
-
-
-
 
 def open_browser(chromedriver_path):
     chrome_options = webdriver.ChromeOptions()
@@ -78,6 +57,9 @@ def get_csv(driver):
                                         '> div > span > button').click()
 
 if __name__ == '__main__':
+    username = 'hnmwtr999'
+    password = 'hnm4264wtr@'
+
     driver_1 = open_browser(chromedriver_path)
     driver_2 = site_login(username,password,url,driver_1)
     time.sleep(7)
