@@ -43,7 +43,7 @@ if __name__ == '__main__':
                 lot = 0.1  # ロット数
                 limit_rate = predict.pred30m - 0.05  #  リミット価格は予測-0.05
                 order = MT5.NARIYUKI_SASINE_BUY  # 指値買い注文
-                MT5.order(order, limit_rate, lot)
+            #    MT5.order(order, limit_rate, lot)
                 order_name = "買い注文"
 
             # 予測値が一定以下の場合→売り注文
@@ -51,7 +51,7 @@ if __name__ == '__main__':
                 lot = 0.1  # ロット数
                 limit_rate = predict.pred30m - 0.05  # リミットかか木は予想-0.05
                 order = MT5.NARIYUKI_SASINE_SELL  # 指値売り注文
-                MT5.order(order, limit_rate, lot)
+            #    MT5.order(order, limit_rate, lot)
                 order_name = "売り注文"
 
             # 予測値が売り、買い条件に当てはまらないとき
