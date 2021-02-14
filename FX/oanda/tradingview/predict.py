@@ -77,7 +77,7 @@ def pred(df, syukai_flag, pred30m):
 
     # 1週目に限り前回の予測も行う
     if syukai_flag == False:
-        before_pred30m, before_pred_one30m, pred_after_time = read_model('.\model\GBPJPY_30m', df, 0.5, -3, -2)  # 0.5時間後の予測
+      #  before_pred30m, before_pred_one30m, pred_after_time = read_model('.\model\GBPJPY_30m', df, 0.5, -3, -2)  # 0.5時間後の予測
         diff_30m = 0  # 差額は初回は0固定
 
     # 2週目以降は前回の予測との差を求める

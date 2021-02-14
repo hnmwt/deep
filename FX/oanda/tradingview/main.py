@@ -39,7 +39,7 @@ if __name__ == '__main__':
             syukai_flag, predict.pred30m, diff_30m, pred_after_time = predict.pred(df, syukai_flag, predict.pred30m)  # 値を予測
 
             # 予測値が一定以上の場合→買い注文
-            if 0.3 < diff_30m:
+            if 0.3 < float(diff_30m):
                 lot = 0.1  # ロット数
                 limit_rate = predict.pred30m - 0.05  #  リミット価格は予測-0.05
                 order = MT5.NARIYUKI_SASINE_BUY  # 指値買い注文
@@ -47,7 +47,7 @@ if __name__ == '__main__':
                 order_name = "買い注文"
 
             # 予測値が一定以下の場合→売り注文
-            elif diff_30m < -0.3:
+            elif float(diff_30m) < -0.3:
                 lot = 0.1  # ロット数
                 limit_rate = predict.pred30m - 0.05  # リミットかか木は予想-0.05
                 order = MT5.NARIYUKI_SASINE_SELL  # 指値売り注文
@@ -69,9 +69,9 @@ if __name__ == '__main__':
 
             time.sleep(900)
             driver_2.refresh()
-            time.sleep(500)
+            time.sleep(860)
            # driver_2.refresh()
-            time.sleep(395)
+
 
     except Exception as e:
         t, v, tb = sys.exc_info()
