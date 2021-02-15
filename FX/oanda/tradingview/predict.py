@@ -86,7 +86,7 @@ def pred(df, syukai_flag, pred30m):
         diff_30m = format(diff_30m)
 
     syukai_flag = True
-    return syukai_flag, pred30m, diff_30m, pred_after_time
+    return syukai_flag, float(pred30m), diff_30m, pred_after_time
 
 # デバッグ用
 if __name__ == '__main__':
