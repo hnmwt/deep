@@ -8,6 +8,7 @@ import os
 import sys
 import traceback
 from Line_bot import Line_bot
+import schedule
 
 username = 'hnmwtr999'
 password = 'hnm4264wtr@'
@@ -39,19 +40,19 @@ if __name__ == '__main__':
             syukai_flag, predict.pred30m, diff_30m, pred_after_time = predict.pred(df, syukai_flag, predict.pred30m)  # 値を予測
 
             # 予測値が一定以上の場合→買い注文
-            if 0.003 < float(diff_30m):
+            if 0.12 < float(diff_30m):
                 lot = 0.1  # ロット数
                 limit_rate = predict.pred30m - float(0.05)  #  リミット価格は予測-0.05
-                order = MT5.NARIYUKI_SASINE_BUY  # 指値買い注文
-            #    MT5.order(order, limit_rate, lot)
+                order = MT5.NARIYUKI_BUY  # 指値買い注文
+                MT5.order(order, limit_rate, lot)
                 order_name = "買い注文"
 
             # 予測値が一定以下の場合→売り注文
-            elif float(diff_30m) < -0.003:
+            elif float(diff_30m) < -0.12:
                 lot = 0.1  # ロット数
                 limit_rate = predict.pred30m - float(0.05)  # リミットかか木は予想-0.05
-                order = MT5.NARIYUKI_SASINE_SELL  # 指値売り注文
-            #    MT5.order(order, limit_rate, lot)
+                order = MT5.NARIYUKI_SELL  # 指値売り注文
+                MT5.order(order, limit_rate, lot)
                 order_name = "売り注文"
 
             # 予測値が売り、買い条件に当てはまらないとき
@@ -67,17 +68,19 @@ if __name__ == '__main__':
             print(message)
             Line_bot(message)
 
-            #time.sleep(900)
+            time.sleep(980)
             driver_2.refresh()
             #time.sleep(860)
-            time.sleep(800)
+            time.sleep(802)
            # driver_2.refresh()
 
+            while datetime.datetime.now().strftime('%Y/%m/%d/ %H:%M:%S') == '%Y/%m/%d/ %H:%30:%S':
+                schedule.every().day.at("10:30").do(job)
 
     except Exception as e:
         t, v, tb = sys.exc_info()
         message = traceback.print_tb(tb)
         print(message, t, v)
-        Line_bot("エラー発生")
+        Line_bot("エラー発生" + str(tb))
       #  predict.Line_bot(str(dt_now) + 'エラー発生' + str(e))
       #  print(str(dt_now) + 'エラー発生' + str(e))

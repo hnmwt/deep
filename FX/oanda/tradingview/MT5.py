@@ -1,8 +1,8 @@
 import MetaTrader5 as mt5
 from Line_bot import Line_bot
 
-NARIYUKI_SASINE_BUY = mt5.ORDER_TYPE_BUY_LIMIT  # 買い指値注文
-NARIYUKI_SASINE_SELL = mt5.ORDER_TYPE_SELL_LIMIT  # 売り指値注文
+NARIYUKI_BUY = mt5.ORDER_TYPE_BUY  # 買い指値注文
+NARIYUKI_SELL = mt5.ORDER_TYPE_SELL  # 売り指値注文
 
 def order(order_type, limit_rate, lot):
     account_ID = 900006047
@@ -21,6 +21,7 @@ def order(order_type, limit_rate, lot):
         # ポジション保有中→End
         if len(positions) > 0:
             print("Total positions on" + symbol + "=", len(positions))
+            Line_bot("ポジション保有中です")
             # すべてのポジションを表示する
             for position in positions:
                 print(position)
@@ -33,45 +34,55 @@ def order(order_type, limit_rate, lot):
             point = mt5.symbol_info(symbol).point  # 指定したシンボルの情報 point=最小の値動きの単位 ※値は0.001
             price = mt5.symbol_info_tick(symbol).ask  # 指定したシンボルの最後のtick時の情報 ask=買い注文の価格
             deviation = 20
+            if order_type == NARIYUKI_BUY:
+                sl = price - 1500 * point
+                tp = price + 100 * point
+            elif order_type == NARIYUKI_SELL:
+                sl = price + 1500 * point
+                tp = price - 100 * point
+
             request = {
                 "action": mt5.TRADE_ACTION_DEAL,         # 取引操作の種類。
                 "symbol": symbol,                        # 注文が行われた取引商品の名前。注文を変更する場合と決済する場合は不要。
                 "volume": lot,                           # ロット単位でのリクエストされた取引量。
-                "type": order_type,                      # 注文の種類。
+                "type": order_type,              # 注文の種類。
                 "price": price,                          # 注文実行価格。
-                "sl": price - 100 * point,               # 逆指値注文価格 ※100*0.001=0.1
-                "tp": price + 100 * point,               # 指値注文価格
+                "sl": sl                 ,               # 逆指値注文価格 ※100*0.001=0.1
+                "tp": tp                 ,               # 指値注文価格
                 "deviation": deviation,                  # リクエストされた価格からの最大許容偏差(ポイント単位)
                 "magic": 234000,                         # EAのID。取引注文の分析処理を調整できるようにします。各EAは、取引リクエストを送信するときに一意のIDを設定できます。
                 "comment": "python script open",         # 注文コメント。
                 "type_time": mt5.ORDER_TIME_GTC,         # 注文有効期限の種類。値はORDER_TYPE_TIME値のうちの1つです。
-                "type_filling": mt5.ORDER_FILLING_RETURN,# 注文の種類。値はORDER_TYPE_FILLING値のうちの1つです。
+                "type_filling": mt5.ORDER_FILLING_IOC,   # 注文の種類。値はORDER_TYPE_FILLING値のうちの1つです。
+              #  "stoplimit": price + 0.1
             }
             # 取引リクエストを送信する
             result = mt5.order_send(request)
             # 実行結果を確認する
             print("1. order_send(): by {} {} lots at {} with deviation={} points".format(symbol, lot, price, deviation))
+            print("逆指値:" , (price - 100 * point) , "\n指値" , (price + 100 * point))
 
-            # リクエストの送信が失敗→End
+            # リクエスト完了以外→End
             if result.retcode != mt5.TRADE_RETCODE_DONE:
                 message = "2. order_send failed, retcode={}".format(result.retcode)
                 print(message)
+                print(result.comment)
                 Line_bot(message)
 
-            # リクエストの送信が成功
+            # リクエスト完了
             else:
-                print("4. position #{} closed, {}".format(position_id, result))
+#                print("4. position #{} closed, {}".format(position_id, result))
                 # 結果をディクショナリとしてリクエストし、要素ごとに表示する
                 result_dict = result._asdict()
                 for field in result_dict.keys():
                     print("   {}={}".format(field, result_dict[field]))
                     # これが取引リクエスト構造体の場合は要素ごとに表示する
-                    if field == "request":
-                        traderequest_dict = result_dict[field]._asdict()
-                    for tradereq_filed in traderequest_dict:
-                        print("traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
-                        print("リクエスト送信完了")
-                Line_bot("リクエスト送信完了")
+#                    if field == "request":
+#                        traderequest_dict = result_dict[field]._asdict()
+#                    for tradereq_filed in traderequest_dict:
+#                        print("traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
+                print("リクエスト送信完了")
+                Line_bot("リクエスト送信完了\n逆指値：" + str(sl) + "\n指値：" + str(tp))
 
     # 接続不可能→End
     else:
@@ -85,3 +96,4 @@ def order(order_type, limit_rate, lot):
 
 if __name__ == '__main__':
     print("実行開始")
+    order(NARIYUKI_BUY, 146.7, 0.1)
