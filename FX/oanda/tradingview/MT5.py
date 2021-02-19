@@ -4,7 +4,7 @@ from Line_bot import Line_bot
 NARIYUKI_BUY = mt5.ORDER_TYPE_BUY  # 買い指値注文
 NARIYUKI_SELL = mt5.ORDER_TYPE_SELL  # 売り指値注文
 
-def order(order_type, limit_rate, lot):
+def order(order_type, sl_point, tp_point, lot):
     account_ID = 900006047
     password = "Hnm4264wtr"
     symbol = "GBPJPY"
@@ -18,37 +18,37 @@ def order(order_type, limit_rate, lot):
         # GBPJPYのポジションを取得する
         positions = mt5.positions_get(symbol=symbol)
 
-        # ポジション保有中→End
-        if len(positions) > 0:
+        # ポジションが2個以上→End
+        if len(positions) >= 2:
             print("Total positions on" + symbol + "=", len(positions))
-            Line_bot("ポジション保有中です")
+            Line_bot("ポジションを" + str(len(positions)) + "個保有中です。END")
             # すべてのポジションを表示する
             for position in positions:
                 print(position)
 
         # ポジション無し→処理継続
         elif not positions :
-            print("ポジションを保有していません。処理を継続します。")
+            Line_bot("ポジションを" + str(len(positions)) + "個保有中です。処理継続")
 
             #lot = 0.1
             point = mt5.symbol_info(symbol).point  # 指定したシンボルの情報 point=最小の値動きの単位 ※値は0.001
             price = mt5.symbol_info_tick(symbol).ask  # 指定したシンボルの最後のtick時の情報 ask=買い注文の価格
             deviation = 20
             if order_type == NARIYUKI_BUY:
-                sl = price - 1500 * point
-                tp = price + 100 * point
+                sl = price - sl_point * point  # ※100*0.001=0.1
+                tp = price + tp_point * point
             elif order_type == NARIYUKI_SELL:
-                sl = price + 1500 * point
-                tp = price - 100 * point
+                sl = price + sl_point * point
+                tp = price - tp_point * point
 
             request = {
                 "action": mt5.TRADE_ACTION_DEAL,         # 取引操作の種類。
                 "symbol": symbol,                        # 注文が行われた取引商品の名前。注文を変更する場合と決済する場合は不要。
                 "volume": lot,                           # ロット単位でのリクエストされた取引量。
-                "type": order_type,              # 注文の種類。
+                "type": order_type,                      # 注文の種類。
                 "price": price,                          # 注文実行価格。
-                "sl": sl                 ,               # 逆指値注文価格 ※100*0.001=0.1
-                "tp": tp                 ,               # 指値注文価格
+                "sl": sl,                                # 逆指値注文価格 ※100*0.001=0.1
+                "tp": tp,                                # 指値注文価格
                 "deviation": deviation,                  # リクエストされた価格からの最大許容偏差(ポイント単位)
                 "magic": 234000,                         # EAのID。取引注文の分析処理を調整できるようにします。各EAは、取引リクエストを送信するときに一意のIDを設定できます。
                 "comment": "python script open",         # 注文コメント。
@@ -96,4 +96,6 @@ def order(order_type, limit_rate, lot):
 
 if __name__ == '__main__':
     print("実行開始")
-    order(NARIYUKI_BUY, 146.7, 0.1)
+    sl_point = 500
+    tp_point = 100
+    order(NARIYUKI_BUY, sl_point,tp_point, 0.1)

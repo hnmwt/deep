@@ -17,70 +17,122 @@ chromedriver_path = "C://driver/chromedriver.exe"
 url = "https://jp.tradingview.com/chart/wznernFp/#signin"
 get_csv_name = ".\FX_GBPJPY, 30.csv"
 mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
+minute = 30 #minuteの間隔で動作
 
-syukai_flag = False  # 周回フラグ
 
-
-if __name__ == '__main__':
-    driver_1 = TradingView.open_browser(chromedriver_path)
-    driver_2 = TradingView.site_login(username, password, url, driver_1)
+def job():
+#    driver_1 = TradingView.open_browser(chromedriver_path)
+#    driver_2 = TradingView.site_login(username, password, url, driver_1)
     try:
-        while True:
-            dt_now = datetime.datetime.now().strftime('%Y/%m/%d/ %H:%M:%S')
-            # 前回のcsvがあるとき削除
-            if os.path.isfile(get_csv_name):
-                os.remove(get_csv_name)
+#        while True:
+        dt_now = datetime.datetime.now().strftime('%Y/%m/%d/ %H:%M:%S')
+        # 前回のcsvがあるとき削除
+        if os.path.isfile(get_csv_name):
+            os.remove(get_csv_name)
 
-            time.sleep(6)
-            TradingView.get_csv(driver_2)
-            print('csvファイルダウンロード完了')
+        time.sleep(6)
+        TradingView.get_csv(driver_2)
+        print('csvファイルダウンロード完了')
 
-            time.sleep(4)
-            df = predict.create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
-            syukai_flag, predict.pred30m, diff_30m, pred_after_time = predict.pred(df, syukai_flag, predict.pred30m)  # 値を予測
+        time.sleep(4)
+        df = predict.create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
+        predict.syukai_flag, predict.pred30m, diff_30m, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m)  # 値を予測
 
-            # 予測値が一定以上の場合→買い注文
-            if 0.12 < float(diff_30m):
-                lot = 0.1  # ロット数
-                limit_rate = predict.pred30m - float(0.05)  #  リミット価格は予測-0.05
-                order = MT5.NARIYUKI_BUY  # 指値買い注文
-                MT5.order(order, limit_rate, lot)
-                order_name = "買い注文"
+        # 予測値が一定以上の場合→買い注文
+        if 0.12 < float(diff_30m):
+            lot = 0.1  # ロット数
+            sl_point = 500
+            tp_point = 100
+            order = MT5.NARIYUKI_BUY  # 指値買い注文
+            MT5.order(order, sl_point,tp_point, lot)
+            order_name = "買い注文"
 
-            # 予測値が一定以下の場合→売り注文
-            elif float(diff_30m) < -0.12:
-                lot = 0.1  # ロット数
-                limit_rate = predict.pred30m - float(0.05)  # リミットかか木は予想-0.05
-                order = MT5.NARIYUKI_SELL  # 指値売り注文
-                MT5.order(order, limit_rate, lot)
-                order_name = "売り注文"
+        # 予測値が一定以上の場合→買い注文(少)
+        if 0.06 < float(diff_30m) < 0.12:
+            lot = 0.1  # ロット数
+            sl_point = 500
+            tp_point = 35
+            order = MT5.NARIYUKI_BUY  # 指値買い注文
+            MT5.order(order, sl_point,tp_point, lot)
+            order_name = "買い注文(少)"
 
-            # 予測値が売り、買い条件に当てはまらないとき
-            else:
-                order_name = "注文無し"
+        # 予測値が一定以下の場合→売り注文
+        elif float(diff_30m) < -0.12:
+            lot = 0.1  # ロット数
+            sl_point = 500
+            tp_point = 100
+            order = MT5.NARIYUKI_SELL  # 指値売り注文
+            MT5.order(order, sl_point,tp_point, lot)
+            order_name = "売り注文"
 
-            message = str(dt_now) + \
-            '\n予測時刻:' + str(pred_after_time) + \
-            '\n予測値:' + str(predict.pred30m) + \
-            '\n前回との差額:' + str(diff_30m) + \
-            '\nオーダー:' + str(order_name)
+        # 予測値が一定以下の場合→売り注文(少)
+        elif -0.12 < float(diff_30m) < -0.06:
+            lot = 0.1  # ロット数
+            sl_point = 500
+            tp_point = 30
+            order = MT5.NARIYUKI_SELL  # 指値売り注文
+            MT5.order(order, sl_point,tp_point, lot)
+            order_name = "売り注文(少)"
 
-            print(message)
-            Line_bot(message)
+        # 予測値が売り、買い条件に当てはまらないとき
+        else:
+            order_name = "注文無し"
 
-            time.sleep(980)
-            driver_2.refresh()
-            #time.sleep(860)
-            time.sleep(802)
+        message = str(dt_now) + \
+        '\n予測時刻:' + str(pred_after_time) + \
+        '\n予測値:' + str(predict.pred30m) + \
+        '\n前回との差額:' + str(diff_30m) + \
+        '\nオーダー:' + str(order_name)
+
+        print(message)
+        Line_bot(message)
+
+#            time.sleep(980)
+#            driver_2.refresh()
+#            #time.sleep(860)
+#            time.sleep(802)
            # driver_2.refresh()
-
-            while datetime.datetime.now().strftime('%Y/%m/%d/ %H:%M:%S') == '%Y/%m/%d/ %H:%30:%S':
-                schedule.every().day.at("10:30").do(job)
 
     except Exception as e:
         t, v, tb = sys.exc_info()
         message = traceback.print_tb(tb)
         print(message, t, v)
         Line_bot("エラー発生" + str(tb))
+
+
+if __name__ == '__main__':
+
+    # 30分毎のjob実行を登録
+    dt_now = datetime.datetime.now()  # 現在時刻
+    dt_now_criteria = dt_now.replace(minute=minute) # 基準時刻
+    dt_diff = dt_now - dt_now_criteria  # 現在時刻と基準時刻の差
+    dt_diff_sec = dt_diff.total_seconds()  # 秒数変換
+
+    # 現在時刻(分)が30分より前
+    if dt_diff_sec < 0:
+        job_start_time = dt_now_criteria  # ジョブスタート時間は30分
+        print('ジョブスタート時間:', job_start_time)
+
+    # 現在時刻(分)が30分以降(30分含む)→次の00分にスタート
+    elif 0 <= dt_diff_sec:
+        hour = dt_now.hour
+        job_start_time = dt_now.replace(hour=hour+1,minute=0,second=0)  # ジョブスタート時間は時間が繰り上がった後
+        print('ジョブスタート時間:', job_start_time)
+
+    while job_start_time > datetime.datetime.now():
+        time.sleep(1)
+
+    driver_1 = TradingView.open_browser(chromedriver_path)
+    driver_2 = TradingView.site_login(username, password, url, driver_1)
+    job()
+
+    schedule.every(minute).minutes.do(job)
+    print('ジョブ登録完了')
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
       #  predict.Line_bot(str(dt_now) + 'エラー発生' + str(e))
       #  print(str(dt_now) + 'エラー発生' + str(e))

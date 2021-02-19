@@ -14,6 +14,8 @@ pred8h = 0
 pred16h = 0
 pred24h = 0
 
+syukai_flag = False  # 周回フラグ
+
 # 特徴量データを取得
 def create_train_data(file_name):
     df = pd.read_csv(file_name, encoding='shift_jis')
