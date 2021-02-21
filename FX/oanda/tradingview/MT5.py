@@ -5,7 +5,7 @@ NARIYUKI_BUY = mt5.ORDER_TYPE_BUY  # 買い指値注文
 NARIYUKI_SELL = mt5.ORDER_TYPE_SELL  # 売り指値注文
 
 # オーダー送信関数
-def order_send(order_type, sl_point, tp_point, lot, magic):
+def order_send(order_type, sl_point, tp_point, lot, magic, symbol):
     point = mt5.symbol_info(symbol).point  # 指定したシンボルの情報 point=最小の値動きの単位 ※値は0.001
     price = mt5.symbol_info_tick(symbol).ask  # 指定したシンボルの最後のtick時の情報 ask=注文の価格
     deviation = 20
@@ -61,10 +61,9 @@ def order_send(order_type, sl_point, tp_point, lot, magic):
 
 
 # オーダー関数
-def order(order_type, sl_point, tp_point, lot, magic):
+def order(order_type, sl_point, tp_point, lot, magic, symbol):
     account_ID = 900006047
     password = "Hnm4264wtr"
-    symbol = "GBPJPY"
 
     order_flag = True
     max_positions = 2  # 指定した数値未満が保有できる最大ポジション数になる
@@ -106,7 +105,7 @@ def order(order_type, sl_point, tp_point, lot, magic):
             if order_flag == True:
                 print("同じmagicナンバーのポジションが無いため処理継続します")
                 Line_bot("同じmagicナンバーのポジションが無いため処理継続します")
-                order_send(order_type, sl_point, tp_point, lot, magic)
+                order_send(order_type, sl_point, tp_point, lot, magic, symbol)
 
             # オーダーフラグがFalse→オーダーしない
             elif order_flag == False:
@@ -116,7 +115,7 @@ def order(order_type, sl_point, tp_point, lot, magic):
         # ポジション無し→オーダー送信
         elif not positions :
             Line_bot("ポジションを" + str(len(positions)) + "個保有中です。処理継続")
-            order_send(order_type, sl_point, tp_point, lot, magic)
+            order_send(order_type, sl_point, tp_point, lot, magic, symbol)
     # 接続不可能→End
     else:
         message = "initialize() failed, error code =", mt5.last_error()
@@ -132,4 +131,5 @@ if __name__ == '__main__':
     sl_point = 500
     tp_point = 100
     magic = 234000
-    order(NARIYUKI_BUY, sl_point,tp_point, 0.1, magic)
+    symbol = 'GBPJPY'
+    order(NARIYUKI_BUY, sl_point,tp_point, 0.1, magic, symbol)

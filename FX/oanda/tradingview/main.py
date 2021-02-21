@@ -21,6 +21,7 @@ minute = 30 #minuteの間隔で動作
 
 
 def job():
+    symbol = "GBPJPY"
     try:
 #        while True:
         dt_now = datetime.datetime.now().strftime('%Y/%m/%d/ %H:%M:%S')
@@ -43,7 +44,7 @@ def job():
             tp_point = 100
             magic = 234000
             order = MT5.NARIYUKI_BUY  # 指値買い注文
-            MT5.order(order, sl_point,tp_point, lot, magic)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol)
             order_name = "買い注文"
 
         # 予測値が一定以上の場合→買い注文(少)
@@ -53,7 +54,7 @@ def job():
             tp_point = 30
             magic = 234001
             order = MT5.NARIYUKI_BUY  # 指値買い注文
-            MT5.order(order, sl_point,tp_point, lot, magic)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol)
             order_name = "買い注文(少)"
 
         # 予測値が一定以下の場合→売り注文
@@ -63,7 +64,7 @@ def job():
             tp_point = 100
             magic = 235000
             order = MT5.NARIYUKI_SELL  # 指値売り注文
-            MT5.order(order, sl_point,tp_point, lot, magic)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol)
             order_name = "売り注文"
 
         # 予測値が一定以下の場合→売り注文(少)
@@ -73,7 +74,7 @@ def job():
             tp_point = 30
             magic = 235000
             order = MT5.NARIYUKI_SELL  # 指値売り注文
-            MT5.order(order, sl_point,tp_point, lot, magic)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol)
             order_name = "売り注文(少)"
 
         # 予測値が条件に当てはまらないとき
