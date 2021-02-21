@@ -40,7 +40,7 @@ def job():
         # 予測値が一定以上の場合→買い注文
         if 0.12 < float(diff_30m):
             lot = 0.1  # ロット数
-            sl_point = 500
+            sl_point = 1000
             tp_point = 100
             magic = 234000
             order = MT5.NARIYUKI_BUY  # 指値買い注文
@@ -50,7 +50,7 @@ def job():
         # 予測値が一定以上の場合→買い注文(少)
         if 0.06 < float(diff_30m) < 0.12:
             lot = 0.1  # ロット数
-            sl_point = 500
+            sl_point = 700
             tp_point = 30
             magic = 234001
             order = MT5.NARIYUKI_BUY  # 指値買い注文
@@ -60,7 +60,7 @@ def job():
         # 予測値が一定以下の場合→売り注文
         elif float(diff_30m) < -0.12:
             lot = 0.1  # ロット数
-            sl_point = 500
+            sl_point = 700
             tp_point = 100
             magic = 235000
             order = MT5.NARIYUKI_SELL  # 指値売り注文
@@ -70,7 +70,7 @@ def job():
         # 予測値が一定以下の場合→売り注文(少)
         elif -0.12 < float(diff_30m) < -0.06:
             lot = 0.1  # ロット数
-            sl_point = 500
+            sl_point = 1000
             tp_point = 30
             magic = 235000
             order = MT5.NARIYUKI_SELL  # 指値売り注文
