@@ -20,7 +20,7 @@ mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
 minute = 30 #minuteの間隔で動作
 
 
-def job():
+def EA():
     symbol = "GBPJPY"
     try:
 #        while True:
@@ -102,12 +102,10 @@ def job():
         print(message, t, v)
         Line_bot("エラー発生" + str(tb))
 
-
-if __name__ == '__main__':
-
+def work_interval():
     # 30分毎のjob実行を登録
     dt_now = datetime.datetime.now()  # 現在時刻
-    dt_now_criteria = dt_now.replace(minute=minute) # 基準時刻
+    dt_now_criteria = dt_now.replace(minute=minute, second=0) # 基準時刻
     dt_diff = dt_now - dt_now_criteria  # 現在時刻と基準時刻の差
     dt_diff_sec = dt_diff.total_seconds()  # 秒数変換
 
@@ -120,23 +118,35 @@ if __name__ == '__main__':
         hour = dt_now.hour
         job_start_time = dt_now.replace(hour=hour+1,minute=0,second=0)  # ジョブスタート時間は時間が繰り上がった後
 
+    return job_start_time
+
+
+if __name__ == '__main__':
+
+    job_start_time = work_interval()
+
     # 初回
     driver_1 = TradingView.open_browser(chromedriver_path)
     driver_2 = TradingView.site_login(username, password, url, driver_1)
-    job()
+    EA()
+    print("次回時刻" + str(job_start_time))
+ #   # ジョブの登録 & 現在時刻が指定の時間になるまで待機
+ #   print('ジョブスタート時間:', job_start_time)
+ #   while job_start_time > datetime.datetime.now():
+ #       time.sleep(1)
+ #   schedule.every(minute).minutes.do(job)
+ #   print('ジョブ登録完了')
+ #   job()  # ループを抜けたら2回目のジョブを実行(ここで時間補正を行う)
+ #
+ #   # 2回目以降は指定した時間毎に処理を行う
+ #   while True:
+ #       schedule.run_pending()
+ #       time.sleep(1)
 
-    # ジョブの登録 & 現在時刻が指定の時間になるまで待機
-    schedule.every(minute).minutes.do(job)
-    print('ジョブ登録完了')
-    print('ジョブスタート時間:', job_start_time)
-
-    # 指定の時間になるまで待機
-    while job_start_time > datetime.datetime.now():
-        time.sleep(1)
-    job()  # ループを抜けたら2回目のジョブを実行(ここで時間補正を行う)
-
-    # 2回目以降は指定した時間毎に処理を行う
+    # 2回目以降は
     while True:
-        schedule.run_pending()
-        time.sleep(1)
-
+        if job_start_time <= datetime.datetime.now():  # 指定時間 <= 現在時刻の時に処理をスタートする
+            EA()
+            job_start_time = work_interval()  # 処理終了後に指定時間を更新する
+            print("次回時刻" + str(job_start_time))
+        time.sleep(10)
