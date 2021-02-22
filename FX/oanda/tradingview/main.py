@@ -143,7 +143,7 @@ if __name__ == '__main__':
  #       schedule.run_pending()
  #       time.sleep(1)
 
-    # 2回目以降は
+    # 2回目以降
     while True:
         if job_start_time <= datetime.datetime.now():  # 指定時間 <= 現在時刻の時に処理をスタートする
             EA()

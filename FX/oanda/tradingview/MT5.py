@@ -74,18 +74,21 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
 # 保有ポジションがプラス収支の場合に決済する関数
 def settlement_position(position):
     profit = position[15]  # 現在の利益
-    print("aaaaaa")
     if 0 < profit:
         # 決済リクエストを作成する
-        position_id = result.order
-        price = mt5.symbol_info_tick(symbol).bid
+       # position_id = result.order
+       # price = mt5.symbol_info_tick(symbol).bid
 
         position_id = position[7]  # ポジションID
         price = position[13]  # 現在の価格
         magic = position[6]  # magicナンバー
         symbol = position[16]
         lot = position[9]
-        type = position[5]
+
+        if position[5] == 1:
+            type = NARIYUKI_BUY
+        elif position[5] == 0:
+            type = NARIYUKI_SELL
 
         deviation = 20
         request = {
@@ -99,7 +102,7 @@ def settlement_position(position):
             "magic": magic,
             "comment": "python script close",
             "type_time": mt5.ORDER_TIME_GTC,
-            "type_filling": mt5.ORDER_FILLING_RETURN,
+            "type_filling": mt5.ORDER_FILLING_IOC,
         }
         result = mt5.order_send(request)
 
@@ -145,6 +148,9 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
 
         # ポジションがmax_positions個以上→End
         if max_positions <= len(positions):
+            for position in positions:
+                resultsettlement_position = settlement_position(position)  # 保有ポジションがプラス収支の場合に決済する関数
+
             print("分岐1:ポジションを" + str(len(positions)) + "個持っているため処理を終了します")
             Line_bot("分岐1:ポジションを" + str(len(positions)) + "個持っているため処理を終了します")
 
@@ -157,7 +163,6 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
             # すべてのポジションを表示する
             magic_nums = []  # magicナンバーのリスト
             for position in positions:
-                print(position)
                 resultsettlement_position = settlement_position(position)  # 保有ポジションがプラス収支の場合に決済する関数
                 if resultsettlement_position == False:  # 保有ポジションの決済を行っていないとき　→　ポジションを保有しているので
                     magic_nums.append(position[6])      # 全ての保有ポジションmagicナンバーを取り出してリストに追加
