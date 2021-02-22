@@ -48,7 +48,7 @@ def job():
             order_name = "買い注文"
 
         # 予測値が一定以上の場合→買い注文(少)
-        if 0.06 < float(diff_30m) < 0.12:
+        elif 0.06 < float(diff_30m) < 0.12:
             lot = 0.1  # ロット数
             sl_point = 700
             tp_point = 30

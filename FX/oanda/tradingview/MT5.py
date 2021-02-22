@@ -5,10 +5,8 @@ NARIYUKI_BUY = mt5.ORDER_TYPE_BUY  # 買い指値注文
 NARIYUKI_SELL = mt5.ORDER_TYPE_SELL  # 売り指値注文
 
 # オーダー送信関数
-def order_send(order_type, sl_point, tp_point, lot, magic, symbol):
+def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid):
     point = mt5.symbol_info(symbol).point  # 指定したシンボルの情報 point=最小の値動きの単位 ※値は0.001
-    price_ask = mt5.symbol_info_tick(symbol).ask  # 指定したシンボルの最後のtick時の情報 ask=買い注文の価格
-    price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 bid=売り注文の価格
     deviation = 20
     permit_spread = 0.011
     spread = price_ask - price_bid
@@ -72,6 +70,57 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol):
     else:
         print("分岐3:スプレッドが広いため処理を終了します")
         Line_bot("分岐3:スプレッドが広いため処理を終了します")
+
+# 保有ポジションがプラス収支の場合に決済する関数
+def settlement_position(position):
+    profit = position[15]  # 現在の利益
+    if 0 < profit:
+        # 決済リクエストを作成する
+        position_id = result.order
+        price = mt5.symbol_info_tick(symbol).bid
+
+        position_id = position[7]  # ポジションID
+        price = position[13]  # 現在の価格
+        magic = position[6]  # magicナンバー
+        symbol = position[16]
+        lot = position[9]
+        type = position[5]
+
+        deviation = 20
+        request = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": symbol,
+            "volume": lot,
+            "type": type,
+            "position": position_id,
+            "price": price,
+            "deviation": deviation,
+            "magic": magic,
+            "comment": "python script close",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_RETURN,
+        }
+        result = mt5.order_send(request)
+
+        # リクエスト完了以外→End
+        if result.retcode != mt5.TRADE_RETCODE_DONE:
+            message = "2. order_send failed, retcode={}".format(result.retcode)
+            print(message)
+            print(result.comment)
+            Line_bot(message)
+            return False
+        # リクエスト完了
+        else:
+            # 結果をディクショナリとしてリクエストし、要素ごとに表示する
+            result_dict = result._asdict()
+            for field in result_dict.keys():
+                print("   {}={}".format(field, result_dict[field]))
+            print("リクエスト送信完了")
+            Line_bot("決済リクエスト送信完了\n利益：" + str(profit))
+            return True  #
+
+    return False
+
 # オーダー関数
 def order(order_type, sl_point, tp_point, lot, magic, symbol):
     account_ID = 900006047
@@ -87,6 +136,8 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
         authorized = mt5.login(account_ID, password=password)
         # GBPJPYのポジションを取得する
         positions = mt5.positions_get(symbol=symbol)
+        price_ask = mt5.symbol_info_tick(symbol).ask  # 指定したシンボルの最後のtick時の情報 ask=買い注文の価格
+        price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 bid=売り注文の価格
 
         # ポジションがmax_positions個以上→End
         if max_positions <= len(positions):
@@ -94,14 +145,18 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
             Line_bot("分岐1:ポジションを" + str(len(positions)) + "個持っているため処理を終了します")
 
         # ポジション数が1以上、max_positions未満→magicナンバー判定を行う
-        # magicナンバーが一致 → オーダーしない
-        # magicナンバーが一致 → オーダーする
+        # ※ magicナンバーが一致 → オーダーしない
+        # ※ magicナンバーが一致 → オーダーする
+
+        # 保有ポジションが1以上、max_positions未満の場合
         elif 1 <= len(positions) < max_positions:
             # すべてのポジションを表示する
-            magic_nums = []
+            magic_nums = []  # magicナンバーのリスト
             for position in positions:
                 print(position)
-                magic_nums.append(position[6])  # 全ての保有ポジションmagicナンバーを取り出してリストに追加
+                resultsettlement_position = settlement_position(position)  # 保有ポジションがプラス収支の場合に決済する関数
+                if resultsettlement_position == False:  # 保有ポジションの決済を行っていないとき　→　ポジションを保有しているので
+                    magic_nums.append(position[6])      # 全ての保有ポジションmagicナンバーを取り出してリストに追加
 
             # 保有ポジションとオーダーポジションのmagicナンバーを判定
             for magic_num in magic_nums:
@@ -118,7 +173,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
             if order_flag == True:
                 print("分岐2:同じmagicナンバーのポジションが無いため処理継続します")
             #    Line_bot("分岐2:同じmagicナンバーのポジションが無いため処理継続します")
-                order_send(order_type, sl_point, tp_point, lot, magic, symbol)  # オーダー送信
+                order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid)  # オーダー送信
 
             # オーダーフラグがFalse→オーダーしない
             elif order_flag == False:
@@ -129,7 +184,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
         elif not positions :
             print("分岐1:ポジションを" + str(len(positions)) + "個保有中です。処理継続")
         #    Line_bot("分岐1:ポジションを" + str(len(positions)) + "個保有中です。処理継続")
-            order_send(order_type, sl_point, tp_point, lot, magic, symbol)  # オーダー送信
+            order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid)  # オーダー送信
     # 接続不可能→End
     else:
         message = "initialize() failed, error code =", mt5.last_error()
