@@ -1,3 +1,3 @@
 positions = None
-for position in positions:
-    print(position)
+position_types = []
+print(len(position_types))

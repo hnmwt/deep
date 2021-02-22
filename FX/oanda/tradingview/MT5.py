@@ -149,13 +149,16 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
         # 保有ポジションがある場合 → 保有ポジションの決済処理 & 保有ポジションのmagicナンバーを取り出してリストに格納
         if positions :
             magic_nums = []  # magicナンバーのリスト
+            position_types = []  # 保有ポジションタイプのリスト
             for position in positions:
                 resultsettlement_position = settlement_position(position)  # 保有ポジションがプラス収支の場合に決済する関数
                 if resultsettlement_position == False:  # 保有ポジションの決済を行っていないとき　→　ポジションを保有しているので
                     magic_nums.append(position[6])  # 全ての保有ポジションmagicナンバーを取り出してリストに追加
+                    if order_type == position_types:  # オーダータイプと保有ポジションのタイプが同じとき
+                        position_types.append(position[5])  # ポジションタイプを追加
 
-        # ポジションがmax_positions個以上→End
-        if max_positions <= len(positions):
+        # 同ポジションタイプがmax_positions個以上→End
+        if max_positions <= len(position_types):
             print("分岐1:ポジションを" + str(len(positions)) + "個持っているため処理を終了します")
             Line_bot("分岐1:ポジションを" + str(len(positions)) + "個持っているため処理を終了します")
 
@@ -164,7 +167,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
         # ※ magicナンバーが一致 → オーダーする
 
         # 保有ポジションが1以上、max_positions未満の場合
-        elif 1 <= len(positions) < max_positions:
+        elif 1 <= len(position_types) < max_positions:
             # 保有ポジションとオーダーポジションのmagicナンバーを判定
             for magic_num in magic_nums:
                 # 全ての保有ポジションとオーダーポジションのmagicナンバーが違う→処理継続
@@ -187,7 +190,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
                 Line_bot("分岐2:既に同じmagicナンバーのポジションを保有しています:" + magic)
 
         # ポジション無し→オーダー送信
-        elif not positions :
+        elif 0 == position_types :
             print("分岐1:ポジションを" + str(len(positions)) + "個保有中です。処理継続")
         #    Line_bot("分岐1:ポジションを" + str(len(positions)) + "個保有中です。処理継続")
             order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid)  # オーダー送信
