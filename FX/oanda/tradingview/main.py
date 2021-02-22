@@ -39,7 +39,7 @@ def job():
 
         # 予測値が一定以上の場合→買い注文
         if 0.12 < float(diff_30m):
-            lot = 0.1  # ロット数
+            lot = 0.14  # ロット数
             sl_point = 1000
             tp_point = 100
             magic = 234000
@@ -49,7 +49,7 @@ def job():
 
         # 予測値が一定以上の場合→買い注文(少)
         elif 0.06 < float(diff_30m) < 0.12:
-            lot = 0.1  # ロット数
+            lot = 0.14  # ロット数
             sl_point = 700
             tp_point = 30
             magic = 234001
@@ -59,7 +59,7 @@ def job():
 
         # 予測値が一定以下の場合→売り注文
         elif float(diff_30m) < -0.12:
-            lot = 0.1  # ロット数
+            lot = 0.14  # ロット数
             sl_point = 700
             tp_point = 100
             magic = 235000
@@ -69,7 +69,7 @@ def job():
 
         # 予測値が一定以下の場合→売り注文(少)
         elif -0.12 < float(diff_30m) < -0.06:
-            lot = 0.1  # ロット数
+            lot = 0.14  # ロット数
             sl_point = 1000
             tp_point = 30
             magic = 235000
@@ -111,28 +111,29 @@ if __name__ == '__main__':
     dt_diff = dt_now - dt_now_criteria  # 現在時刻と基準時刻の差
     dt_diff_sec = dt_diff.total_seconds()  # 秒数変換
 
-    # 現在時刻(分)が30分より前
+    # 現在時刻(分)が30分より前 → 30分にスタート
     if dt_diff_sec < 0:
         job_start_time = dt_now_criteria  # ジョブスタート時間は30分
-        print('ジョブスタート時間:', job_start_time)
 
     # 現在時刻(分)が30分以降(30分含む)→次の00分にスタート
     elif 0 <= dt_diff_sec:
         hour = dt_now.hour
         job_start_time = dt_now.replace(hour=hour+1,minute=0,second=0)  # ジョブスタート時間は時間が繰り上がった後
-        print('ジョブスタート時間:', job_start_time)
-
-    # 現在時刻が指定の時間になるまで待機
-    while job_start_time > datetime.datetime.now():
-        time.sleep(1)
 
     # 初回
     driver_1 = TradingView.open_browser(chromedriver_path)
     driver_2 = TradingView.site_login(username, password, url, driver_1)
     job()
 
+    # ジョブの登録 & 現在時刻が指定の時間になるまで待機
     schedule.every(minute).minutes.do(job)
     print('ジョブ登録完了')
+    print('ジョブスタート時間:', job_start_time)
+
+    # 指定の時間になるまで待機
+    while job_start_time > datetime.datetime.now():
+        time.sleep(1)
+    job()  # ループを抜けたら2回目のジョブを実行(ここで時間補正を行う)
 
     # 2回目以降は指定した時間毎に処理を行う
     while True:

@@ -74,6 +74,7 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
 # 保有ポジションがプラス収支の場合に決済する関数
 def settlement_position(position):
     profit = position[15]  # 現在の利益
+    print("aaaaaa")
     if 0 < profit:
         # 決済リクエストを作成する
         position_id = result.order
@@ -119,7 +120,10 @@ def settlement_position(position):
             Line_bot("決済リクエスト送信完了\n利益：" + str(profit))
             return True  #
 
-    return False
+    else:
+        print('保有ポジションの評価がマイナスのため決済を行いません')
+        Line_bot('保有ポジションの評価がマイナスのため決済を行いません')
+        return False
 
 # オーダー関数
 def order(order_type, sl_point, tp_point, lot, magic, symbol):
