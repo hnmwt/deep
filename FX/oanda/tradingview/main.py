@@ -115,9 +115,8 @@ def work_interval():
 
     # 現在時刻(分)が30分以降(30分含む)→次の00分にスタート
     elif 0 <= dt_diff_sec:
-        hour = dt_now.hour
-        job_start_time = dt_now.replace(hour=hour+1,minute=0,second=0)  # ジョブスタート時間は時間が繰り上がった後
-
+        job_start_time = dt_now + datetime.timedelta(hours=1)  # ジョブスタート時間を1時間後にする
+        job_start_time = job_start_time.replace(minute=0,second=0)  # ジョブスタート時間の分秒を0にする
     return job_start_time
 
 
