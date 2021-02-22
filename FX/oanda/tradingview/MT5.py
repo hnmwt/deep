@@ -146,11 +146,16 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
         price_ask = mt5.symbol_info_tick(symbol).ask  # 指定したシンボルの最後のtick時の情報 ask=買い注文の価格
         price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 bid=売り注文の価格
 
-        # ポジションがmax_positions個以上→End
-        if max_positions <= len(positions):
+        # 保有ポジションがある場合 → 保有ポジションの決済処理 & 保有ポジションのmagicナンバーを取り出してリストに格納
+        if positions :
+            magic_nums = []  # magicナンバーのリスト
             for position in positions:
                 resultsettlement_position = settlement_position(position)  # 保有ポジションがプラス収支の場合に決済する関数
+                if resultsettlement_position == False:  # 保有ポジションの決済を行っていないとき　→　ポジションを保有しているので
+                    magic_nums.append(position[6])  # 全ての保有ポジションmagicナンバーを取り出してリストに追加
 
+        # ポジションがmax_positions個以上→End
+        if max_positions <= len(positions):
             print("分岐1:ポジションを" + str(len(positions)) + "個持っているため処理を終了します")
             Line_bot("分岐1:ポジションを" + str(len(positions)) + "個持っているため処理を終了します")
 
@@ -160,19 +165,11 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
 
         # 保有ポジションが1以上、max_positions未満の場合
         elif 1 <= len(positions) < max_positions:
-            # すべてのポジションを表示する
-            magic_nums = []  # magicナンバーのリスト
-            for position in positions:
-                resultsettlement_position = settlement_position(position)  # 保有ポジションがプラス収支の場合に決済する関数
-                if resultsettlement_position == False:  # 保有ポジションの決済を行っていないとき　→　ポジションを保有しているので
-                    magic_nums.append(position[6])      # 全ての保有ポジションmagicナンバーを取り出してリストに追加
-
             # 保有ポジションとオーダーポジションのmagicナンバーを判定
             for magic_num in magic_nums:
                 # 全ての保有ポジションとオーダーポジションのmagicナンバーが違う→処理継続
                 if magic_num != magic:
                     print("処理継続")
-
                 # 1つでも保有ポジションとオーダーポジションのmagicナンバーが同じ→End
                 elif magic_nums == magic:
                     print("既に持っているポジションです。End")
@@ -194,6 +191,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
             print("分岐1:ポジションを" + str(len(positions)) + "個保有中です。処理継続")
         #    Line_bot("分岐1:ポジションを" + str(len(positions)) + "個保有中です。処理継続")
             order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid)  # オーダー送信
+
     # 接続不可能→End
     else:
         message = "initialize() failed, error code =", mt5.last_error()

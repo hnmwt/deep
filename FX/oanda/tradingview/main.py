@@ -38,7 +38,7 @@ def EA():
         predict.syukai_flag, predict.pred30m, diff_30m, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m)  # 値を予測
 
         # 予測値が一定以上の場合→買い注文
-        if 0.12 < float(diff_30m):
+        if 0.12 <= float(diff_30m):
             lot = 0.14  # ロット数
             sl_point = 1000
             tp_point = 100
@@ -58,7 +58,7 @@ def EA():
             order_name = "買い注文(少)"
 
         # 予測値が一定以下の場合→売り注文
-        elif float(diff_30m) < -0.12:
+        elif float(diff_30m) <= -0.12:
             lot = 0.14  # ロット数
             sl_point = 700
             tp_point = 100
