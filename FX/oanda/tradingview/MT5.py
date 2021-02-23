@@ -132,9 +132,9 @@ def settlement_position(position):
 def order(order_type, sl_point, tp_point, lot, magic, symbol):
     account_ID = 900006047
     password = "Hnm4264wtr"
-
     order_flag = True
     max_positions = 2  # 指定した数値が保有できる最大ポジション数になる
+
     # MetaTrader 5に接続する
     # 接続完了→処理継続
     if mt5.initialize():
@@ -159,8 +159,8 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
 
         # 同ポジションタイプがmax_positions個以上→End
         if max_positions <= len(position_types):
-            print("分岐1:ポジションを" + str(len(positions)) + "個持っているため処理を終了します")
-            Line_bot("分岐1:ポジションを" + str(len(positions)) + "個持っているため処理を終了します")
+            print("分岐1:同ポジションを" + str(len(positions)) + "個持っているため処理を終了します")
+            Line_bot("分岐1:同ポジションを" + str(len(positions)) + "個持っているため処理を終了します")
 
         # ポジション数が1以上、max_positions未満→magicナンバー判定を行う
         # ※ magicナンバーが一致 → オーダーしない
@@ -175,7 +175,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
                     print("処理継続")
                 # 1つでも保有ポジションとオーダーポジションのmagicナンバーが同じ→End
                 elif magic_nums == magic:
-                    print("既に持っているポジションです。End")
+                    print("既に持っている同ポジションです。End")
                     order_flag = False
 
             # オーダーフラグがTrue→オーダー送信
@@ -190,8 +190,8 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
                 Line_bot("分岐2:既に同じmagicナンバーのポジションを保有しています:" + magic)
 
         # ポジション無し→オーダー送信
-        elif 0 == position_types :
-            print("分岐1:ポジションを" + str(len(positions)) + "個保有中です。処理継続")
+        elif 0 == len(position_types) :
+            print("分岐1:同ポジションを" + str(position_types) + "個保有中です。処理継続")
         #    Line_bot("分岐1:ポジションを" + str(len(positions)) + "個保有中です。処理継続")
             order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid)  # オーダー送信
 
