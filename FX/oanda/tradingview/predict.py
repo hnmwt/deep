@@ -5,14 +5,12 @@ from tensorflow import keras
 import time
 import pickle
 
-get_csv_name = r".\FX_GBPJPY, 30.csv"
+#get_csv_name = r".\FX_GBPJPY, 30.csv"
+get_csv_name = r".\FX_GBPJPY, 15.csv"
 train_data_name = r".\Intermediate\predict.py中間ファイル.csv"
 pred_data_name = r".\Intermediate\predict.py予測ファイル.csv"
 
 pred30m = 0
-pred8h = 0
-pred16h = 0
-pred24h = 0
 
 syukai_flag = False  # 周回フラグ
 
@@ -54,28 +52,27 @@ def read_model(dir, df, hour, column_start, column_end):
 
     pred = pred[column_start:column_end]  # 対象の行を抜き出す
     pred = "{:.3f}".format(float(pred))  # 書式編集
-    after_time = time + datetime.timedelta(hours=hour+9+0.5)  # 日本時間を計算、30分足のデータのため予測値は29分59秒≒0.5時間
+    after_time = time + datetime.timedelta(hours=hour+9+hour)  # 日本時間を計算、hour足のデータのため予測時刻= 現在時刻 + hour後
     after_time = "{0:%Y-%m-%d %H:%M}".format(after_time)
     pred_time = {str(after_time) : str(pred)}  # 時間、予測レートを辞書化
 
-
     return pred_time, pred, after_time
 
-# 前回の予測と今回の予測の差
-def rate_diff():
-    diff_30m = last_pred30m - pred30m
-    diff_8h = last_pred8h - pred8h
-    diff_16h = last_pred16h - pred16h
-    diff_24h = last_pred24h - pred24h
+# 予測間隔をhourに変換
+def met_hour(next_time):
+    next_time = 60 / next_time
+    next_time = 100 / next_time
+    next_time = next_time * 0.01
+    return next_time
 
 # 24時間後までの予測
-def pred(df, syukai_flag, pred30m):
-
+def pred(df, syukai_flag, pred30m, next_time):
+    t = met_hour(next_time)
     # 2週目以降は前回の予測値を変数に格納  ※処理1/2
     if syukai_flag == True:
         last_pred30m = pred30m
 
-    dict_pred30m, pred30m, pred_after_time = read_model('.\model\GBPJPY_30m', df, 0.5, -2, -1) # 0.5時間後の予測
+    dict_pred30m, pred30m, pred_after_time = read_model('.\model', df, t, -2, -1) # 0.5時間後の予測
 
     # 1週目に限り前回の予測も行う
     if syukai_flag == False:
