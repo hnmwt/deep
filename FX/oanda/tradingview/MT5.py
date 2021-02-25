@@ -1,4 +1,5 @@
 import MetaTrader5 as mt5
+import sys
 from Line_bot import Line_bot
 
 NARIYUKI_BUY = mt5.ORDER_TYPE_BUY  # 買い指値注文
@@ -72,25 +73,31 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
         Line_bot("分岐3:スプレッドが広いため処理を終了します")
 
 # 保有ポジションがプラス収支の場合に決済する関数
+# 保有ポジションがマイナスの時はtpを0.005変更する
 def settlement_position(position):
     profit = position[15]  # 現在の利益
+    position_id = position[7]  # ポジションID
+    price = position[13]  # 現在の価格
+    magic = position[6]  # magicナンバー
+    symbol = position[16]
+    lot = position[9]
+    price_open = position[10]
+    sl = position[11]
+    tp = position[12]
+    if position[5] == 1:
+        type = NARIYUKI_BUY
+        change_tp = price_open + 0.005
+    elif position[5] == 0:
+        type = NARIYUKI_SELL
+        change_tp = price_open - 0.005
+
+    deviation = 20
+    # 利益がプラスの時
     if 0 < profit:
         # 決済リクエストを作成する
        # position_id = result.order
        # price = mt5.symbol_info_tick(symbol).bid
 
-        position_id = position[7]  # ポジションID
-        price = position[13]  # 現在の価格
-        magic = position[6]  # magicナンバー
-        symbol = position[16]
-        lot = position[9]
-
-        if position[5] == 1:
-            type = NARIYUKI_BUY
-        elif position[5] == 0:
-            type = NARIYUKI_SELL
-
-        deviation = 20
         request = {
             "action": mt5.TRADE_ACTION_DEAL,
             "symbol": symbol,
@@ -119,13 +126,32 @@ def settlement_position(position):
             result_dict = result._asdict()
             for field in result_dict.keys():
                 print("   {}={}".format(field, result_dict[field]))
-            print("リクエスト送信完了")
+            #print("リクエスト送信完了")
             Line_bot("決済リクエスト送信完了\n利益：" + str(profit))
             return True  #
 
-    else:
-        print('保有ポジションの評価がマイナスのため決済を行いません')
-        Line_bot('保有ポジションの評価がマイナスのため決済を行いません')
+    # 利益がマイナスの時
+    elif 0 >= profit:
+        request = {
+            "action": mt5.TRADE_ACTION_SLTP,
+            "symbol": symbol,
+            "volume": lot,
+            "type": type,
+            "position": position_id,
+            "price": price,
+            "deviation": deviation,
+            "magic": magic,
+            "tp": change_tp,
+            "sl":sl,
+            "comment": "python script close",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_IOC,
+        }
+
+        result = mt5.order_send(request)
+        print(request)
+    #    print('保有ポジションの評価がマイナスのため決済を行いません')
+    #    Line_bot('保有ポジションの評価がマイナスのため決済を行いません')
         return False
 
 # オーダー関数
@@ -133,7 +159,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
     account_ID = 900006047
     password = "Hnm4264wtr"
     order_flag = True
-    max_positions = 2  # 指定した数値が保有できる最大ポジション数になる
+    max_positions = 1  # 指定した数値が保有できる最大ポジション数になる
 
     # MetaTrader 5に接続する
     # 接続完了→処理継続
@@ -157,10 +183,13 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
                     if order_type == position[5]:  # オーダータイプと保有ポジションのタイプが同じとき
                         position_types.append(position[5])  # ポジションタイプを追加
             position_types_count = len(position_types)
+
         # 保有ポジションがない場合 → 保有ポジション数 = 0
         else:
             position_types_count = 0
-
+        if debug == True:
+            print("debugのためブレイク")
+            sys.exit()
         # ポジション無し→オーダー送信
         if 0 == position_types_count :
             print("分岐1:同ポジションを" + str(position_types_count) + "個保有中です。処理継続")
@@ -199,8 +228,6 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
                 print("分岐2:既に同じmagicナンバーのポジションを保有しています:" + magic)
                 Line_bot("分岐2:既に同じmagicナンバーのポジションを保有しています:" + magic)
 
-
-
     # 接続不可能→End
     else:
         message = "initialize() failed, error code =", mt5.last_error()
@@ -212,6 +239,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
     print('シャットダウン完了')
 
 if __name__ == '__main__':
+    debug = True
     print("実行開始")
     sl_point = 500
     tp_point = 100

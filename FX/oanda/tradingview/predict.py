@@ -30,11 +30,11 @@ def format(num):
     return num
 
 # モデルデータから未来のレートを予測
-def read_model(dir, df, hour, column_start, column_end):
-    model = keras.models.load_model(dir +'\model.hdf5')  # モデルを読込み
-    model.load_weights(dir +'\param.hdf5')  # 重みを読込み
-    X_train_save_scaler = pickle.load(open(r'.\dump\X_train_scaler.sav', 'rb'))  # 正規化パラメータを読込み
-    y_train_save_scaler = pickle.load(open(r'.\dump\y_train_scaler.sav', 'rb'))  # 正規化パラメータを読込み
+def read_model(model_dir, scalar_dir, df, hour, column_start, column_end):
+    model = keras.models.load_model(model_dir +'\model.hdf5')  # モデルを読込み
+    model.load_weights(model_dir +'\param.hdf5')  # 重みを読込み
+    X_train_save_scaler = pickle.load(open(scalar_dir + '\X_train_scaler.sav', 'rb'))  # 正規化パラメータを読込み
+    y_train_save_scaler = pickle.load(open(scalar_dir + '\y_train_scaler.sav', 'rb'))  # 正規化パラメータを読込み
 
     X_train_columns = len(df.columns) - 1  # 特徴量のカラム数を計算
     time = df.iloc[column_start, 0]        # 時間[行, 列]
@@ -66,13 +66,13 @@ def met_hour(next_time):
     return next_time
 
 # 24時間後までの予測
-def pred(df, syukai_flag, pred30m, next_time):
+def pred(df, syukai_flag, pred30m, next_time, model_dir, scalar_dir):
     t = met_hour(next_time)
     # 2週目以降は前回の予測値を変数に格納  ※処理1/2
     if syukai_flag == True:
         last_pred30m = pred30m
 
-    dict_pred30m, pred30m, pred_after_time = read_model('.\model', df, t, -2, -1) # 0.5時間後の予測
+    dict_pred30m, pred30m, pred_after_time = read_model(model_dir, scalar_dir, df, t, -2, -1) # 0.5時間後の予測
 
     # 1週目に限り前回の予測も行う
     if syukai_flag == False:
