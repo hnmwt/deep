@@ -17,6 +17,7 @@ syukai_flag = False  # 周回フラグ
 # 特徴量データを取得
 def create_train_data(file_name):
     df = pd.read_csv(file_name, encoding='shift_jis')
+    MACD_Cross = df['Cross'].copy()
     df.drop(labels='Cross', axis=1, inplace=True)  # MACDの追加のためNanの多いカラムを削除する 21.02.28
     df = df.dropna()
     df['time'] = pd.to_datetime(df['time']  )#, format='%Y-%m-%d-%A %H:%M:%S')  # 日付カラムを日付型に変換
@@ -26,7 +27,7 @@ def create_train_data(file_name):
     df.to_csv(train_data_name, index=False)
     MACD = df['MACD']
     MACD_signal = df['Signal Line']
-    return df, MACD, MACD_signal
+    return df, MACD, MACD_signal, MACD_Cross
 
 def format(num):
     num = "{:.3f}".format(float(num))  # 書式編集
@@ -76,18 +77,23 @@ def MACD_sign(MACD, MACD_signal):
     MACD_last = MACD[-1]
     MACD_last2 = MACD[-2]
 
-    # 0を超過しているとき
+    # MACDが0を超過しているとき
     if MACD_last > 0:
         if MACD_last > MACD_last2:
             MACD_judge = BUY
+            # 保有しているsellポジションは決済
         elif MACD_last < MACD_last2:
             MACD_judge = SELL
+            # 保有しているbuyポジションは決済
 
+    # MACDが0未満のとき
     elif MACD_last < 0:
         if MACD_last < MACD_last2:
             MACD_judge = SELL
+            # 保有しているbuyポジションは決済
         elif MACD_last > MACD_last2:
             MACD_judge = BUY
+            # 保有しているsellポジションは決済
 
     return MACD_judge
 
@@ -120,7 +126,7 @@ if __name__ == '__main__':
     model_dir = '.\model'
     scalar_dir = '.\dump'
     while True:
-        df, MACD, MACD_signal = create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
+        df, MACD, MACD_signal, MACD_Cross = create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
         syukai_flag, pred30m, diff, pred_after_time = pred(df, syukai_flag,pred30m, csv_time, model_dir, scalar_dir)  # 値を予測
         MACD_judge = MACD_sign(MACD, MACD_signal)
         print('完了')

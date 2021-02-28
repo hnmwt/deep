@@ -74,7 +74,7 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
 
 # 保有ポジションがプラス収支の場合に決済する関数
 # 保有ポジションがマイナスの時はtpを0.005変更する
-def settlement_position(position):
+def settlement_position(position, MACD_judge):
     profit = position[15]  # 現在の利益
     position_id = position[7]  # ポジションID
     price = position[13]  # 現在の価格
@@ -84,16 +84,24 @@ def settlement_position(position):
     price_open = position[10]
     sl = position[11]
     tp = position[12]
-    if position[5] == 1:
-        type = NARIYUKI_BUY
+    order_type = position[5]
+    settle_flag = False
+
+#    if order_type == NARIYUKI_SELL:   # 注文が売りの時は
+    if MACD_judge == NARIYUKI_SELL & order_type == NARIYUKI_BUY:  # MACDが売りシグナルの時は買いポジションを手放す
+        type = NARIYUKI_BUY           # 決済が買い
         change_tp = price_open - 0.005
-    elif position[5] == 0:
-        type = NARIYUKI_SELL
+        settle_flag = True
+#    elif order_type == NARIYUKI_BUY:  # 注文が買いの時は
+    elif MACD_judge == NARIYUKI_BUY & order_type == NARIYUKI_SELL:
+        type = NARIYUKI_SELL          # 決済が売り
         change_tp = price_open + 0.005
+        settle_flag = True
 
     deviation = 20
-    # 利益がプラスの時
-    if 0 < profit:
+    # 利益がプラスの時 →　即決済
+#    if 0 < profit:
+    if settle_flag:  # MACDのシグナルに保有ポジションが該当している
         # 決済リクエストを作成する
        # position_id = result.order
        # price = mt5.symbol_info_tick(symbol).bid
@@ -155,7 +163,7 @@ def settlement_position(position):
         return False
 
 # オーダー関数
-def order(order_type, sl_point, tp_point, lot, magic, symbol):
+def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge):
     account_ID = 900006047
     password = "Hnm4264wtr"
     order_flag = True
@@ -177,7 +185,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
             magic_nums = []  # magicナンバーのリスト
             position_types = []  # 保有ポジションタイプのリスト
             for position in positions:
-                resultsettlement_position = settlement_position(position)  # 保有ポジションがプラス収支の場合に決済する関数
+                resultsettlement_position = settlement_position(position, MACD_judge)  # 保有ポジションがプラス収支の場合に決済する関数
                 if resultsettlement_position == False:  # 保有ポジションの決済を行っていないとき　→　ポジションを保有しているので
                     magic_nums.append(position[6])  # 全ての保有ポジションmagicナンバーを取り出してリストに追加
                     if order_type == position[5]:  # オーダータイプと保有ポジションのタイプが同じとき
