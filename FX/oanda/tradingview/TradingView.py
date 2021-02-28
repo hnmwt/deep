@@ -28,7 +28,7 @@ def site_login(username,password,url,driver):
     driver.find_element_by_name('username').send_keys(username)
     driver.find_element_by_name('password').send_keys(password)
     driver.find_element_by_class_name('tv-button__loader').click()
-    time.sleep(5) # ensure the page loads (bottleneck)
+    time.sleep(3) # ensure the page loads (bottleneck)
     return driver
 
 def get_csv(driver):
@@ -40,7 +40,7 @@ def get_csv(driver):
     driver.find_element_by_css_selector('#overlap-manager-root > div > span > div.popupMenu-2ot2Uu9Z.menuWrap-1gEtmoET '
                                         '> div > div > div.apply-common-tooltip.common-tooltip-vertical.item-2xPVYue0.item-1dXqixrD '
                                         '> div > div').click()
-    time.sleep(4)
+    time.sleep(3)
     # click datetime format
     driver.find_element_by_css_selector('#overlap-manager-root > div > div > div.dialog-34XTwGTT.dialog-2QwUBM-N.dialog'
                                         '-2APwxL3O.rounded-tXI9mwGE.shadowed-2M13-xZa > div > div.scrollable-2ZZHicYg > '

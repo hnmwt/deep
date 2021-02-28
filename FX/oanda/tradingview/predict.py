@@ -6,7 +6,7 @@ import time
 import pickle
 
 #get_csv_name = r".\FX_GBPJPY, 30.csv"
-get_csv_name = r".\FX_GBPJPY, 15.csv"
+get_csv_name = r".\OANDA_USDJPY, 5.csv"
 train_data_name = r".\Intermediate\predict.py中間ファイル.csv"
 pred_data_name = r".\Intermediate\predict.py予測ファイル.csv"
 
@@ -17,6 +17,7 @@ syukai_flag = False  # 周回フラグ
 # 特徴量データを取得
 def create_train_data(file_name):
     df = pd.read_csv(file_name, encoding='shift_jis')
+    df.drop(labels='Cross', axis=1, inplace=True)  # MACDの追加のためNanの多いカラムを削除する 21.02.28
     df = df.dropna()
     df['time'] = pd.to_datetime(df['time']  )#, format='%Y-%m-%d-%A %H:%M:%S')  # 日付カラムを日付型に変換
     df['time(hour)'] = df['time'].dt.hour  # hourをデータに追加
@@ -35,7 +36,6 @@ def read_model(model_dir, scalar_dir, df, hour, column_start, column_end):
     model.load_weights(model_dir +'\param.hdf5')  # 重みを読込み
     X_train_save_scaler = pickle.load(open(scalar_dir + '\X_train_scaler.sav', 'rb'))  # 正規化パラメータを読込み
     y_train_save_scaler = pickle.load(open(scalar_dir + '\y_train_scaler.sav', 'rb'))  # 正規化パラメータを読込み
-
     X_train_columns = len(df.columns) - 1  # 特徴量のカラム数を計算
     time = df.iloc[column_start, 0]        # 時間[行, 列]
     df = df.loc[:, 'open':'time(weekday)']  # [行 , 列名称(始まり):列名称(終わり)]

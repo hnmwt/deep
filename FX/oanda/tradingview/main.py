@@ -9,7 +9,7 @@ import sys
 import traceback
 from Line_bot import Line_bot
 import schedule
-debug = False
+
 username = 'hnmwtr999'
 password = 'hnm4264wtr@'
 # You should download chromedriver and place it in a high hierarchy folder
@@ -17,11 +17,12 @@ chromedriver_path = "C://driver/chromedriver.exe"
 mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
 
 url = "https://jp.tradingview.com/chart/wznernFp/#signin"
-get_csv_name = r".\FX_GBPJPY, 15.csv"  # csvをpredictから読込み
-csv_time = 15
-symbol = "GBPJPY"
+get_csv_name = r".\OANDA_USDJPY, 5.csv"
+csv_time = 5
+symbol = "USDJPY"#"GBPJPY"
 model_dir = '.\model'
 scalar_dir = '.\dump'
+lot = 0.1  # ロット数
 
 def EA():
     try:
@@ -39,12 +40,12 @@ def EA():
         df = predict.create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
         predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir)  # 値を予測
 
-        lot = 0.24  # ロット数
+        tp_point = 10
         # 予測値が一定以上の場合→買い注文
         if 0.12 <= float(diff):
 #            lot = 0.24  # ロット数
             sl_point = 300
-            tp_point = 85#85
+#            tp_point = 5#85
             magic = 234000
             order = MT5.NARIYUKI_BUY  # 指値買い注文
             MT5.order(order, sl_point,tp_point, lot, magic, symbol)
@@ -54,7 +55,7 @@ def EA():
         elif 0.02 < float(diff) < 0.12:
 #            lot = 0.24  # ロット数
             sl_point = 300
-            tp_point = 35
+#            tp_point = 5
             magic = 234001
             order = MT5.NARIYUKI_BUY  # 指値買い注文
             MT5.order(order, sl_point,tp_point, lot, magic, symbol)
@@ -63,8 +64,8 @@ def EA():
         # 予測値が一定以上の場合→買い注文(少)
         elif 0 < float(diff) <= 0.02:
 #            lot = 0.24  # ロット数
-            sl_point = 300
-            tp_point = 5
+            sl_point = 50
+#            tp_point = 5
             magic = 234001
             order = MT5.NARIYUKI_BUY  # 指値買い注文
             MT5.order(order, sl_point,tp_point, lot, magic, symbol)
@@ -74,7 +75,7 @@ def EA():
         elif float(diff) <= -0.12:
 #            lot = 0.24  # ロット数
             sl_point = 300
-            tp_point = 85#85
+#            tp_point = 5#85
             magic = 235000
             order = MT5.NARIYUKI_SELL  # 指値売り注文
             MT5.order(order, sl_point,tp_point, lot, magic, symbol)
@@ -84,7 +85,7 @@ def EA():
         elif -0.12 < float(diff) < -0.02:
 #            lot = 0.24  # ロット数
             sl_point = 300
-            tp_point = 35
+#            tp_point = 5
             magic = 235000
             order = MT5.NARIYUKI_SELL  # 指値売り注文
             MT5.order(order, sl_point,tp_point, lot, magic, symbol)
@@ -93,8 +94,8 @@ def EA():
         # 予測値が一定以下の場合→売り注文(少)
         elif -0.02 <= float(diff) < 0:
 #            lot = 0.24  # ロット数
-            sl_point = 300
-            tp_point = 5
+            sl_point = 50
+#            tp_point = 5
             magic = 235000
             order = MT5.NARIYUKI_SELL  # 指値売り注文
             MT5.order(order, sl_point,tp_point, lot, magic, symbol)
@@ -224,8 +225,8 @@ def work_interval_5m():
 if __name__ == '__main__':
 
 #    job_start_time = work_interval_30m()
-    job_start_time = work_interval_15m()
-#    job_start_time = work_interval_5m()
+#    job_start_time = work_interval_15m()
+    job_start_time = work_interval_5m()
 
     # 初回
     driver_1 = TradingView.open_browser(chromedriver_path)
@@ -239,7 +240,7 @@ if __name__ == '__main__':
         if job_start_time <= datetime.datetime.now():  # 指定時間 <= 現在時刻の時に処理をスタートする
             EA()
 #            job_start_time = work_interval_30m()  # 処理終了後に指定時間を更新する
-            job_start_time = work_interval_15m()
-#            job_start_time = work_interval_5m()
+#            job_start_time = work_interval_15m()
+            job_start_time = work_interval_5m()
             print("次回時刻" + str(job_start_time))
-        time.sleep(5)
+        time.sleep(1)

@@ -4,7 +4,7 @@ from Line_bot import Line_bot
 
 NARIYUKI_BUY = mt5.ORDER_TYPE_BUY  # 買い指値注文
 NARIYUKI_SELL = mt5.ORDER_TYPE_SELL  # 売り指値注文
-
+debug = False
 # オーダー送信関数
 def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid):
     point = mt5.symbol_info(symbol).point  # 指定したシンボルの情報 point=最小の値動きの単位 ※値は0.001
@@ -86,10 +86,10 @@ def settlement_position(position):
     tp = position[12]
     if position[5] == 1:
         type = NARIYUKI_BUY
-        change_tp = price_open + 0.005
+        change_tp = price_open - 0.005
     elif position[5] == 0:
         type = NARIYUKI_SELL
-        change_tp = price_open - 0.005
+        change_tp = price_open + 0.005
 
     deviation = 20
     # 利益がプラスの時
@@ -132,26 +132,26 @@ def settlement_position(position):
 
     # 利益がマイナスの時
     elif 0 >= profit:
-        request = {
-            "action": mt5.TRADE_ACTION_SLTP,
-            "symbol": symbol,
-            "volume": lot,
-            "type": type,
-            "position": position_id,
-            "price": price,
-            "deviation": deviation,
-            "magic": magic,
-            "tp": change_tp,
-            "sl":sl,
-            "comment": "python script close",
-            "type_time": mt5.ORDER_TIME_GTC,
-            "type_filling": mt5.ORDER_FILLING_IOC,
-        }
-
-        result = mt5.order_send(request)
-        print(request)
-    #    print('保有ポジションの評価がマイナスのため決済を行いません')
-    #    Line_bot('保有ポジションの評価がマイナスのため決済を行いません')
+#        request = {
+#            "action": mt5.TRADE_ACTION_SLTP,
+#            "symbol": symbol,
+#            "volume": lot,
+#            "type": type,
+#            "position": position_id,
+#            "price": price,
+#            "deviation": deviation,
+#            "magic": magic,
+#            "tp": change_tp,
+#            "sl":sl,
+#            "comment": "python script close",
+#            "type_time": mt5.ORDER_TIME_GTC,
+#            "type_filling": mt5.ORDER_FILLING_IOC,
+#        }
+#
+#        result = mt5.order_send(request)
+#        print(request)
+#    #    print('保有ポジションの評価がマイナスのため決済を行いません')
+#    #    Line_bot('保有ポジションの評価がマイナスのため決済を行いません')
         return False
 
 # オーダー関数
@@ -159,7 +159,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
     account_ID = 900006047
     password = "Hnm4264wtr"
     order_flag = True
-    max_positions = 1  # 指定した数値が保有できる最大ポジション数になる
+    max_positions = 2  # 指定した数値が保有できる最大ポジション数になる
 
     # MetaTrader 5に接続する
     # 接続完了→処理継続
@@ -187,6 +187,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol):
         # 保有ポジションがない場合 → 保有ポジション数 = 0
         else:
             position_types_count = 0
+
         if debug == True:
             print("debugのためブレイク")
             sys.exit()
