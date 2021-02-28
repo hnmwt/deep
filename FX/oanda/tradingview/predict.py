@@ -24,7 +24,9 @@ def create_train_data(file_name):
     df['time(minute)'] = df['time'].dt.minute  # minuteをデータに追加
     df['time(weekday)'] = df['time'].dt.dayofweek  # minuteをデータに追加
     df.to_csv(train_data_name, index=False)
-    return df
+    MACD = df['MACD']
+    MACD_signal = df['Signal Line']
+    return df, MACD, MACD_signal
 
 def format(num):
     num = "{:.3f}".format(float(num))  # 書式編集
@@ -65,6 +67,30 @@ def met_hour(next_time):
     next_time = next_time * 0.01
     return next_time
 
+def MACD_sign(MACD, MACD_signal):
+    BUY = 0
+    SELL = 1
+    MACD_judge = 9
+
+    MACD = MACD.values.tolist()
+    MACD_last = MACD[-1]
+    MACD_last2 = MACD[-2]
+
+    # 0を超過しているとき
+    if MACD_last > 0:
+        if MACD_last > MACD_last2:
+            MACD_judge = BUY
+        elif MACD_last < MACD_last2:
+            MACD_judge = SELL
+
+    elif MACD_last < 0:
+        if MACD_last < MACD_last2:
+            MACD_judge = SELL
+        elif MACD_last > MACD_last2:
+            MACD_judge = BUY
+
+    return MACD_judge
+
 # 24時間後までの予測
 def pred(df, syukai_flag, pred30m, next_time, model_dir, scalar_dir):
     t = met_hour(next_time)
@@ -90,9 +116,13 @@ def pred(df, syukai_flag, pred30m, next_time, model_dir, scalar_dir):
 # デバッグ用
 if __name__ == '__main__':
     syukai_flag = False
+    csv_time = 5
+    model_dir = '.\model'
+    scalar_dir = '.\dump'
     while True:
-        df = create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
-        syukai_flag, pred30m, diff_30m, pred_time = pred(df, syukai_flag, pred30m)
+        df, MACD, MACD_signal = create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
+        syukai_flag, pred30m, diff, pred_after_time = pred(df, syukai_flag,pred30m, csv_time, model_dir, scalar_dir)  # 値を予測
+        MACD_judge = MACD_sign(MACD, MACD_signal)
         print('完了')
         time.sleep(5)
 
