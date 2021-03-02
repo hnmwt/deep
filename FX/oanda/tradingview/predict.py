@@ -76,22 +76,23 @@ def MACD_sign(MACD, MACD_signal):
     MACD = MACD.values.tolist()
     MACD_last = MACD[-1]
     MACD_last2 = MACD[-2]
+    MACD_last3 = MACD[-3]
 
     # MACDが0を超過しているとき
     if MACD_last > 0:
-        if MACD_last > MACD_last2:
+        if MACD_last > MACD_last2 > MACD_last3:
             MACD_judge = BUY
             # 保有しているsellポジションは決済
-        elif MACD_last < MACD_last2:
+        elif MACD_last < MACD_last2 < MACD_last3:
             MACD_judge = SELL
             # 保有しているbuyポジションは決済
 
     # MACDが0未満のとき
     elif MACD_last < 0:
-        if MACD_last < MACD_last2:
+        if MACD_last < MACD_last2 < MACD_last3:
             MACD_judge = SELL
             # 保有しているbuyポジションは決済
-        elif MACD_last > MACD_last2:
+        elif MACD_last > MACD_last2 > MACD_last3:
             MACD_judge = BUY
             # 保有しているsellポジションは決済
 

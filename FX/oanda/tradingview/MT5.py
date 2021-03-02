@@ -87,21 +87,24 @@ def settlement_position(position, MACD_judge):
     order_type = position[5]
     settle_flag = False
 
+    #　損切り処理
 #    if order_type == NARIYUKI_SELL:   # 注文が売りの時は
     if MACD_judge == NARIYUKI_SELL & order_type == NARIYUKI_BUY:  # MACDが売りシグナルの時は買いポジションを手放す
-        type = NARIYUKI_BUY           # 決済が買い
+        type = NARIYUKI_SELL           # 決済が買い
         change_tp = price_open - 0.005
         settle_flag = True
 #    elif order_type == NARIYUKI_BUY:  # 注文が買いの時は
     elif MACD_judge == NARIYUKI_BUY & order_type == NARIYUKI_SELL:
-        type = NARIYUKI_SELL          # 決済が売り
+        type = NARIYUKI_BUY          # 決済が売り
         change_tp = price_open + 0.005
         settle_flag = True
 
     deviation = 20
     # 利益がプラスの時 →　即決済
 #    if 0 < profit:
-    if settle_flag:  # MACDのシグナルに保有ポジションが該当している
+    print("settle_flag:",settle_flag)
+    Line_bot("settle_flag:" + str(settle_flag))
+    if settle_flag == True:  # MACDのシグナルに保有ポジションが該当している
         # 決済リクエストを作成する
        # position_id = result.order
        # price = mt5.symbol_info_tick(symbol).bid

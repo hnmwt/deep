@@ -41,12 +41,12 @@ def EA():
         predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir)  # 値を予測
         MACD_judge = predict.MACD_sign(MACD, MACD_signal)
 
-        tp_point = 10
+        tp_point = 7
         # 予測値が一定以上の場合→買い注文
         if 0.12 <= float(diff):
             order = MT5.NARIYUKI_BUY  # 指値買い注文
 #               lot = 0.24  # ロット数
-            sl_point = 300
+            sl_point = 3000
 #               tp_point = 5#85
             magic = 234000
             MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge)
@@ -65,9 +65,8 @@ def EA():
         # 予測値が一定以上の場合→買い注文(少)
         elif 0 < float(diff) <= 0.02:
             order = MT5.NARIYUKI_BUY  # 指値買い注文
-            if order == MACD_judge:
 #                lot = 0.24  # ロット数
-            sl_point = 50
+            sl_point = 70
 #                tp_point = 5
             magic = 234001
             MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge)
@@ -97,7 +96,7 @@ def EA():
         elif -0.02 <= float(diff) < 0:
             order = MT5.NARIYUKI_SELL  # 指値売り注文
 #                lot = 0.24  # ロット数
-            sl_point = 50
+            sl_point = 70
 #                tp_point = 5
             magic = 235000
             MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge)
