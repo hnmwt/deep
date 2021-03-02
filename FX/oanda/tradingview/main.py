@@ -16,13 +16,22 @@ password = 'hnm4264wtr@'
 chromedriver_path = "C://driver/chromedriver.exe"
 mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
 
-url = "https://jp.tradingview.com/chart/wznernFp/#signin"
+url = "https://jp.tradingview.com/chart/rKDq2LHz/#signin"
 get_csv_name = r".\OANDA_USDJPY, 5.csv"
 csv_time = 5
 symbol = "USDJPY"#"GBPJPY"
 model_dir = '.\model'
 scalar_dir = '.\dump'
 lot = 0.1  # ロット数
+
+def MACD_Cross_judge(Cross_judge, order):
+    if Cross_judge == 9:
+        pass
+    elif Cross_judge == 0:  # 買いシグナル
+        order = MT5.NARIYUKI_BUY
+    elif Cross_judge == 1:  # 売りシグナル
+        order = MT5.NARIYUKI_SELL
+    return order
 
 def EA():
     try:
@@ -39,7 +48,7 @@ def EA():
         time.sleep(4)
         df, MACD, MACD_signal, MACD_Cross = predict.create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
         predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir)  # 値を予測
-        MACD_judge = predict.MACD_sign(MACD, MACD_signal)
+        MACD_judge, Cross_judge = predict.MACD_sign(MACD, MACD_signal, MACD_Cross)
 
         tp_point = 7
         # 予測値が一定以上の場合→買い注文
@@ -49,7 +58,8 @@ def EA():
             sl_point = 3000
 #               tp_point = 5#85
             magic = 234000
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge)
+            order = MACD_Cross_judge(Cross_judge, order)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge)
             order_name = "買い注文"
 
         # 予測値が一定以上の場合→買い注文(少)
@@ -57,9 +67,10 @@ def EA():
             order = MT5.NARIYUKI_BUY  # 指値買い注文
 #               lot = 0.24  # ロット数
             sl_point = 300
-#               tp_point = 5
+            tp_point = 12
             magic = 234001
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge)
+            order = MACD_Cross_judge(Cross_judge, order)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge)
             order_name = "買い注文(少)"
 
         # 予測値が一定以上の場合→買い注文(少)
@@ -69,7 +80,8 @@ def EA():
             sl_point = 70
 #                tp_point = 5
             magic = 234001
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge)
+            order = MACD_Cross_judge(Cross_judge, order)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge)
             order_name = "買い注文(極少)"
 
         # 予測値が一定以下の場合→売り注文
@@ -79,7 +91,8 @@ def EA():
             sl_point = 300
 #                tp_point = 5#85
             magic = 235000
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge)
+            order = MACD_Cross_judge(Cross_judge, order)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge)
             order_name = "売り注文"
 
         # 予測値が一定以下の場合→売り注文(少)
@@ -87,9 +100,10 @@ def EA():
             order = MT5.NARIYUKI_SELL  # 指値売り注文
 #                lot = 0.24  # ロット数
             sl_point = 300
-#                tp_point = 5
+            tp_point = 12
             magic = 235000
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge)
+            order = MACD_Cross_judge(Cross_judge, order)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge)
             order_name = "売り注文(少)"
 
         # 予測値が一定以下の場合→売り注文(少)
@@ -99,7 +113,8 @@ def EA():
             sl_point = 70
 #                tp_point = 5
             magic = 235000
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge)
+            order = MACD_Cross_judge(Cross_judge, order)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge)
             order_name = "売り注文(極少)"
 
         # 予測値が条件に当てはまらないとき

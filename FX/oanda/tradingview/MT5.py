@@ -166,7 +166,7 @@ def settlement_position(position, MACD_judge):
         return False
 
 # オーダー関数
-def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge):
+def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_judge):
     account_ID = 900006047
     password = "Hnm4264wtr"
     order_flag = True
@@ -202,6 +202,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge):
         if debug == True:
             print("debugのためブレイク")
             sys.exit()
+
         # ポジション無し→オーダー送信
         if 0 == position_types_count :
             print("分岐1:同ポジションを" + str(position_types_count) + "個保有中です。処理継続")

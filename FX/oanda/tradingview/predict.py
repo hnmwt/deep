@@ -4,6 +4,7 @@ import datetime
 from tensorflow import keras
 import time
 import pickle
+import math
 
 #get_csv_name = r".\FX_GBPJPY, 30.csv"
 get_csv_name = r".\OANDA_USDJPY, 5.csv"
@@ -68,16 +69,19 @@ def met_hour(next_time):
     next_time = next_time * 0.01
     return next_time
 
-def MACD_sign(MACD, MACD_signal):
+def MACD_sign(MACD, MACD_signal, MACD_Cross):
     BUY = 0
     SELL = 1
-    MACD_judge = 9
+    NG = 9
+    MACD_judge = NG
+    Cross_judge = NG
 
     MACD = MACD.values.tolist()
-    MACD_last = MACD[-1]
-    MACD_last2 = MACD[-2]
-    MACD_last3 = MACD[-3]
 
+    MACD_last = MACD[-2]  # 最終の値
+    MACD_last2 = MACD[-3]
+    MACD_last3 = MACD[-4]
+    MACD_Cross_last = MACD_Cross[-2:-1]
     # MACDが0を超過しているとき
     if MACD_last > 0:
         if MACD_last > MACD_last2 > MACD_last3:
@@ -86,7 +90,6 @@ def MACD_sign(MACD, MACD_signal):
         elif MACD_last < MACD_last2 < MACD_last3:
             MACD_judge = SELL
             # 保有しているbuyポジションは決済
-
     # MACDが0未満のとき
     elif MACD_last < 0:
         if MACD_last < MACD_last2 < MACD_last3:
@@ -96,7 +99,14 @@ def MACD_sign(MACD, MACD_signal):
             MACD_judge = BUY
             # 保有しているsellポジションは決済
 
-    return MACD_judge
+    if math.isnan(MACD_Cross_last):
+        pass
+    elif MACD_Cross_last > 0: # 売りシグナル
+        Cross_judge = SELL
+    elif MACD_Cross_last < 0: # 買いシグナル
+        Cross_judge = BUY
+
+    return MACD_judge, Cross_judge
 
 # 24時間後までの予測
 def pred(df, syukai_flag, pred30m, next_time, model_dir, scalar_dir):
@@ -129,7 +139,7 @@ if __name__ == '__main__':
     while True:
         df, MACD, MACD_signal, MACD_Cross = create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
         syukai_flag, pred30m, diff, pred_after_time = pred(df, syukai_flag,pred30m, csv_time, model_dir, scalar_dir)  # 値を予測
-        MACD_judge = MACD_sign(MACD, MACD_signal)
+        MACD_judge, Cross_judge = MACD_sign(MACD, MACD_signal, MACD_Cross)
         print('完了')
         time.sleep(5)
 
