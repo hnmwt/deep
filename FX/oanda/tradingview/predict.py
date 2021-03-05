@@ -5,7 +5,9 @@ from tensorflow import keras
 import time
 import pickle
 import math
-
+import backtest_variable
+import backtest_variable
+backtest = backtest_variable.backtest
 #get_csv_name = r".\FX_GBPJPY, 30.csv"
 get_csv_name = r".\OANDA_USDJPY, 5.csv"
 train_data_name = r".\Intermediate\predict.py中間ファイル.csv"
@@ -16,8 +18,10 @@ pred30m = 0
 syukai_flag = False  # 周回フラグ
 
 # 特徴量データを取得
-def create_train_data(file_name):
+def create_train_data(file_name, bktest_orbit):
     df = pd.read_csv(file_name, encoding='shift_jis')
+    if backtest == True:
+        df = df[:bktest_orbit]
     MACD_Cross = df['Cross'].copy()
     df.drop(labels='Cross', axis=1, inplace=True)  # MACDの追加のためNanの多いカラムを削除する 21.02.28
     df = df.dropna()
@@ -29,6 +33,7 @@ def create_train_data(file_name):
     MACD = df['MACD']
     MACD_signal = df['Signal Line']
     return df, MACD, MACD_signal, MACD_Cross
+
 
 def format(num):
     num = "{:.3f}".format(float(num))  # 書式編集
@@ -75,6 +80,7 @@ def MACD_sign(MACD, MACD_signal, MACD_Cross):
     NG = 9
     MACD_judge = NG
     Cross_judge = NG
+    MACD_last_diff_flag = False
 
     MACD = MACD.values.tolist()
 
@@ -82,34 +88,43 @@ def MACD_sign(MACD, MACD_signal, MACD_Cross):
     MACD_last2 = MACD[-3]
     MACD_last3 = MACD[-4]
     MACD_Cross_last = MACD_Cross[-2:-1]
+
+    MACD_last_diff = abs(MACD_last - MACD_last2)  # MACDの差額
+    MACD_last_diff_threshold = 0.003              # MACDの差額の閾値
+
+    if MACD_last_diff_threshold < MACD_last_diff:  # 差額が閾値以上
+        MACD_last_diff_flag = True
+
     # MACDが0を超過しているとき
     if MACD_last > 0:
-        if MACD_last > MACD_last2 > MACD_last3:
+        if MACD_last > MACD_last2: #> MACD_last3 and MACD_last_diff_flag == True:  #
             MACD_judge = BUY
             # 保有しているsellポジションは決済
-        elif MACD_last < MACD_last2 < MACD_last3:
+        elif MACD_last < MACD_last2: # < MACD_last3 and MACD_last_diff_flag == True :
             MACD_judge = SELL
             # 保有しているbuyポジションは決済
     # MACDが0未満のとき
     elif MACD_last < 0:
-        if MACD_last < MACD_last2 < MACD_last3:
+        if MACD_last < MACD_last2: # < MACD_last3 and MACD_last_diff_flag == True :
             MACD_judge = SELL
             # 保有しているbuyポジションは決済
-        elif MACD_last > MACD_last2 > MACD_last3:
+        elif MACD_last > MACD_last2: # > MACD_last3 and MACD_last_diff_flag == True :
             MACD_judge = BUY
             # 保有しているsellポジションは決済
 
+    # MACDのシグナルが出たとき
     if math.isnan(MACD_Cross_last):
         pass
-    elif MACD_Cross_last > 0: # 売りシグナル
+    elif float(MACD_Cross_last) > 0: # 売りシグナル
         Cross_judge = SELL
-    elif MACD_Cross_last < 0: # 買いシグナル
+    elif float(MACD_Cross_last) < 0: # 買いシグナル
         Cross_judge = BUY
 
     return MACD_judge, Cross_judge
 
-# 24時間後までの予測
-def pred(df, syukai_flag, pred30m, next_time, model_dir, scalar_dir):
+# 予測関数
+def pred(df, syukai_flag, pred30m, next_time, model_dir, scalar_dir, backtest_col_st):
+    backtest_col_ed = backtest_col_st + 1
     t = met_hour(next_time)
     # 2週目以降は前回の予測値を変数に格納  ※処理1/2
     if syukai_flag == True:

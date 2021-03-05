@@ -9,14 +9,17 @@ import sys
 import traceback
 from Line_bot import Line_bot
 import schedule
+import pandas as pd
+import backtest_variable
+backtest = backtest_variable.backtest
 
 username = 'hnmwtr999'
 password = 'hnm4264wtr@'
 # You should download chromedriver and place it in a high hierarchy folder
 chromedriver_path = "C://driver/chromedriver.exe"
 mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
-
-url = "https://jp.tradingview.com/chart/rKDq2LHz/#signin"
+DF = pd.DataFrame()
+url = "https://jp.tradingview.com/chart/lXaj0SrK/#signin"
 get_csv_name = r".\OANDA_USDJPY, 5.csv"
 csv_time = 5
 symbol = "USDJPY"#"GBPJPY"
@@ -24,101 +27,104 @@ model_dir = '.\model'
 scalar_dir = '.\dump'
 lot = 0.1  # ロット数
 
-def MACD_Cross_judge(Cross_judge, order):
+
+
+def MACD_Cross_judge(Cross_judge, order, tp_point):
     if Cross_judge == 9:
         pass
     elif Cross_judge == 0:  # 買いシグナル
         order = MT5.NARIYUKI_BUY
+        tp_point = 20
+        Line_bot("買いシグナル")
     elif Cross_judge == 1:  # 売りシグナル
         order = MT5.NARIYUKI_SELL
-    return order
+        tp_point = 20
+        Line_bot("売りシグナル")
+    return order ,tp_point
 
-def EA():
+def EA(bktest_orbit=0):
     try:
 #        while True:
         dt_now = datetime.datetime.now().strftime('%Y/%m/%d/ %H:%M:%S')
-        # 前回のcsvがあるとき削除
-        if os.path.isfile(get_csv_name):
-            os.remove(get_csv_name)
+        if backtest == False:  # バックテストがTrueならcsvは削除しない
+            # 前回のcsvがあるとき削除
+            if os.path.isfile(get_csv_name):
+                os.remove(get_csv_name)
 
-        time.sleep(6)
-        TradingView.get_csv(driver_2)
-        print('csvファイルダウンロード完了')
+                time.sleep(2)
+                TradingView.get_csv(driver_2)
+                print('csvファイルダウンロード完了')
+                time.sleep(4)
 
-        time.sleep(4)
-        df, MACD, MACD_signal, MACD_Cross = predict.create_train_data(get_csv_name)  # 取ってきたcsvからdfを作成
-        predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir)  # 値を予測
+        df, MACD, MACD_signal, MACD_Cross = predict.create_train_data(get_csv_name, bktest_orbit)  # 取ってきたcsvからdfを作成
+        predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir,bktest_orbit)  # 値を予測
         MACD_judge, Cross_judge = predict.MACD_sign(MACD, MACD_signal, MACD_Cross)
+        lot = 0.1  # ロット数
+        tp_point = 3
 
-        tp_point = 7
         # 予測値が一定以上の場合→買い注文
-        if 0.12 <= float(diff):
+        if 0.12 <= float(diff) and MACD_judge == MT5.NARIYUKI_BUY:
             order = MT5.NARIYUKI_BUY  # 指値買い注文
-#               lot = 0.24  # ロット数
             sl_point = 3000
-#               tp_point = 5#85
             magic = 234000
-            order = MACD_Cross_judge(Cross_judge, order)
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge)
+            order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
             order_name = "買い注文"
 
         # 予測値が一定以上の場合→買い注文(少)
-        elif 0.02 < float(diff) < 0.12:
+        elif 0.02 < float(diff) < 0.12 and MACD_judge == MT5.NARIYUKI_BUY:
             order = MT5.NARIYUKI_BUY  # 指値買い注文
-#               lot = 0.24  # ロット数
-            sl_point = 300
+            sl_point = 60
             tp_point = 12
             magic = 234001
-            order = MACD_Cross_judge(Cross_judge, order)
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge)
+            order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
             order_name = "買い注文(少)"
 
         # 予測値が一定以上の場合→買い注文(少)
-        elif 0 < float(diff) <= 0.02:
+        elif 0 <= float(diff) <= 0.02 and MACD_judge == MT5.NARIYUKI_BUY:
             order = MT5.NARIYUKI_BUY  # 指値買い注文
-#                lot = 0.24  # ロット数
-            sl_point = 70
-#                tp_point = 5
+            sl_point = 60
             magic = 234001
-            order = MACD_Cross_judge(Cross_judge, order)
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge)
+            order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
             order_name = "買い注文(極少)"
 
         # 予測値が一定以下の場合→売り注文
-        elif float(diff) <= -0.12:
+        elif float(diff) <= -0.12 and MACD_judge == MT5.NARIYUKI_SELL:
             order = MT5.NARIYUKI_SELL  # 指値売り注文
-#               lot = 0.24  # ロット数
             sl_point = 300
-#                tp_point = 5#85
             magic = 235000
-            order = MACD_Cross_judge(Cross_judge, order)
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge)
+            order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
             order_name = "売り注文"
 
         # 予測値が一定以下の場合→売り注文(少)
-        elif -0.12 < float(diff) < -0.02:
+        elif -0.12 < float(diff) < -0.02 and MACD_judge == MT5.NARIYUKI_SELL:
             order = MT5.NARIYUKI_SELL  # 指値売り注文
-#                lot = 0.24  # ロット数
-            sl_point = 300
+            sl_point = 60
             tp_point = 12
             magic = 235000
-            order = MACD_Cross_judge(Cross_judge, order)
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge)
+            order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
             order_name = "売り注文(少)"
 
         # 予測値が一定以下の場合→売り注文(少)
-        elif -0.02 <= float(diff) < 0:
+        elif -0.02 <= float(diff) < 0 and MACD_judge == MT5.NARIYUKI_SELL:
             order = MT5.NARIYUKI_SELL  # 指値売り注文
-#                lot = 0.24  # ロット数
-            sl_point = 70
-#                tp_point = 5
+            sl_point = 60
             magic = 235000
-            order = MACD_Cross_judge(Cross_judge, order)
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge)
+            order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
             order_name = "売り注文(極少)"
 
         # 予測値が条件に当てはまらないとき
         else:
+            order = MT5.NARIYUKI_SELL  # 指値売り注文
+            lot = 0 # ロット数
+            sl_point = 00
+            magic = 000000
+            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df,order_flag=False)
             order_name = "注文無し"
 
         message = str(dt_now) + \
@@ -239,24 +245,31 @@ def work_interval_5m():
     return job_start_time
 
 if __name__ == '__main__':
+    if backtest == False:
+    #    job_start_time = work_interval_30m()
+    #    job_start_time = work_interval_15m()
+        job_start_time = work_interval_5m()
 
-#    job_start_time = work_interval_30m()
-#    job_start_time = work_interval_15m()
-    job_start_time = work_interval_5m()
-
-    # 初回
-    driver_1 = TradingView.open_browser(chromedriver_path)
-    driver_2 = TradingView.site_login(username, password, url, driver_1)
-    EA()
-    print("次回時刻" + str(job_start_time))
+        # 初回
+        driver_1 = TradingView.open_browser(chromedriver_path)
+        driver_2 = TradingView.site_login(username, password, url, driver_1)
+        EA(0)
+        print("次回時刻" + str(job_start_time))
 
 
-    # 2回目以降
-    while True:
-        if job_start_time <= datetime.datetime.now():  # 指定時間 <= 現在時刻の時に処理をスタートする
-            EA()
-#            job_start_time = work_interval_30m()  # 処理終了後に指定時間を更新する
-#            job_start_time = work_interval_15m()
-            job_start_time = work_interval_5m()
-            print("次回時刻" + str(job_start_time))
-        time.sleep(1)
+        # 2回目以降
+        while True:
+            if job_start_time <= datetime.datetime.now():  # 指定時間 <= 現在時刻の時に処理をスタートする
+                EA()
+    #            job_start_time = work_interval_30m()  # 処理終了後に指定時間を更新する
+    #            job_start_time = work_interval_15m()
+                job_start_time = work_interval_5m()
+                print("次回時刻" + str(job_start_time))
+            time.sleep(1)
+
+
+
+    elif backtest == True:
+        print('バックテスト')
+        for i in range(100 ,1700):
+            EA(i)

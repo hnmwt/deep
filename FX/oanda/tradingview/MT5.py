@@ -1,6 +1,11 @@
 import MetaTrader5 as mt5
 import sys
 from Line_bot import Line_bot
+import backtest_variable
+import time
+import pandas as pd
+import numpy as np
+backtest = backtest_variable.backtest
 
 NARIYUKI_BUY = mt5.ORDER_TYPE_BUY  # 買い指値注文
 NARIYUKI_SELL = mt5.ORDER_TYPE_SELL  # 売り指値注文
@@ -9,11 +14,14 @@ debug = False
 def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid):
     point = mt5.symbol_info(symbol).point  # 指定したシンボルの情報 point=最小の値動きの単位 ※値は0.001
     deviation = 20
-    permit_spread = 0.011
+    permit_spread = 0.004
     spread = price_ask - price_bid
-
+    if backtest == True:
+        spread = spread.values.tolist()
+        spread = spread[0]
     # スプレッドが基準以下の時　→　処理継続
     if spread <= permit_spread:
+
     # 買い注文時の価格
         if order_type == NARIYUKI_BUY:
             price = price_ask
@@ -77,7 +85,7 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
 def settlement_position(position, MACD_judge):
     profit = position[15]  # 現在の利益
     position_id = position[7]  # ポジションID
-    price = position[13]  # 現在の価格
+    price_current = position[13]  # 現在の価格
     magic = position[6]  # magicナンバー
     symbol = position[16]
     lot = position[9]
@@ -89,12 +97,12 @@ def settlement_position(position, MACD_judge):
 
     #　損切り処理
 #    if order_type == NARIYUKI_SELL:   # 注文が売りの時は
-    if MACD_judge == NARIYUKI_SELL & order_type == NARIYUKI_BUY:  # MACDが売りシグナルの時は買いポジションを手放す
+    if MACD_judge == NARIYUKI_SELL and order_type == NARIYUKI_BUY:  # MACDが売りシグナルの時は買いポジションを手放す
         type = NARIYUKI_SELL           # 決済が買い
         change_tp = price_open - 0.005
         settle_flag = True
 #    elif order_type == NARIYUKI_BUY:  # 注文が買いの時は
-    elif MACD_judge == NARIYUKI_BUY & order_type == NARIYUKI_SELL:
+    elif MACD_judge == NARIYUKI_BUY and order_type == NARIYUKI_SELL:
         type = NARIYUKI_BUY          # 決済が売り
         change_tp = price_open + 0.005
         settle_flag = True
@@ -103,8 +111,9 @@ def settlement_position(position, MACD_judge):
     # 利益がプラスの時 →　即決済
 #    if 0 < profit:
     print("settle_flag:",settle_flag)
-    Line_bot("settle_flag:" + str(settle_flag))
+
     if settle_flag == True:  # MACDのシグナルに保有ポジションが該当している
+#        Line_bot("settle_flag:" + str(settle_flag))
         # 決済リクエストを作成する
        # position_id = result.order
        # price = mt5.symbol_info_tick(symbol).bid
@@ -115,7 +124,7 @@ def settlement_position(position, MACD_judge):
             "volume": lot,
             "type": type,
             "position": position_id,
-            "price": price,
+            "price": price_current,
             "deviation": deviation,
             "magic": magic,
             "comment": "python script close",
@@ -138,7 +147,8 @@ def settlement_position(position, MACD_judge):
             for field in result_dict.keys():
                 print("   {}={}".format(field, result_dict[field]))
             #print("リクエスト送信完了")
-            Line_bot("決済リクエスト送信完了\n利益：" + str(profit))
+            Line_bot("settle_flag:" + str(settle_flag) + "決済リクエスト送信完了\n利益：" + str(profit)
+                     + "\nオープン価格：" + str(price_open)+ "\n現在価格：" + str(price_current))
             return True  #
 
     # 利益がマイナスの時
@@ -166,22 +176,28 @@ def settlement_position(position, MACD_judge):
         return False
 
 # オーダー関数
-def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_judge):
+def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df,order_flag=True):
     account_ID = 900006047
     password = "Hnm4264wtr"
-    order_flag = True
-    max_positions = 2  # 指定した数値が保有できる最大ポジション数になる
+    #order_flag = True
+    max_positions = 1  # 指定した数値が保有できる最大ポジション数になる
 
     # MetaTrader 5に接続する
     # 接続完了→処理継続
     if mt5.initialize():
-        print("接続確立完了。処理を継続します。")
-        # パスワードとサーバを指定して取引口座に接続する
-        authorized = mt5.login(account_ID, password=password)
-        # GBPJPYのポジションを取得する
-        positions = mt5.positions_get(symbol=symbol)
-        price_ask = mt5.symbol_info_tick(symbol).ask  # 指定したシンボルの最後のtick時の情報 ask=買い注文の価格
-        price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 bid=売り注文の価格
+        if backtest == False:  # 本番
+            print("接続確立完了。処理を継続します。")
+            # パスワードとサーバを指定して取引口座に接続する
+            authorized = mt5.login(account_ID, password=password)
+            # GBPJPYのポジションを取得する
+            positions = mt5.positions_get(symbol=symbol)
+            price_ask = mt5.symbol_info_tick(symbol).ask  # 指定したシンボルの最後のtick時の情報 ask=買い注文の価格
+            price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 bid=売り注文の価格
+
+        elif backtest == True:  # バックテスト
+            positions = []
+            price_ask = df.iloc[-2:-1,1]
+            price_bid = price_ask -0.003
 
         # 保有ポジションがある場合 → 保有ポジションの決済処理 & 保有ポジションのmagicナンバーを取り出してリストに格納
         if positions :
@@ -199,15 +215,15 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
         else:
             position_types_count = 0
 
-        if debug == True:
-            print("debugのためブレイク")
-            sys.exit()
+        if order_flag == False:
+            print("order_flag:False")
 
         # ポジション無し→オーダー送信
-        if 0 == position_types_count :
+        elif 0 == position_types_count :
             print("分岐1:同ポジションを" + str(position_types_count) + "個保有中です。処理継続")
         #    Line_bot("分岐1:ポジションを" + str(len(positions)) + "個保有中です。処理継続")
             order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid)  # オーダー送信
+
 
         # 同ポジションタイプがmax_positions個以上→End
         elif max_positions <= position_types_count:
@@ -257,5 +273,8 @@ if __name__ == '__main__':
     sl_point = 500
     tp_point = 100
     magic = 234000
-    symbol = 'GBPJPY'
-    order(NARIYUKI_BUY, sl_point,tp_point, 0.1, magic, symbol)
+    symbol = 'USDJPY'
+    MACD_judge = 9
+    Cross_judge = 9
+    lot = 0.01
+    order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge)
