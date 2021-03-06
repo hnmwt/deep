@@ -11,14 +11,20 @@ NARIYUKI_BUY = mt5.ORDER_TYPE_BUY  # 買い指値注文
 NARIYUKI_SELL = mt5.ORDER_TYPE_SELL  # 売り指値注文
 debug = False
 # オーダー送信関数
-def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid):
-    point = mt5.symbol_info(symbol).point  # 指定したシンボルの情報 point=最小の値動きの単位 ※値は0.001
-    deviation = 20
-    permit_spread = 0.004
-    spread = price_ask - price_bid
-    if backtest == True:
+def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid, df):
+    if backtest == False: # 本番
+        point = mt5.symbol_info(symbol).point  # 指定したシンボルの情報 point=最小の値動きの単位 ※値は0.001
+        spread = price_ask - price_bid
+    elif backtest == True:  # バックテスト
+        point = 0.001
+        spread = price_ask - price_bid
         spread = spread.values.tolist()
         spread = spread[0]
+
+    deviation = 20
+    permit_spread = 0.004
+    #spread = price_ask - price_bid
+
     # スプレッドが基準以下の時　→　処理継続
     if spread <= permit_spread:
 
@@ -48,34 +54,42 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
             "type_filling": mt5.ORDER_FILLING_IOC,   # 注文の種類。値はORDER_TYPE_FILLING値のうちの1つです。
           #  "stoplimit": price + 0.1
         }
-        # 取引リクエストを送信する
-        result = mt5.order_send(request)
-        # 実行結果を確認する
-        print("1. order_send(): by {} {} lots at {} with deviation={} points".format(symbol, lot, price, deviation))
-        print("逆指値:" , (price - 100 * point) , "\n指値" , (price + 100 * point))
 
-        # リクエスト完了以外→End
-        if result.retcode != mt5.TRADE_RETCODE_DONE:
-            message = "2. order_send failed, retcode={}".format(result.retcode)
-            print(message)
-            print(result.comment)
-            Line_bot(message)
+        if backtest == False:  # 本番
+            # 取引リクエストを送信する
+            result = mt5.order_send(request)
+            # 実行結果を確認する
+            print("1. order_send(): by {} {} lots at {} with deviation={} points".format(symbol, lot, price, deviation))
+            print("逆指値:" , (price - 100 * point) , "\n指値" , (price + 100 * point))
 
-        # リクエスト完了
-        else:
-#             print("4. position #{} closed, {}".format(position_id, result))
-             # 結果をディクショナリとしてリクエストし、要素ごとに表示する
-            result_dict = result._asdict()
-            for field in result_dict.keys():
-                print("   {}={}".format(field, result_dict[field]))
-                # これが取引リクエスト構造体の場合は要素ごとに表示する
-#                 if field == "request":
-#                     traderequest_dict = result_dict[field]._asdict()
-#                 for tradereq_filed in traderequest_dict:
-#                     print("traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
-            print("リクエスト送信完了")
-            Line_bot("リクエスト送信完了\n逆指値：" + str(sl) + "\n指値：" + str(tp))
+            # リクエスト完了以外→End
+            if result.retcode != mt5.TRADE_RETCODE_DONE:
+                message = "2. order_send failed, retcode={}".format(result.retcode)
+                print(message)
+                print(result.comment)
+                Line_bot(message)
 
+            # リクエスト完了
+            else:
+#                 print("4. position #{} closed, {}".format(position_id, result))
+                 # 結果をディクショナリとしてリクエストし、要素ごとに表示する
+                result_dict = result._asdict()
+                for field in result_dict.keys():
+                    print("   {}={}".format(field, result_dict[field]))
+                    # これが取引リクエスト構造体の場合は要素ごとに表示する
+#                     if field == "request":
+#                         traderequest_dict = result_dict[field]._asdict()
+#                     for tradereq_filed in traderequest_dict:
+#                         print("traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
+                print("リクエスト送信完了")
+                Line_bot("リクエスト送信完了\n逆指値：" + str(sl) + "\n指値：" + str(tp))
+
+        elif backtest == True:  # バックテスト
+            high = df.iat[-1, 2] # 予測した時間の実際の価格
+            low = df.iat[-1, 3] # 予測した時間の実際の価格
+
+            print(high)
+        time.sleep(10)
     else:
         print("分岐3:スプレッドが広いため処理を終了します")
         Line_bot("分岐3:スプレッドが広いため処理を終了します")
@@ -184,84 +198,84 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
 
     # MetaTrader 5に接続する
     # 接続完了→処理継続
-    if mt5.initialize():
-        if backtest == False:  # 本番
-            print("接続確立完了。処理を継続します。")
-            # パスワードとサーバを指定して取引口座に接続する
-            authorized = mt5.login(account_ID, password=password)
-            # GBPJPYのポジションを取得する
-            positions = mt5.positions_get(symbol=symbol)
-            price_ask = mt5.symbol_info_tick(symbol).ask  # 指定したシンボルの最後のtick時の情報 ask=買い注文の価格
-            price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 bid=売り注文の価格
+   # if mt5.initialize():
+    if backtest == False:  # 本番
+        print("接続確立完了。処理を継続します。")
+        # パスワードとサーバを指定して取引口座に接続する
+        authorized = mt5.login(account_ID, password=password)
+        # GBPJPYのポジションを取得する
+        positions = mt5.positions_get(symbol=symbol)
+        price_ask = mt5.symbol_info_tick(symbol).ask  # 指定したシンボルの最後のtick時の情報 ask=買い注文の価格
+        price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 bid=売り注文の価格
 
-        elif backtest == True:  # バックテスト
-            positions = []
-            price_ask = df.iloc[-2:-1,1]
-            price_bid = price_ask -0.003
+    elif backtest == True:  # バックテスト
+        positions = []
+        price_ask = df.iat[-2,1]  # 最終行から2つ目のopen価格
+        price_bid = price_ask -0.003
 
-        # 保有ポジションがある場合 → 保有ポジションの決済処理 & 保有ポジションのmagicナンバーを取り出してリストに格納
-        if positions :
-            magic_nums = []  # magicナンバーのリスト
-            position_types = []  # 保有ポジションタイプのリスト
-            for position in positions:
-                resultsettlement_position = settlement_position(position, MACD_judge)  # 保有ポジションがプラス収支の場合に決済する関数
-                if resultsettlement_position == False:  # 保有ポジションの決済を行っていないとき　→　ポジションを保有しているので
-                    magic_nums.append(position[6])  # 全ての保有ポジションmagicナンバーを取り出してリストに追加
-                    if order_type == position[5]:  # オーダータイプと保有ポジションのタイプが同じとき
-                        position_types.append(position[5])  # ポジションタイプを追加
-            position_types_count = len(position_types)
+    # 保有ポジションがある場合 → 保有ポジションの決済処理 & 保有ポジションのmagicナンバーを取り出してリストに格納
+    if positions :
+        magic_nums = []  # magicナンバーのリスト
+        position_types = []  # 保有ポジションタイプのリスト
+        for position in positions:
+            resultsettlement_position = settlement_position(position, MACD_judge)  # 保有ポジションがプラス収支の場合に決済する関数
+            if resultsettlement_position == False:  # 保有ポジションの決済を行っていないとき　→　ポジションを保有しているので
+                magic_nums.append(position[6])  # 全ての保有ポジションmagicナンバーを取り出してリストに追加
+                if order_type == position[5]:  # オーダータイプと保有ポジションのタイプが同じとき
+                    position_types.append(position[5])  # ポジションタイプを追加
+        position_types_count = len(position_types)
 
-        # 保有ポジションがない場合 → 保有ポジション数 = 0
-        else:
-            position_types_count = 0
+    # 保有ポジションがない場合 → 保有ポジション数 = 0
+    else:
+        position_types_count = 0
 
-        if order_flag == False:
-            print("order_flag:False")
+    if order_flag == False:
+        print("order_flag:False")
 
-        # ポジション無し→オーダー送信
-        elif 0 == position_types_count :
-            print("分岐1:同ポジションを" + str(position_types_count) + "個保有中です。処理継続")
-        #    Line_bot("分岐1:ポジションを" + str(len(positions)) + "個保有中です。処理継続")
-            order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid)  # オーダー送信
+    # ポジション無し→オーダー送信
+    elif 0 == position_types_count :
+        print("分岐1:同ポジションを" + str(position_types_count) + "個保有中です。処理継続")
+    #    Line_bot("分岐1:ポジションを" + str(len(positions)) + "個保有中です。処理継続")
+        order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid, df)  # オーダー送信
 
 
-        # 同ポジションタイプがmax_positions個以上→End
-        elif max_positions <= position_types_count:
-            print("分岐1:同ポジションを" + str(position_types_count) + "個持っているため処理を終了します")
-            Line_bot("分岐1:同ポジションを" + str(position_types_count) + "個持っているため処理を終了します")
+    # 同ポジションタイプがmax_positions個以上→End
+    elif max_positions <= position_types_count:
+        print("分岐1:同ポジションを" + str(position_types_count) + "個持っているため処理を終了します")
+        Line_bot("分岐1:同ポジションを" + str(position_types_count) + "個持っているため処理を終了します")
 
-        # ポジション数が1以上、max_positions未満→magicナンバー判定を行う
-        # ※ magicナンバーが一致 → オーダーしない
-        # ※ magicナンバーが一致 → オーダーする
+    # ポジション数が1以上、max_positions未満→magicナンバー判定を行う
+    # ※ magicナンバーが一致 → オーダーしない
+    # ※ magicナンバーが一致 → オーダーする
 
-        # 保有ポジションが1以上、max_positions未満の場合
-        elif 1 <= position_types_count < max_positions:
-            # 保有ポジションとオーダーポジションのmagicナンバーを判定
-            for magic_num in magic_nums:
-                # 全ての保有ポジションとオーダーポジションのmagicナンバーが違う→処理継続
-                if magic_num != magic:
-                    print("処理継続")
-                # 1つでも保有ポジションとオーダーポジションのmagicナンバーが同じ→End
-                elif magic_nums == magic:
-                    print("既に持っている同ポジションです。End")
-                    order_flag = False
+    # 保有ポジションが1以上、max_positions未満の場合
+    elif 1 <= position_types_count < max_positions:
+        # 保有ポジションとオーダーポジションのmagicナンバーを判定
+        for magic_num in magic_nums:
+            # 全ての保有ポジションとオーダーポジションのmagicナンバーが違う→処理継続
+            if magic_num != magic:
+                print("処理継続")
+            # 1つでも保有ポジションとオーダーポジションのmagicナンバーが同じ→End
+            elif magic_nums == magic:
+                print("既に持っている同ポジションです。End")
+                order_flag = False
 
-            # オーダーフラグがTrue→オーダー送信
-            if order_flag == True:
-                print("分岐2:同じmagicナンバーのポジションが無いため処理継続します")
-            #    Line_bot("分岐2:同じmagicナンバーのポジションが無いため処理継続します")
-                order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid)  # オーダー送信
+        # オーダーフラグがTrue→オーダー送信
+        if order_flag == True:
+            print("分岐2:同じmagicナンバーのポジションが無いため処理継続します")
+        #    Line_bot("分岐2:同じmagicナンバーのポジションが無いため処理継続します")
+            order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid, df)  # オーダー送信
 
-            # オーダーフラグがFalse→オーダーしない
-            elif order_flag == False:
-                print("分岐2:既に同じmagicナンバーのポジションを保有しています:" + magic)
-                Line_bot("分岐2:既に同じmagicナンバーのポジションを保有しています:" + magic)
+        # オーダーフラグがFalse→オーダーしない
+        elif order_flag == False:
+            print("分岐2:既に同じmagicナンバーのポジションを保有しています:" + magic)
+            Line_bot("分岐2:既に同じmagicナンバーのポジションを保有しています:" + magic)
 
     # 接続不可能→End
-    else:
-        message = "initialize() failed, error code =", mt5.last_error()
-        print(message)
-        Line_bot(message)
+    #else:
+    #    message = "initialize() failed, error code =", mt5.last_error()
+    #    print(message)
+    #    Line_bot(message)
 
     # MetaTrader 5ターミナルへの接続をシャットダウンする
     mt5.shutdown()

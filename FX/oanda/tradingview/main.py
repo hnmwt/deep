@@ -134,7 +134,8 @@ def EA(bktest_orbit=0):
         '\nオーダー:' + str(order_name)
 
         print(message)
-        Line_bot(message)
+        if backtest == False: # 本番
+            Line_bot(message)
 
 #            time.sleep(980)
 #            driver_2.refresh()
@@ -146,7 +147,8 @@ def EA(bktest_orbit=0):
         t, v, tb = sys.exc_info()
         message = traceback.print_tb(tb)
         print(message, t, v)
-        Line_bot("エラー発生" + str(tb))
+        if backtest == False:  # 本番
+            Line_bot("エラー発生" + str(tb))
 
 def work_interval_30m():
     minute = 30  # minuteの間隔で動作
