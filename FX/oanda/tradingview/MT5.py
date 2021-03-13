@@ -6,10 +6,13 @@ import time
 import pandas as pd
 import numpy as np
 backtest = backtest_variable.backtest
-
+positions_backtest= []
 NARIYUKI_BUY = mt5.ORDER_TYPE_BUY  # 買い指値注文
 NARIYUKI_SELL = mt5.ORDER_TYPE_SELL  # 売り指値注文
 debug = False
+profit_all = 0
+carryover_position = 0
+
 # オーダー送信関数
 def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid, df):
     if backtest == False: # 本番
@@ -18,8 +21,8 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
     elif backtest == True:  # バックテスト
         point = 0.001
         spread = price_ask - price_bid
-        spread = spread.values.tolist()
-        spread = spread[0]
+        spread = spread.tolist()
+#        spread = spread[0]
 
     deviation = 20
     permit_spread = 0.004
@@ -28,7 +31,7 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
     # スプレッドが基準以下の時　→　処理継続
     if spread <= permit_spread:
 
-    # 買い注文時の価格
+        # 買い注文時の価格
         if order_type == NARIYUKI_BUY:
             price = price_ask
             sl = price - sl_point * point  # ※100*0.001=0.1
@@ -85,18 +88,51 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
                 Line_bot("リクエスト送信完了\n逆指値：" + str(sl) + "\n指値：" + str(tp))
 
         elif backtest == True:  # バックテスト
-            high = df.iat[-1, 2] # 予測した時間の実際の価格
-            low = df.iat[-1, 3] # 予測した時間の実際の価格
+            global positions_backtest
+            high = df.iat[-1, 2] # 予測した時間の実際の価格(high)
+            low = df.iat[-1, 3] # 予測した時間の実際の価格(low)
+            lot = 10000
+            global profit_all
+            global carryover_position
+            # 買い注文→売り決済時の判定
+            if order_type == NARIYUKI_BUY:
+                if sl < low:  # slが成立
+                    profit = (sl - price_bid) * lot
+                    print('sl買い注文売り決済成立:', profit)
+                    profit_all += profit
+                elif tp < high:  # tpが成立
+                    profit = (tp - price_bid) * lot
+                    print('tp買い注文売り決済成立:', profit)
+                    profit_all += profit
+                else:  # ポジション持ち越し
+                    carryover_position += 1
+                    positions_backtest.append([0,0,0,0,0,order_type,0,0,0,lot,0,sl,tp,0,0,0,symbol,price_ask,price_bid])
 
-            print(high)
-        time.sleep(10)
+            # 売り注文→回決済時の判定
+            elif order_type == NARIYUKI_SELL:
+                if sl > high:  # slが成立
+                    profit = (price_ask - sl) * lot
+                    print('sl売り注文買い決済成立:', profit)
+                    profit_all += profit
+                elif tp < low:  # tpが成立
+                    profit = (price_ask - tp) * lot
+                    print('tp売り注文買い決済成立:', profit)
+                    profit_all += profit
+                else:  # ポジション持ち越し
+                    carryover_position += 1
+                    positions_backtest.append([0,0,0,0,0,order_type,0,0,0,lot,0,sl,tp,0,0,0,symbol,price_ask,price_bid])
+
+        print('profit_all:', profit_all)
+
+#            print(high)
+        #time.sleep(10)
     else:
         print("分岐3:スプレッドが広いため処理を終了します")
         Line_bot("分岐3:スプレッドが広いため処理を終了します")
 
 # 保有ポジションがプラス収支の場合に決済する関数
 # 保有ポジションがマイナスの時はtpを0.005変更する
-def settlement_position(position, MACD_judge):
+def settlement_position(position, MACD_judge, price_ask, price_bid):
     profit = position[15]  # 現在の利益
     position_id = position[7]  # ポジションID
     price_current = position[13]  # 現在の価格
@@ -122,51 +158,70 @@ def settlement_position(position, MACD_judge):
         settle_flag = True
 
     deviation = 20
-    # 利益がプラスの時 →　即決済
+
 #    if 0 < profit:
     print("settle_flag:",settle_flag)
+    if settle_flag == True:  # MACDのシグナルに保有ポジションが該当している(トレンドが変わったら現在価格で損切りする)
+        if backtest == False :  # 本番
+#            Line_bot("settle_flag:" + str(settle_flag))
+            # 決済リクエストを作成する
+           # position_id = result.order
+           # price = mt5.symbol_info_tick(symbol).bid
 
-    if settle_flag == True:  # MACDのシグナルに保有ポジションが該当している
-#        Line_bot("settle_flag:" + str(settle_flag))
-        # 決済リクエストを作成する
-       # position_id = result.order
-       # price = mt5.symbol_info_tick(symbol).bid
+            request = {
+                "action": mt5.TRADE_ACTION_DEAL,
+                "symbol": symbol,
+                "volume": lot,
+                "type": type,
+                "position": position_id,
+                "price": price_current,
+                "deviation": deviation,
+                "magic": magic,
+                "comment": "python script close",
+                "type_time": mt5.ORDER_TIME_GTC,
+                "type_filling": mt5.ORDER_FILLING_IOC,
+            }
+            result = mt5.order_send(request)
 
-        request = {
-            "action": mt5.TRADE_ACTION_DEAL,
-            "symbol": symbol,
-            "volume": lot,
-            "type": type,
-            "position": position_id,
-            "price": price_current,
-            "deviation": deviation,
-            "magic": magic,
-            "comment": "python script close",
-            "type_time": mt5.ORDER_TIME_GTC,
-            "type_filling": mt5.ORDER_FILLING_IOC,
-        }
-        result = mt5.order_send(request)
+            # リクエスト完了以外→End
+            if result.retcode != mt5.TRADE_RETCODE_DONE:
+                message = "2. order_send failed, retcode={}".format(result.retcode)
+                print(message)
+                print(result.comment)
+                Line_bot(message)
+                return False
+            # リクエスト完了
+            else:
+                # 結果をディクショナリとしてリクエストし、要素ごとに表示する
+                result_dict = result._asdict()
+                for field in result_dict.keys():
+                    print("   {}={}".format(field, result_dict[field]))
+                #print("リクエスト送信完了")
+                Line_bot("settle_flag:" + str(settle_flag) + "決済リクエスト送信完了\n利益：" + str(profit)
+                         + "\nオープン価格：" + str(price_open)+ "\n現在価格：" + str(price_current))
+                return True  #
 
-        # リクエスト完了以外→End
-        if result.retcode != mt5.TRADE_RETCODE_DONE:
-            message = "2. order_send failed, retcode={}".format(result.retcode)
-            print(message)
-            print(result.comment)
-            Line_bot(message)
-            return False
-        # リクエスト完了
-        else:
-            # 結果をディクショナリとしてリクエストし、要素ごとに表示する
-            result_dict = result._asdict()
-            for field in result_dict.keys():
-                print("   {}={}".format(field, result_dict[field]))
-            #print("リクエスト送信完了")
-            Line_bot("settle_flag:" + str(settle_flag) + "決済リクエスト送信完了\n利益：" + str(profit)
-                     + "\nオープン価格：" + str(price_open)+ "\n現在価格：" + str(price_current))
-            return True  #
+        if backtest == True :  # バックテスト
+            global profit_all
+            global carryover_position
+            when_price_ask = position[17]  # 注文時の価格
+            when_price_bid = position[18]  # 注文時の価格
 
-    # 利益がマイナスの時
-    elif 0 >= profit:
+            if order_type == NARIYUKI_BUY:  # 買い注文→売り決済
+                profit = (when_price_ask - price_bid) * lot
+                print('settlement:', profit)
+                profit_all += profit
+
+            # 売り注文→回決済時の判定
+            elif order_type == NARIYUKI_SELL:  # 売り注文→買い決済
+                profit = (when_price_bid - price_ask) * lot
+                print('settlement:', profit)
+                profit_all += profit
+
+            return True
+
+
+    elif settle_flag == False:  # MACDのシグナルに保有ポジションが該当している
 #        request = {
 #            "action": mt5.TRADE_ACTION_SLTP,
 #            "symbol": symbol,
@@ -209,20 +264,24 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
         price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 bid=売り注文の価格
 
     elif backtest == True:  # バックテスト
-        positions = []
-        price_ask = df.iat[-2,1]  # 最終行から2つ目のopen価格
+        positions = positions_backtest
+        price_ask = df.iat[-2,1]  # 最終行から2つ目(現在)のopen価格
         price_bid = price_ask -0.003
 
     # 保有ポジションがある場合 → 保有ポジションの決済処理 & 保有ポジションのmagicナンバーを取り出してリストに格納
     if positions :
         magic_nums = []  # magicナンバーのリスト
         position_types = []  # 保有ポジションタイプのリスト
+        i = 0
         for position in positions:
-            resultsettlement_position = settlement_position(position, MACD_judge)  # 保有ポジションがプラス収支の場合に決済する関数
+            resultsettlement_position = settlement_position(position, MACD_judge,price_ask,price_bid)  # 保有ポジションがプラス収支の場合に決済する関数
             if resultsettlement_position == False:  # 保有ポジションの決済を行っていないとき　→　ポジションを保有しているので
                 magic_nums.append(position[6])  # 全ての保有ポジションmagicナンバーを取り出してリストに追加
-                if order_type == position[5]:  # オーダータイプと保有ポジションのタイプが同じとき
-                    position_types.append(position[5])  # ポジションタイプを追加
+                if order_type == position[5]:  # これからオーダーしようとしているのオーダータイプと保有ポジションのオーダータイプが同じとき
+                    position_types.append(position[5])  # ポジションタイプを追加(所持しているポジション数を把握したい)
+            if resultsettlement_position == True and backtest == True:  # バックテストかつポジションの決済が完了したとき
+                del positions_backtest[i]
+            i += 1
         position_types_count = len(position_types)
 
     # 保有ポジションがない場合 → 保有ポジション数 = 0
@@ -242,7 +301,8 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
     # 同ポジションタイプがmax_positions個以上→End
     elif max_positions <= position_types_count:
         print("分岐1:同ポジションを" + str(position_types_count) + "個持っているため処理を終了します")
-        Line_bot("分岐1:同ポジションを" + str(position_types_count) + "個持っているため処理を終了します")
+        if backtest == False:  # 本番
+            Line_bot("分岐1:同ポジションを" + str(position_types_count) + "個持っているため処理を終了します")
 
     # ポジション数が1以上、max_positions未満→magicナンバー判定を行う
     # ※ magicナンバーが一致 → オーダーしない

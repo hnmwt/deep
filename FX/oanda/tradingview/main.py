@@ -35,11 +35,11 @@ def MACD_Cross_judge(Cross_judge, order, tp_point):
     elif Cross_judge == 0:  # 買いシグナル
         order = MT5.NARIYUKI_BUY
         tp_point = 20
-        Line_bot("買いシグナル")
+#        Line_bot("買いシグナル")
     elif Cross_judge == 1:  # 売りシグナル
         order = MT5.NARIYUKI_SELL
         tp_point = 20
-        Line_bot("売りシグナル")
+#        Line_bot("売りシグナル")
     return order ,tp_point
 
 def EA(bktest_orbit=0):
@@ -60,12 +60,13 @@ def EA(bktest_orbit=0):
         predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir,bktest_orbit)  # 値を予測
         MACD_judge, Cross_judge = predict.MACD_sign(MACD, MACD_signal, MACD_Cross)
         lot = 0.1  # ロット数
-        tp_point = 3
-
+        tp_point = 20
+        sl_point = 5
         # 予測値が一定以上の場合→買い注文
         if 0.12 <= float(diff) and MACD_judge == MT5.NARIYUKI_BUY:
             order = MT5.NARIYUKI_BUY  # 指値買い注文
-            sl_point = 3000
+            sl_point = 40
+            tp_point = 50
             magic = 234000
             order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
             MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
@@ -74,8 +75,8 @@ def EA(bktest_orbit=0):
         # 予測値が一定以上の場合→買い注文(少)
         elif 0.02 < float(diff) < 0.12 and MACD_judge == MT5.NARIYUKI_BUY:
             order = MT5.NARIYUKI_BUY  # 指値買い注文
-            sl_point = 60
-            tp_point = 12
+           # sl_point = 70
+            #tp_point = 30
             magic = 234001
             order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
             MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
@@ -84,7 +85,7 @@ def EA(bktest_orbit=0):
         # 予測値が一定以上の場合→買い注文(少)
         elif 0 <= float(diff) <= 0.02 and MACD_judge == MT5.NARIYUKI_BUY:
             order = MT5.NARIYUKI_BUY  # 指値買い注文
-            sl_point = 60
+          #  sl_point = 70
             magic = 234001
             order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
             MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
@@ -93,7 +94,8 @@ def EA(bktest_orbit=0):
         # 予測値が一定以下の場合→売り注文
         elif float(diff) <= -0.12 and MACD_judge == MT5.NARIYUKI_SELL:
             order = MT5.NARIYUKI_SELL  # 指値売り注文
-            sl_point = 300
+            sl_point = 40
+            tp_point = 50
             magic = 235000
             order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
             MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
@@ -102,8 +104,8 @@ def EA(bktest_orbit=0):
         # 予測値が一定以下の場合→売り注文(少)
         elif -0.12 < float(diff) < -0.02 and MACD_judge == MT5.NARIYUKI_SELL:
             order = MT5.NARIYUKI_SELL  # 指値売り注文
-            sl_point = 60
-            tp_point = 12
+           # sl_point = 70
+           # tp_point = 30
             magic = 235000
             order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
             MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
@@ -112,11 +114,13 @@ def EA(bktest_orbit=0):
         # 予測値が一定以下の場合→売り注文(少)
         elif -0.02 <= float(diff) < 0 and MACD_judge == MT5.NARIYUKI_SELL:
             order = MT5.NARIYUKI_SELL  # 指値売り注文
-            sl_point = 60
+          #  sl_point = 70
             magic = 235000
             order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
             MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
             order_name = "売り注文(極少)"
+
+
 
         # 予測値が条件に当てはまらないとき
         else:
@@ -247,7 +251,7 @@ def work_interval_5m():
     return job_start_time
 
 if __name__ == '__main__':
-    if backtest == False:
+    if backtest == False:  # 本番
     #    job_start_time = work_interval_30m()
     #    job_start_time = work_interval_15m()
         job_start_time = work_interval_5m()
@@ -271,7 +275,11 @@ if __name__ == '__main__':
 
 
 
-    elif backtest == True:
+    elif backtest == True:  # バックテスト
         print('バックテスト')
-        for i in range(100 ,1700):
+      #  for i in range(915 ,1200):
+        for i in range(1200, 1800):
             EA(i)
+        print('**************終了***********************')
+        print('総計',MT5.profit_all)
+        print('ポジション持ち越し回数',MT5.carryover_position)
