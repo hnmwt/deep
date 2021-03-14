@@ -251,6 +251,7 @@ def work_interval_5m():
     return job_start_time
 
 if __name__ == '__main__':
+
     if backtest == False:  # 本番
     #    job_start_time = work_interval_30m()
     #    job_start_time = work_interval_15m()
@@ -261,7 +262,6 @@ if __name__ == '__main__':
         driver_2 = TradingView.site_login(username, password, url, driver_1)
         EA(0)
         print("次回時刻" + str(job_start_time))
-
 
         # 2回目以降
         while True:
@@ -276,6 +276,9 @@ if __name__ == '__main__':
 
 
     elif backtest == True:  # バックテスト
+        if os.path.isfile(MT5.backtest_log):
+            os.remove(MT5.backtest_log)
+
         print('バックテスト')
       #  for i in range(915 ,1200):
         for i in range(1200, 1800):

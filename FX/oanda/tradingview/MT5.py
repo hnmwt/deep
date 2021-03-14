@@ -12,6 +12,7 @@ NARIYUKI_SELL = mt5.ORDER_TYPE_SELL  # 売り指値注文
 debug = False
 profit_all = 0
 carryover_position = 0
+backtest_log = "./バックテスト/取引ログ.csv"
 
 # オーダー送信関数
 def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid, df):
@@ -92,36 +93,39 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
             high = df.iat[-1, 2] # 予測した時間の実際の価格(high)
             low = df.iat[-1, 3] # 予測した時間の実際の価格(low)
             lot = 10000
+            profit = 0
             global profit_all
             global carryover_position
-            # 買い注文→売り決済時の判定
-            if order_type == NARIYUKI_BUY:
-                if sl < low:  # slが成立
-                    profit = (sl - price_bid) * lot
-                    print('sl買い注文売り決済成立:', profit)
-                    profit_all += profit
-                elif tp < high:  # tpが成立
-                    profit = (tp - price_bid) * lot
-                    print('tp買い注文売り決済成立:', profit)
-                    profit_all += profit
-                else:  # ポジション持ち越し
-                    carryover_position += 1
-                    positions_backtest.append([0,0,0,0,0,order_type,0,0,0,lot,0,sl,tp,0,0,0,symbol,price_ask,price_bid])
 
-            # 売り注文→回決済時の判定
-            elif order_type == NARIYUKI_SELL:
-                if sl > high:  # slが成立
-                    profit = (price_ask - sl) * lot
-                    print('sl売り注文買い決済成立:', profit)
-                    profit_all += profit
-                elif tp < low:  # tpが成立
-                    profit = (price_ask - tp) * lot
-                    print('tp売り注文買い決済成立:', profit)
-                    profit_all += profit
-                else:  # ポジション持ち越し
-                    carryover_position += 1
-                    positions_backtest.append([0,0,0,0,0,order_type,0,0,0,lot,0,sl,tp,0,0,0,symbol,price_ask,price_bid])
+            with open(backtest_log, mode="a",encoding="utf-8") as f:
+                # 買い注文→売り決済時の判定
+                if order_type == NARIYUKI_BUY:
+                    if sl < low:  # slが成立
+                        profit = (sl - price_bid) * lot
+                        print('sl買い注文売り決済成立:', profit)
+                        profit_all += profit
+                    elif tp < high:  # tpが成立
+                        profit = (tp - price_bid) * lot
+                        print('tp買い注文売り決済成立:', profit)
+                        profit_all += profit
+                    else:  # ポジション持ち越し
+                        carryover_position += 1
+                        positions_backtest.append([0,0,0,0,0,order_type,0,0,0,lot,0,sl,tp,0,0,0,symbol,price_ask,price_bid])
 
+                # 売り注文→回決済時の判定
+                elif order_type == NARIYUKI_SELL:
+                    if sl > high:  # slが成立
+                        profit = (price_ask - sl) * lot
+                        print('sl売り注文買い決済成立:', profit)
+                        profit_all += profit
+                    elif tp < low:  # tpが成立
+                        profit = (price_ask - tp) * lot
+                        print('tp売り注文買い決済成立:', profit)
+                        profit_all += profit
+                    else:  # ポジション持ち越し
+                        carryover_position += 1
+                        positions_backtest.append([0,0,0,0,0,order_type,0,0,0,lot,0,sl,tp,0,0,0,symbol,price_ask,price_bid])
+                f.write(str(profit) + "\n")
         print('profit_all:', profit_all)
 
 #            print(high)
