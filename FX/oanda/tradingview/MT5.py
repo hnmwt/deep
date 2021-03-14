@@ -5,6 +5,8 @@ import backtest_variable
 import time
 import pandas as pd
 import numpy as np
+import datetime
+
 backtest = backtest_variable.backtest
 positions_backtest= []
 NARIYUKI_BUY = mt5.ORDER_TYPE_BUY  # 買い指値注文
@@ -34,12 +36,12 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
 
         # 買い注文時の価格
         if order_type == NARIYUKI_BUY:
-            price = price_ask
+            price = price_bid  # 決済は逆のポジションを基準に考える
             sl = price - sl_point * point  # ※100*0.001=0.1
             tp = price + tp_point * point
         # 売り注文時の価格
         elif order_type == NARIYUKI_SELL:
-            price = price_bid
+            price = price_ask  # 決済は逆のポジションを基準に考える
             sl = price + sl_point * point
             tp = price - tp_point * point
 
@@ -90,8 +92,11 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
 
         elif backtest == True:  # バックテスト
             global positions_backtest
-            high = df.iat[-1, 2] # 予測した時間の実際の価格(high)
-            low = df.iat[-1, 3] # 予測した時間の実際の価格(low)
+            high = df.iat[-2, 2] # 予測した時間の実際の価格(high)
+            low = df.iat[-2, 3] # 予測した時間の実際の価格(low)
+            time = df.iat[-2, 0]  # 予測した時間(予測後ではない)
+            time = time + datetime.timedelta(hours=9)  # 日本時間を計算
+            time = "{0:%Y-%m-%d %H:%M}".format(time)
             lot = 10000
             profit = 0
             global profit_all
@@ -99,12 +104,12 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
 
             with open(backtest_log, mode="a",encoding="utf-8") as f:
                 # 買い注文→売り決済時の判定
-                if order_type == NARIYUKI_BUY:
+                if order_type == NARIYUKI_BUY:  # 値は0
                     if sl < low:  # slが成立
                         profit = (sl - price_bid) * lot
                         print('sl買い注文売り決済成立:', profit)
                         profit_all += profit
-                    elif tp < high:  # tpが成立
+                    elif tp > high:  # tpが成立
                         profit = (tp - price_bid) * lot
                         print('tp買い注文売り決済成立:', profit)
                         profit_all += profit
@@ -113,19 +118,20 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
                         positions_backtest.append([0,0,0,0,0,order_type,0,0,0,lot,0,sl,tp,0,0,0,symbol,price_ask,price_bid])
 
                 # 売り注文→回決済時の判定
-                elif order_type == NARIYUKI_SELL:
-                    if sl > high:  # slが成立
+                elif order_type == NARIYUKI_SELL:  # 値は1
+                    if sl < high:  # slが成立
                         profit = (price_ask - sl) * lot
                         print('sl売り注文買い決済成立:', profit)
                         profit_all += profit
-                    elif tp < low:  # tpが成立
+                    elif tp > low:  # tpが成立
                         profit = (price_ask - tp) * lot
                         print('tp売り注文買い決済成立:', profit)
                         profit_all += profit
                     else:  # ポジション持ち越し
                         carryover_position += 1
                         positions_backtest.append([0,0,0,0,0,order_type,0,0,0,lot,0,sl,tp,0,0,0,symbol,price_ask,price_bid])
-                f.write(str(profit) + "\n")
+                f.write(str(time) + "," + str(profit) + "," + str(order_type) + "," + str(tp) + "," + str(sl)\
+                        + "," + str(price_ask) + "," + str(price_bid) + "," + str(high) + "," + str(low) + "\n")
         print('profit_all:', profit_all)
 
 #            print(high)
@@ -213,12 +219,14 @@ def settlement_position(position, MACD_judge, price_ask, price_bid):
 
             if order_type == NARIYUKI_BUY:  # 買い注文→売り決済
                 profit = (when_price_ask - price_bid) * lot
+                profit = -40 # 暫定処理03.14
                 print('settlement:', profit)
                 profit_all += profit
 
-            # 売り注文→回決済時の判定
+            # 売り注文→買い決済時の判定
             elif order_type == NARIYUKI_SELL:  # 売り注文→買い決済
                 profit = (when_price_bid - price_ask) * lot
+                profit = -40  # 暫定処理03.14
                 print('settlement:', profit)
                 profit_all += profit
 
@@ -248,7 +256,7 @@ def settlement_position(position, MACD_judge, price_ask, price_bid):
 #    #    Line_bot('保有ポジションの評価がマイナスのため決済を行いません')
         return False
 
-# オーダー関数
+# オーダー判定関数
 def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df,order_flag=True):
     account_ID = 900006047
     password = "Hnm4264wtr"
@@ -284,7 +292,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
                 if order_type == position[5]:  # これからオーダーしようとしているのオーダータイプと保有ポジションのオーダータイプが同じとき
                     position_types.append(position[5])  # ポジションタイプを追加(所持しているポジション数を把握したい)
             if resultsettlement_position == True and backtest == True:  # バックテストかつポジションの決済が完了したとき
-                del positions_backtest[i]
+                del positions_backtest[i]  # 対象のポジションのリストを削除
             i += 1
         position_types_count = len(position_types)
 
@@ -292,11 +300,11 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
     else:
         position_types_count = 0
 
-    if order_flag == False:
-        print("order_flag:False")
+  #使わない  if order_flag == False:
+  #使わない      print("order_flag:False")
 
     # ポジション無し→オーダー送信
-    elif 0 == position_types_count :
+    if 0 == position_types_count :
         print("分岐1:同ポジションを" + str(position_types_count) + "個保有中です。処理継続")
     #    Line_bot("分岐1:ポジションを" + str(len(positions)) + "個保有中です。処理継続")
         order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid, df)  # オーダー送信
@@ -307,13 +315,20 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
         print("分岐1:同ポジションを" + str(position_types_count) + "個持っているため処理を終了します")
         if backtest == False:  # 本番
             Line_bot("分岐1:同ポジションを" + str(position_types_count) + "個持っているため処理を終了します")
+        elif backtest == True:  # バックテスト
+            time = df.iat[-1, 0]  # 予測した時間(予測後ではない)
+            time = time + datetime.timedelta(hours=9)  # 日本時間を計算
+            time = "{0:%Y-%m-%d %H:%M}".format(time)
+
+            with open(backtest_log, mode="a", encoding="shift_jis")as f:
+                f.write(str(time) + ",ポジションを持っている\n")
 
     # ポジション数が1以上、max_positions未満→magicナンバー判定を行う
     # ※ magicナンバーが一致 → オーダーしない
     # ※ magicナンバーが一致 → オーダーする
 
-    # 保有ポジションが1以上、max_positions未満の場合
-    elif 1 <= position_types_count < max_positions:
+    # 保有ポジションが1以上、max_positions(閾値)以下の場合
+    elif 1 <= position_types_count <= max_positions:
         # 保有ポジションとオーダーポジションのmagicナンバーを判定
         for magic_num in magic_nums:
             # 全ての保有ポジションとオーダーポジションのmagicナンバーが違う→処理継続
@@ -343,7 +358,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
 
     # MetaTrader 5ターミナルへの接続をシャットダウンする
     mt5.shutdown()
-    print('シャットダウン完了')
+    #print('シャットダウン完了')
 
 if __name__ == '__main__':
     debug = True
