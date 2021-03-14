@@ -16,6 +16,9 @@ profit_all = 0
 carryover_position = 0
 backtest_log = "./バックテスト/取引ログ.csv"
 
+backtest_tp = 20
+backtest_sl = 4
+
 # オーダー送信関数
 def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid, df):
     if backtest == False: # 本番
@@ -214,19 +217,20 @@ def settlement_position(position, MACD_judge, price_ask, price_bid):
         if backtest == True :  # バックテスト
             global profit_all
             global carryover_position
+            global backtest_sl
             when_price_ask = position[17]  # 注文時の価格
             when_price_bid = position[18]  # 注文時の価格
 
             if order_type == NARIYUKI_BUY:  # 買い注文→売り決済
                 profit = (when_price_ask - price_bid) * lot
-                profit = -40 # 暫定処理03.14
+                profit = backtest_sl * -10 # 暫定処理03.14
                 print('settlement:', profit)
                 profit_all += profit
 
             # 売り注文→買い決済時の判定
             elif order_type == NARIYUKI_SELL:  # 売り注文→買い決済
                 profit = (when_price_bid - price_ask) * lot
-                profit = -40  # 暫定処理03.14
+                profit = backtest_sl * -10  # 暫定処理03.14
                 print('settlement:', profit)
                 profit_all += profit
 

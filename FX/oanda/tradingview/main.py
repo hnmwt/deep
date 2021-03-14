@@ -60,8 +60,14 @@ def EA(bktest_orbit=0):
         predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir,bktest_orbit)  # 値を予測
         MACD_judge, Cross_judge = predict.MACD_sign(MACD, MACD_signal, MACD_Cross)
         lot = 0.1  # ロット数
-        tp_point = 20
-        sl_point = 4
+
+        if backtest == True:  # バックテスト
+            tp_point = MT5.backtest_tp
+            sl_point = MT5.backtest_sl
+        elif backtest == False:  # 本番
+            tp_point = 20
+            sl_point = 4
+
         # 予測値が一定以上の場合→買い注文
         if 0.12 <= float(diff) and MACD_judge == MT5.NARIYUKI_BUY:
             order = MT5.NARIYUKI_BUY  # 指値買い注文
@@ -283,7 +289,7 @@ if __name__ == '__main__':
                         "現時点の売り価格(sell)," + "high注文後~," + "low注文後~," + "\n")
         print('バックテスト')
       #  for i in range(915 ,1200):
-        for i in range(1200, 1800):
+        for i in range(915, 1800):
             EA(i)
         print('**************終了***********************')
         print('総計',MT5.profit_all)
