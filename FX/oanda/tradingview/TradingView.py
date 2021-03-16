@@ -37,24 +37,32 @@ def get_csv(driver):
     driver.find_element_by_css_selector('body > div.js-rootresizer__contents > div.layout__area--topleft > div > div > '
                                         'div > div > svg').click()
     # click csv export on toolbar
-    driver.find_element_by_css_selector('#overlap-manager-root > div > span > div.popupMenu-2ot2Uu9Z.menuWrap-1gEtmoET '
-                                        '> div > div > div.apply-common-tooltip.common-tooltip-vertical.item-2xPVYue0.item-1dXqixrD '
-                                        '> div > div').click()
+#    driver.find_element_by_css_selector('#overlap-manager-root > div > span > div.popupMenu-2ot2Uu9Z.menuWrap-1gEtmoET '
+#                                        '> div > div > div.apply-common-tooltip.common-tooltip-vertical.item-2xPVYue0.item-1dXqixrD '
+#                                        '> div > div').click()
+
+    driver.find_element_by_css_selector('#overlap-manager-root > div > span > div.popupMenu-2WfzAPA-.menuWrap-g78rwseC > div > div > div.apply-common-tooltip.common-tooltip-vertical.item-2IihgTnv.item-1PNqKOSN > div > div').click()
+
     time.sleep(3)
     # click datetime format
-    driver.find_element_by_css_selector('#overlap-manager-root > div > div > div.dialog-34XTwGTT.dialog-2QwUBM-N.dialog'
-                                        '-2APwxL3O.rounded-tXI9mwGE.shadowed-2M13-xZa > div > div.scrollable-2ZZHicYg > '
-                                        'div > div:nth-child(3) > div.container-AqxbM340.dropdown-143jb8d-.intent-default'
-                                        '-saHBD6pK.border-thin-2A_CUSMk.size-medium-2saizg8j > span > span').click()
+#    driver.find_element_by_css_selector('#overlap-manager-root > div > div > div.dialog-34XTwGTT.dialog-2QwUBM-N.dialog'
+#                                       '-2APwxL3O.rounded-tXI9mwGE.shadowed-2M13-xZa > div > div.scrollable-2ZZHicYg > '
+#                                      'div > div:nth-child(3) > div.container-AqxbM340.dropdown-143jb8d-.intent-default'
+#                                      '-saHBD6pK.border-thin-2A_CUSMk.size-medium-2saizg8j > span > span').click()
 
+    driver.find_element_by_css_selector('#overlap-manager-root > div > div > div.dialog-2AogBbC7.dialog-2cMrvu9r.dialog-UM6w7sFp.rounded-UM6w7sFp.shadowed-UM6w7sFp > div > div.scrollable-3m1eCBTR > div > div:nth-child(3) > div.container-2TPkxppK.dropdown-3m1eCBTR.intent-default-2TPkxppK.border-thin-2TPkxppK.size-medium-2TPkxppK > div').click()
     # click ISO date
-    driver.find_element_by_css_selector('#overlap-manager-root > div > div > div:nth-child(2) > div > span > '
-                                        'div.dropdownMenu-3eseaOZb.menuWrap-1gEtmoET > div > div > div:nth-child(1) >'
-                                        ' div > div').click()
+#    driver.find_element_by_css_selector('#overlap-manager-root > div > div > div:nth-child(2) > div > span > '
+#                                        'div.dropdownMenu-3eseaOZb.menuWrap-1gEtmoET > div > div > div:nth-child(1) >'
+#                                        ' div > div').click()
+
+    driver.find_element_by_css_selector('#overlap-manager-root > div > div > div:nth-child(2) > div > span > div.dropdownMenu-3m1eCBTR.menuWrap-g78rwseC > div > div > div.item-2IihgTnv.isActive-2IihgTnv > div > div').click()
 
     # click csv export
-    driver.find_element_by_css_selector('#overlap-manager-root > div > div > div.dialog-34XTwGTT.dialog-2QwUBM-N.dialog-2APwxL3O.rounded-tXI9mwGE.shadowed-2M13-xZa > div > div.footer-1mvnCDqp '
-                                        '> div > span > button').click()
+#    driver.find_element_by_css_selector('#overlap-manager-root > div > div > div.dialog-34XTwGTT.dialog-2QwUBM-N.dialog-2APwxL3O.rounded-tXI9mwGE.shadowed-2M13-xZa > div > div.footer-1mvnCDqp '
+#                                        '> div > span > button').click()
+
+    driver.find_element_by_css_selector('#overlap-manager-root > div > div > div.dialog-2AogBbC7.dialog-2cMrvu9r.dialog-UM6w7sFp.rounded-UM6w7sFp.shadowed-UM6w7sFp > div > div.footer-KW8170fm > div > span > button').click()
 
 if __name__ == '__main__':
     username = 'hnmwtr999'
