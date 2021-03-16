@@ -54,10 +54,10 @@ def EA(bktest_orbit=0):
             if os.path.isfile(get_csv_name):
                 os.remove(get_csv_name)
 
-                time.sleep(2)
-                TradingView.get_csv(driver_2)
-                print('csvファイルダウンロード完了')
-                time.sleep(4)
+            time.sleep(2)
+            TradingView.get_csv(driver_2)
+            print('csvファイルダウンロード完了')
+            time.sleep(4)
 
         df, MACD, MACD_signal, MACD_Cross = predict.create_train_data(get_csv_name, bktest_orbit)  # 取ってきたcsvからdfを作成
         predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir,bktest_orbit)  # 値を予測
@@ -69,7 +69,7 @@ def EA(bktest_orbit=0):
             sl_point = MT5.backtest_sl
         elif backtest == False:  # 本番
             tp_point = 20
-            sl_point = 4
+            sl_point = 1
 
         # 予測値が一定以上の場合→買い注文
         if 0.12 <= float(diff) and MACD_judge == MT5.NARIYUKI_BUY:
