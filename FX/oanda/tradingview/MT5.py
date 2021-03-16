@@ -16,8 +16,8 @@ profit_all = 0
 carryover_position = 0
 backtest_log = "./バックテスト/取引ログ.csv"
 
-backtest_tp = 20
-backtest_sl = 4
+backtest_tp = 25
+backtest_sl = 3
 
 # オーダー送信関数
 def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid, df):
@@ -119,8 +119,9 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
                     else:  # ポジション持ち越し
                         carryover_position += 1
                         positions_backtest.append([0,0,0,0,0,order_type,0,0,0,lot,0,sl,tp,0,0,0,symbol,price_ask,price_bid])
+                        tp = 'motikosi'
 
-                # 売り注文→回決済時の判定
+                # 売り注文→買い決済時の判定
                 elif order_type == NARIYUKI_SELL:  # 値は1
                     if sl < high:  # slが成立
                         profit = (price_ask - sl) * lot
@@ -133,6 +134,11 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
                     else:  # ポジション持ち越し
                         carryover_position += 1
                         positions_backtest.append([0,0,0,0,0,order_type,0,0,0,lot,0,sl,tp,0,0,0,symbol,price_ask,price_bid])
+                        tp = 'motikosi'
+
+                    if sl_point == 0:
+                        tp = "not_order"
+
                 f.write(str(time) + "," + str(profit) + "," + str(order_type) + "," + str(tp) + "," + str(sl)\
                         + "," + str(price_ask) + "," + str(price_bid) + "," + str(high) + "," + str(low) + "\n")
         print('profit_all:', profit_all)
@@ -233,6 +239,8 @@ def settlement_position(position, MACD_judge, price_ask, price_bid):
                 profit = backtest_sl * -10  # 暫定処理03.14
                 print('settlement:', profit)
                 profit_all += profit
+            with open(backtest_log, mode="a", encoding="utf-8") as f:
+                f.write("settlement," + str(profit) + "\n")
 
             return True
 

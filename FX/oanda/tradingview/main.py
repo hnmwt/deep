@@ -21,6 +21,9 @@ mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
 DF = pd.DataFrame()
 url = "https://jp.tradingview.com/chart/lXaj0SrK/#signin"
 get_csv_name = r".\OANDA_USDJPY, 5.csv"
+if backtest == True:
+    get_csv_name = r".\OANDA_USDJPY, 5_test.csv"
+
 csv_time = 5
 symbol = "USDJPY"#"GBPJPY"
 model_dir = '.\model'
@@ -132,7 +135,8 @@ def EA(bktest_orbit=0):
         else:
             order = MT5.NARIYUKI_SELL  # 指値売り注文
             lot = 0 # ロット数
-            sl_point = 00
+            sl_point = 0
+            tp_point = 0
             magic = 000000
             MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df,order_flag=False)
             order_name = "注文無し"
@@ -289,7 +293,7 @@ if __name__ == '__main__':
                         "現時点の売り価格(sell)," + "high注文後~," + "low注文後~," + "\n")
         print('バックテスト')
       #  for i in range(915 ,1200):
-        for i in range(915, 1800):
+        for i in range(1853, 3530):
             EA(i)
         print('**************終了***********************')
         print('総計',MT5.profit_all)
