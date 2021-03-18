@@ -28,7 +28,7 @@ def site_login(username,password,url,driver):
     driver.find_element_by_name('username').send_keys(username)
     driver.find_element_by_name('password').send_keys(password)
     driver.find_element_by_class_name('tv-button__loader').click()
-    time.sleep(3) # ensure the page loads (bottleneck)
+    time.sleep(4) # ensure the page loads (bottleneck)
     return driver
 
 def get_csv(driver):
@@ -51,7 +51,7 @@ def get_csv(driver):
 #                                      '-saHBD6pK.border-thin-2A_CUSMk.size-medium-2saizg8j > span > span').click()
     #日時形式をクリック
     driver.find_element_by_css_selector('#overlap-manager-root > div > div > div.dialog-2AogBbC7.dialog-2cMrvu9r.dialog-UM6w7sFp.rounded-UM6w7sFp.shadowed-UM6w7sFp > div > div.scrollable-3m1eCBTR > div > div:nth-child(3) > div.container-2TPkxppK.dropdown-3m1eCBTR.intent-default-2TPkxppK.border-thin-2TPkxppK.size-medium-2TPkxppK > div').click()
-    time.sleep(1)
+  #  time.sleep(1)
     # click ISO date
 #    driver.find_element_by_css_selector('#overlap-manager-root > div > div > div:nth-child(2) > div > span > '
 #                                        'div.dropdownMenu-3eseaOZb.menuWrap-1gEtmoET > div > div > div:nth-child(1) >'
