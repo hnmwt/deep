@@ -36,6 +36,7 @@ def get_csv(driver):
     # click taskbar
     driver.find_element_by_css_selector('body > div.js-rootresizer__contents > div.layout__area--topleft > div > div > '
                                         'div > div > svg').click()
+    time.sleep(1)
     # click csv export on toolbar
 #    driver.find_element_by_css_selector('#overlap-manager-root > div > span > div.popupMenu-2ot2Uu9Z.menuWrap-1gEtmoET '
 #                                        '> div > div > div.apply-common-tooltip.common-tooltip-vertical.item-2xPVYue0.item-1dXqixrD '
@@ -51,7 +52,6 @@ def get_csv(driver):
 #                                      '-saHBD6pK.border-thin-2A_CUSMk.size-medium-2saizg8j > span > span').click()
 
     driver.find_element_by_css_selector('#overlap-manager-root > div > div > div.dialog-2AogBbC7.dialog-2cMrvu9r.dialog-UM6w7sFp.rounded-UM6w7sFp.shadowed-UM6w7sFp > div > div.scrollable-3m1eCBTR > div > div:nth-child(3) > div.container-2TPkxppK.dropdown-3m1eCBTR.intent-default-2TPkxppK.border-thin-2TPkxppK.size-medium-2TPkxppK > div').click()
-    time.sleep(1)
     # click ISO date
 #    driver.find_element_by_css_selector('#overlap-manager-root > div > div > div:nth-child(2) > div > span > '
 #                                        'div.dropdownMenu-3eseaOZb.menuWrap-1gEtmoET > div > div > div:nth-child(1) >'
