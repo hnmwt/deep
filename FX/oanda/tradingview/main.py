@@ -138,7 +138,8 @@ def EA(bktest_orbit=0):
             sl_point = 0
             tp_point = 0
             magic = 000000
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df,order_flag=False)
+            if backtest == True: # バックテストの時のみ下記の処理に入る
+                MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df,order_flag=False)
             order_name = "注文無し"
 
         message = str(dt_now) + \

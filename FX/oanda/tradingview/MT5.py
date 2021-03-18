@@ -277,15 +277,16 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
 
     # MetaTrader 5に接続する
     # 接続完了→処理継続
-   # if mt5.initialize():
+
     if backtest == False:  # 本番
-        print("接続確立完了。処理を継続します。")
-        # パスワードとサーバを指定して取引口座に接続する
-        authorized = mt5.login(account_ID, password=password)
-        # GBPJPYのポジションを取得する
-        positions = mt5.positions_get(symbol=symbol)
-        price_ask = mt5.symbol_info_tick(symbol).ask  # 指定したシンボルの最後のtick時の情報 ask=買い注文の価格
-        price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 bid=売り注文の価格
+        if mt5.initialize():
+            print("接続確立完了。処理を継続します。")
+            # パスワードとサーバを指定して取引口座に接続する
+            authorized = mt5.login(account_ID, password=password)
+            # GBPJPYのポジションを取得する
+            positions = mt5.positions_get(symbol=symbol)
+            price_ask = mt5.symbol_info_tick(symbol).ask  # 指定したシンボルの最後のtick時の情報 ask=買い注文の価格
+            price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 bid=売り注文の価格
 
     elif backtest == True:  # バックテスト
         positions = positions_backtest
