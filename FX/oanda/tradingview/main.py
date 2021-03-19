@@ -54,7 +54,6 @@ def EA(bktest_orbit=0):
             if os.path.isfile(get_csv_name):
                 os.remove(get_csv_name)
 
-            #time.sleep(2)
             TradingView.get_csv(driver_2)
             print('csvファイルダウンロード完了')
             time.sleep(3)
@@ -69,7 +68,7 @@ def EA(bktest_orbit=0):
             sl_point = MT5.backtest_sl
         elif backtest == False:  # 本番
             tp_point = 20
-            sl_point = 3
+            sl_point = 10
 
         # 予測値が一定以上の場合→買い注文
         if 0.12 <= float(diff) and MACD_judge == MT5.NARIYUKI_BUY:
@@ -92,7 +91,7 @@ def EA(bktest_orbit=0):
             order_name = "買い注文(少)"
 
         # 予測値が一定以上の場合→買い注文(少)
-        elif 0 <= float(diff) <= 0.02 and MACD_judge == MT5.NARIYUKI_BUY:
+        elif 0 < float(diff) <= 0.02 and MACD_judge == MT5.NARIYUKI_BUY:
             order = MT5.NARIYUKI_BUY  # 指値買い注文
           #  sl_point = 70
             magic = 234001
@@ -294,7 +293,7 @@ if __name__ == '__main__':
                         "現時点の売り価格(sell)," + "high注文後~," + "low注文後~," + "\n")
         print('バックテスト')
       #  for i in range(915 ,1200):
-        for i in range(1853, 3530):
+        for i in range(100, 1830):
             EA(i)
         print('**************終了***********************')
         print('総計',MT5.profit_all)

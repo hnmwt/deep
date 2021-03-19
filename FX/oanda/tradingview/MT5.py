@@ -16,8 +16,8 @@ profit_all = 0
 carryover_position = 0
 backtest_log = "./バックテスト/取引ログ.csv"
 
-backtest_tp = 25
-backtest_sl = 3
+backtest_tp = 20
+backtest_sl = 10
 
 # オーダー送信関数
 def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid, df):
@@ -41,14 +41,14 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
         if order_type == NARIYUKI_BUY:
             price = price_ask
             price_settle = price_bid  # 決済は逆のポジションを基準に考える
-            sl = price_settle - sl_point * point  # ※100*0.001=0.1
-            tp = price_settle + tp_point * point
+            sl = price - sl_point * point  # ※100*0.001=0.1
+            tp = price + tp_point * point
         # 売り注文時の価格
         elif order_type == NARIYUKI_SELL:
             price = price_bid
             price_settle = price_ask    # 決済は逆のポジションを基準に考える
-            sl = price + price_settle * point
-            tp = price - price_settle * point
+            sl = price + sl_point * point
+            tp = price - sl_point * point
 
         request = {
             "action": mt5.TRADE_ACTION_DEAL,         # 取引操作の種類。
@@ -72,9 +72,7 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
             # 実行結果を確認する
             print("1. order_send(): by {} {} lots at {} with deviation={} points".format(symbol, lot, price, deviation))
         #    print("逆指値:" , (price - 100 * point) , "\n指値" , (price + 100 * point))
-            print("現在価格：", price)
-            print("sl:" , sl)
-            print("tp:", tp)
+            print("request",request)
             # リクエスト完了以外→End
             if result.retcode != mt5.TRADE_RETCODE_DONE:
                 message = "2. order_send failed, retcode={}".format(result.retcode)
