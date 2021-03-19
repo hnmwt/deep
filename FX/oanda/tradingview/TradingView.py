@@ -43,7 +43,7 @@ def get_csv(driver):
     # csvをエクスポートをクリック
     driver.find_element_by_css_selector('#overlap-manager-root > div > span > div.popupMenu-2WfzAPA-.menuWrap-g78rwseC > div > div > div.apply-common-tooltip.common-tooltip-vertical.item-2IihgTnv.item-1PNqKOSN > div > div').click()
 
-    time.sleep(3)
+    time.sleep(2)
     # click datetime format
 #    driver.find_element_by_css_selector('#overlap-manager-root > div > div > div.dialog-34XTwGTT.dialog-2QwUBM-N.dialog'
 #                                       '-2APwxL3O.rounded-tXI9mwGE.shadowed-2M13-xZa > div > div.scrollable-2ZZHicYg > '

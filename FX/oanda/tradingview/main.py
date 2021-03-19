@@ -19,7 +19,7 @@ password = 'hnm4264wtr@'
 chromedriver_path = "C://driver/chromedriver.exe"
 mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
 DF = pd.DataFrame()
-url = "https://jp.tradingview.com/chart/lXaj0SrK/#signin"
+url = "https://jp.tradingview.com/chart/F98UEI7R/#signin"
 get_csv_name = r".\OANDA_USDJPY, 5.csv"
 if backtest == True:
     get_csv_name = r".\OANDA_USDJPY, 5_test.csv"
@@ -145,7 +145,9 @@ def EA(bktest_orbit=0):
         '\n予測時刻:' + str(pred_after_time) + \
         '\n予測値:' + str(predict.pred30m) + \
         '\n前回予測との差額:' + str(diff) + \
-        '\nオーダー:' + str(order_name)
+        '\nオーダー:' + str(order_name) + \
+        '\nMACD_judge:' + str(MACD_judge)
+
 
         print(message)
         if backtest == False: # 本番
