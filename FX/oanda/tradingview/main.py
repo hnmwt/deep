@@ -19,7 +19,7 @@ password = 'hnm4264wtr@'
 chromedriver_path = "C://driver/chromedriver.exe"
 mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
 DF = pd.DataFrame()
-url = "https://jp.tradingview.com/chart/lXaj0SrK/#signin"
+url = "https://jp.tradingview.com/chart/F98UEI7R/#signin"
 get_csv_name = r".\OANDA_USDJPY, 5.csv"
 if backtest == True:
     get_csv_name = r".\OANDA_USDJPY, 5_test.csv"
