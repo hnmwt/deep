@@ -42,14 +42,14 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
         if order_type == NARIYUKI_BUY:
             price = price_ask
             price_settle = price_bid  # 決済は逆のポジションを基準に考える
-            sl = price - sl_point * point  # ※100*0.001=0.1
-            tp = price + tp_point * point
+            sl = price_settle - sl_point * point  # ※100*0.001=0.1
+            tp = price_settle + tp_point * point
         # 売り注文時の価格
         elif order_type == NARIYUKI_SELL:
             price = price_bid
             price_settle = price_ask    # 決済は逆のポジションを基準に考える
-            sl = price + sl_point * point
-            tp = price - tp_point * point
+            sl = price_settle + sl_point * point
+            tp = price_settle - tp_point * point
 
         request = {
             "action": mt5.TRADE_ACTION_DEAL,         # 取引操作の種類。
@@ -292,7 +292,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
             price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 bid=売り注文の価格
        #     print(positions)
     elif backtest == True:  # バックテスト
-     #   positions = positions_backtest
+        positions = positions_backtest
         price_ask = df.iat[-2,1]  # 最終行から2つ目(現在)のopen価格
         price_bid = price_ask -0.003
 

@@ -296,7 +296,7 @@ if __name__ == '__main__':
                         "現時点の売り価格(sell)," + "high注文後~," + "low注文後~," + "\n")
         print('バックテスト')
       #  for i in range(915 ,1200):
-        for i in range(100, 1830):
+        for i in range(2, 140):
             EA(i)
         print('**************終了***********************')
         print('総計',MT5.profit_all)
