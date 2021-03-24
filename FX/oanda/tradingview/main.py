@@ -1,4 +1,4 @@
-import  TradingView
+import TradingView
 import predict
 import MT5
 import time
@@ -8,7 +8,8 @@ import os
 import sys
 import traceback
 from Line_bot import Line_bot
-import schedule
+from Line_bot import Line_bot_error
+#import schedule
 import pandas as pd
 import backtest_variable
 backtest = backtest_variable.backtest
@@ -19,7 +20,7 @@ password = 'hnm4264wtr@'
 chromedriver_path = "C://driver/chromedriver.exe"
 mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
 DF = pd.DataFrame()
-url = "https://jp.tradingview.com/chart/F98UEI7R/#signin"
+url = "https://jp.tradingview.com/chart/dcnISB2x/#signin"
 get_csv_name = r".\OANDA_USDJPY, 5.csv"
 if backtest == True:
     get_csv_name = r".\OANDA_USDJPY, 5_test.csv"
@@ -68,7 +69,7 @@ def EA(bktest_orbit=0):
             sl_point = MT5.backtest_sl
         elif backtest == False:  # 本番
             tp_point = 20
-            sl_point = 10
+            sl_point = 8
 
         # 予測値が一定以上の場合→買い注文
         if 0.12 <= float(diff) and MACD_judge == MT5.NARIYUKI_BUY:
@@ -146,7 +147,7 @@ def EA(bktest_orbit=0):
         '\n予測値:' + str(predict.pred30m) + \
         '\n前回予測との差額:' + str(diff) + \
         '\nオーダー:' + str(order_name) + \
-        '\nMACD_judge:' + str(MACD_judge)
+        '\nMACD_judge:' + str(MACD_judge) + "・0がbuy・1がsell"
 
 
         print(message)
@@ -164,7 +165,7 @@ def EA(bktest_orbit=0):
         message = traceback.print_tb(tb)
         print(message, t, v)
         if backtest == False:  # 本番
-            Line_bot("エラー発生" + str(tb))
+            Line_bot_error("エラー発生" + str(tb))
 
 def work_interval_30m():
     minute = 30  # minuteの間隔で動作

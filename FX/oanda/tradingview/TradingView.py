@@ -66,7 +66,7 @@ def get_csv(driver):
 #                                        '> div > span > button').click()
 
     driver.find_element_by_css_selector('#overlap-manager-root > div > div > div.dialog-2AogBbC7.dialog-2cMrvu9r.dialog-UM6w7sFp.rounded-UM6w7sFp.shadowed-UM6w7sFp > div > div.footer-KW8170fm > div > span > button').click()
-
+ #   time.sleep(2)
 if __name__ == '__main__':
     username = 'hnmwtr999'
     password = 'hnm4264wtr@'

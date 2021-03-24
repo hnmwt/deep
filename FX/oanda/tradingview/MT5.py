@@ -1,6 +1,7 @@
 import MetaTrader5 as mt5
 import sys
 from Line_bot import Line_bot
+from Line_bot import Line_bot_error
 import backtest_variable
 import time
 import pandas as pd
@@ -48,7 +49,7 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
             price = price_bid
             price_settle = price_ask    # 決済は逆のポジションを基準に考える
             sl = price + sl_point * point
-            tp = price - sl_point * point
+            tp = price - tp_point * point
 
         request = {
             "action": mt5.TRADE_ACTION_DEAL,         # 取引操作の種類。
@@ -78,7 +79,7 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
                 message = "2. order_send failed, retcode={}".format(result.retcode)
                 print(message)
                 print(result.comment)
-                Line_bot(message)
+                Line_bot_error(message)
 
             # リクエスト完了
             else:
@@ -289,9 +290,9 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
             positions = mt5.positions_get(symbol=symbol)
             price_ask = mt5.symbol_info_tick(symbol).ask  # 指定したシンボルの最後のtick時の情報 ask=買い注文の価格
             price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 bid=売り注文の価格
-
+       #     print(positions)
     elif backtest == True:  # バックテスト
-        positions = positions_backtest
+     #   positions = positions_backtest
         price_ask = df.iat[-2,1]  # 最終行から2つ目(現在)のopen価格
         price_bid = price_ask -0.003
 
