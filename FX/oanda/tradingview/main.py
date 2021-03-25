@@ -68,8 +68,8 @@ def EA(bktest_orbit=0):
             tp_point = MT5.backtest_tp
             sl_point = MT5.backtest_sl
         elif backtest == False:  # 本番
-            tp_point = 20
-            sl_point = 8
+            tp_point = 21
+            sl_point = 10
 
         # 予測値が一定以上の場合→買い注文
         if 0.12 <= float(diff) and MACD_judge == MT5.NARIYUKI_BUY:
@@ -152,6 +152,12 @@ def EA(bktest_orbit=0):
 
         print(message)
         if backtest == False: # 本番
+#            today = "{0:%Y%m%d}_log.txt".format(dt_now)
+            today = datetime.datetime.today().strftime("%Y%m%d")
+            today = today + ".log"
+            log_name = "./注文log/" + today
+            with open(log_name, mode="a", encoding="utf-8") as f:
+                f.write(message + "\n")
             Line_bot(message)
 
 #            time.sleep(980)
@@ -275,6 +281,12 @@ if __name__ == '__main__':
         driver_2 = TradingView.site_login(username, password, url, driver_1)
         EA(0)
         print("次回時刻" + str(job_start_time))
+
+        today = datetime.datetime.today().strftime("%Y%m%d")
+        today = today + ".log"
+        log_name = "./注文log/" + today
+        with open(log_name, mode="a", encoding="utf-8") as f:
+            f.write("取引開始")
 
         # 2回目以降
         while True:

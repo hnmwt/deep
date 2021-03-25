@@ -41,16 +41,23 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
         # 買い注文時の価格
         if order_type == NARIYUKI_BUY:
             price = price_ask
-            price_settle = price_bid  # 決済は逆のポジションを基準に考える
-            sl = price_settle - sl_point * point  # ※100*0.001=0.1
-            tp = price_settle + tp_point * point
+            if backtest == True:
+                price_settle = price_bid  # 決済は逆のポジションを基準に考える
+                sl = price_settle - sl_point * point  # ※100*0.001=0.1
+                tp = price_settle + tp_point * point
+            elif backtest == False:
+                sl = price - sl_point * point  # ※100*0.001=0.1
+                tp = price + tp_point * point
         # 売り注文時の価格
         elif order_type == NARIYUKI_SELL:
             price = price_bid
-            price_settle = price_ask    # 決済は逆のポジションを基準に考える
-            sl = price_settle + sl_point * point
-            tp = price_settle - tp_point * point
-
+            if backtest == True:
+                price_settle = price_ask    # 決済は逆のポジションを基準に考える
+                sl = price_settle + sl_point * point
+                tp = price_settle - tp_point * point
+            elif backtest == False:
+                sl = price + sl_point * point
+                tp = price - tp_point * point
         request = {
             "action": mt5.TRADE_ACTION_DEAL,         # 取引操作の種類。
             "symbol": symbol,                        # 注文が行われた取引商品の名前。注文を変更する場合と決済する場合は不要。
