@@ -20,8 +20,12 @@ today = today + "バックテスト.csv"
 backtest_log = "./バックテスト/" + today
 #backtest_log = "./バックテスト/取引ログ.csv"
 
-backtest_tp = 25
-backtest_sl = 8
+log_price = 0
+log_tp = 0
+log_sl = 0
+
+backtest_tp = 30
+backtest_sl = 10
 if backtest == True:  # バックテスト
     positions = []
 
@@ -106,7 +110,7 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
 #                     for tradereq_filed in traderequest_dict:
 #                         print("traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
                 print("リクエスト送信完了")
-                Line_bot("リクエスト送信完了\n逆指値：" + str(sl) + "\n指値：" + str(tp))
+                Line_bot("リクエスト送信完了\n価格：" + str(price) + "逆指値：" + str(sl) + "\n指値：" + str(tp))
 
         elif backtest == True:  # バックテスト
             global positions_backtest
@@ -134,8 +138,8 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
                     else:  # ポジション持ち越し
                         carryover_position += 1
                         positions_backtest.append([0,0,0,0,0,order_type,0,0,0,lot,0,sl,tp,0,0,0,symbol,price_ask,price_bid])
-                        tp = 'motikosi'
-
+                        tp = 'ポジション持ち越し'
+                        sl = 'ポジション持ち越し'
                 # 売り注文→買い決済時の判定
                 elif order_type == NARIYUKI_SELL:  # 値は1
                     if sl < high:  # slが成立
@@ -158,6 +162,12 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
                 f.write(str(time) + "," + str(profit) + "," + str(order_type) + "," + str(tp) + "," + str(sl)\
                         + "," + str(price_ask) + "," + str(price_bid) + "," + str(high) + "," + str(low) + "," + str(profit_all)+ "\n")
         print('profit_all:', profit_all)
+        global log_price
+        global log_tp
+        global log_sl
+        log_price = price
+        log_tp = tp
+        log_sl = sl
 
 #            print(high)
         #time.sleep(10)

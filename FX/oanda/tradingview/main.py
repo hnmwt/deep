@@ -14,6 +14,9 @@ import pandas as pd
 import backtest_variable
 backtest = backtest_variable.backtest
 
+
+
+
 username = 'hnmwtr999'
 password = 'hnm4264wtr@'
 # You should download chromedriver and place it in a high hierarchy folder
@@ -153,20 +156,33 @@ def EA(bktest_orbit=0):
 
 
         print(message)
-        if backtest == False: # 本番
-#            today = "{0:%Y%m%d}_log.txt".format(dt_now)
-            today = datetime.datetime.today().strftime("%Y%m%d")
-            today = today + ".log"
-            log_name = "./注文log/" + today
-            with open(log_name, mode="a", encoding="utf-8") as f:
-                f.write(message + "\n")
-            Line_bot(message)
+        #if backtest == True: # 本番
 
-#            time.sleep(980)
-#            driver_2.refresh()
-#            #time.sleep(860)
-#            time.sleep(802)
-           # driver_2.refresh()
+        # ログ書き込み
+        today = datetime.datetime.today().strftime("%Y%m%d")
+        if backtest == True:  # バックテストの時は名前を変える
+            log_name = today + "バックテスト.csv"
+        elif backtest == False:
+            log_name = today + ".csv"
+        log_name = "./注文log/" + log_name
+
+        if not os.path.isfile(log_name): # ログファイルが無い時はヘッダーを書き込む
+            with open(log_name, mode="a", encoding="shift_jis") as head:
+                header = "現在時刻,予測時刻,オーダー,MACD_judge,現在価格,tp,sl\n"
+                head.write(header)
+
+        with open(log_name, mode="a", encoding="shift_jis") as f:  # ログ内容書き込み
+            log = str(dt_now) + ',' + str(pred_after_time) + ',' + str(order_name) + ',' + str(MACD_judge) + ',' + \
+                  str(MT5.log_price) + ',' + str(MT5.log_tp) + ',' + str(MT5.log_sl)
+            f.write(log + "\n")
+
+        Line_bot(message)
+
+#        time.sleep(980)
+#        driver_2.refresh()
+#        #time.sleep(860)
+#        time.sleep(802)
+       # driver_2.refresh()
 
     except Exception as e:
         t, v, tb = sys.exc_info()
