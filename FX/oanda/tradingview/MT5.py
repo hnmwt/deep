@@ -15,10 +15,13 @@ NARIYUKI_SELL = mt5.ORDER_TYPE_SELL  # 売り指値注文
 debug = False
 profit_all = 0
 carryover_position = 0
-backtest_log = "./バックテスト/取引ログ.csv"
+today = datetime.datetime.today().strftime("%Y-%m-%d-%H-%M-%S")
+today = today + "バックテスト.csv"
+backtest_log = "./バックテスト/" + today
+#backtest_log = "./バックテスト/取引ログ.csv"
 
-backtest_tp = 20
-backtest_sl = 10
+backtest_tp = 100
+backtest_sl = 8
 
 # オーダー送信関数
 def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid, df):
@@ -118,11 +121,11 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
             with open(backtest_log, mode="a",encoding="shift_jis") as f:
                 # 買い注文→売り決済時の判定
                 if order_type == NARIYUKI_BUY:  # 値は0
-                    if sl < low:  # slが成立
+                    if sl > low:  # slが成立
                         profit = (sl - price_bid) * lot
                         print('sl買い注文売り決済成立:', profit)
                         profit_all += profit
-                    elif tp > high:  # tpが成立
+                    elif tp < high:  # tpが成立
                         profit = (tp - price_bid) * lot
                         print('tp買い注文売り決済成立:', profit)
                         profit_all += profit
@@ -151,7 +154,7 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
                         tp = "予測値が同じためオーダーしない"
                         sl = "予測値が同じためオーダーしない"
                 f.write(str(time) + "," + str(profit) + "," + str(order_type) + "," + str(tp) + "," + str(sl)\
-                        + "," + str(price_ask) + "," + str(price_bid) + "," + str(high) + "," + str(low) + "\n")
+                        + "," + str(price_ask) + "," + str(price_bid) + "," + str(high) + "," + str(low) + "," + str(profit_all)+ "\n")
         print('profit_all:', profit_all)
 
 #            print(high)

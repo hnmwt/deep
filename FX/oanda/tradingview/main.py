@@ -33,6 +33,7 @@ lot = 0.1  # ロット数
 
 
 
+
 def MACD_Cross_judge(Cross_judge, order, tp_point):
     if Cross_judge == 9:
         pass
@@ -302,14 +303,15 @@ if __name__ == '__main__':
 
 
     elif backtest == True:  # バックテスト
-        if os.path.isfile(MT5.backtest_log):
-            os.remove(MT5.backtest_log)
-            with open(MT5.backtest_log, mode="a", encoding="shift_jis")as f:
-                f.write("売買した時刻," + "利益," + "0が買い注文、1が売り注文," + "tp," + "sl," + "現時点の買い価格(buy)," +
-                        "現時点の売り価格(sell)," + "high注文後~5分後まで," + "low注文後~5分後まで," + "\n")
+#        if os.path.isfile(MT5.backtest_log):
+#            os.remove(MT5.backtest_log)
+        with open(MT5.backtest_log, mode="a", encoding="shift_jis")as f:
+            f.write("予測値tp:" + str(MT5.backtest_tp) + "予測値sl:" + str(MT5.backtest_sl) + "\n")
+            f.write("売買した時刻," + "利益," + "0が買い注文、1が売り注文," + "tp," + "sl," + "現時点の買い価格(buy)," +
+                        "現時点の売り価格(sell)," + "high注文後~5分後まで," + "low注文後~5分後まで," + "総利益," + "\n")
         print('バックテスト')
       #  for i in range(915 ,1200):
-        for i in range(2, 287):
+        for i in range(2, 290):
             EA(i)
         print('**************終了***********************')
         print('総計',MT5.profit_all)
