@@ -20,8 +20,10 @@ today = today + "バックテスト.csv"
 backtest_log = "./バックテスト/" + today
 #backtest_log = "./バックテスト/取引ログ.csv"
 
-backtest_tp = 100
+backtest_tp = 25
 backtest_sl = 8
+if backtest == True:  # バックテスト
+    positions = []
 
 # オーダー送信関数
 def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, price_bid, df):
@@ -288,7 +290,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
     password = "Hnm4264wtr"
     #order_flag = True
     max_positions = 1  # 指定した数値が保有できる最大ポジション数になる
-
+    global positions
     # MetaTrader 5に接続する
     # 接続完了→処理継続
 
@@ -303,7 +305,6 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
             price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 bid=売り注文の価格
        #     print(positions)
     elif backtest == True:  # バックテスト
-        positions = positions_backtest
         price_ask = df.iat[-2,1]  # 最終行から2つ目(現在)のopen価格
         price_bid = price_ask -0.003
 
