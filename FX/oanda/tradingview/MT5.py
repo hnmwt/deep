@@ -115,7 +115,7 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
             global profit_all
             global carryover_position
 
-            with open(backtest_log, mode="a",encoding="utf-8") as f:
+            with open(backtest_log, mode="a",encoding="shift_jis") as f:
                 # 買い注文→売り決済時の判定
                 if order_type == NARIYUKI_BUY:  # 値は0
                     if sl < low:  # slが成立
@@ -141,14 +141,15 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
                         profit = (price_ask - tp) * lot
                         print('tp売り注文買い決済成立:', profit)
                         profit_all += profit
+#必要なし0327                        del positions_backtest[]
                     else:  # ポジション持ち越し
                         carryover_position += 1
                         positions_backtest.append([0,0,0,0,0,order_type,0,0,0,lot,0,sl,tp,0,0,0,symbol,price_ask,price_bid])
                         tp = 'motikosi'
 
                     if sl_point == 0:
-                        tp = "not_order"
-
+                        tp = "予測値が同じためオーダーしない"
+                        sl = "予測値が同じためオーダーしない"
                 f.write(str(time) + "," + str(profit) + "," + str(order_type) + "," + str(tp) + "," + str(sl)\
                         + "," + str(price_ask) + "," + str(price_bid) + "," + str(high) + "," + str(low) + "\n")
         print('profit_all:', profit_all)
@@ -255,27 +256,27 @@ def settlement_position(position, MACD_judge, price_ask, price_bid):
             return True
 
 
-    elif settle_flag == False:  # MACDのシグナルに保有ポジションが該当している
-#        request = {
-#            "action": mt5.TRADE_ACTION_SLTP,
-#            "symbol": symbol,
-#            "volume": lot,
-#            "type": type,
-#            "position": position_id,
-#            "price": price,
-#            "deviation": deviation,
-#            "magic": magic,
-#            "tp": change_tp,
-#            "sl":sl,
-#            "comment": "python script close",
-#            "type_time": mt5.ORDER_TIME_GTC,
-#            "type_filling": mt5.ORDER_FILLING_IOC,
-#        }
+#       elif settle_flag == False:  # MACDのシグナルに保有ポジションが該当している
+#           request = {
+#               "action": mt5.TRADE_ACTION_SLTP,
+#               "symbol": symbol,
+#               "volume": lot,
+#                "type": type,
+#               "position": position_id,
+#                "price": price,
+#               "deviation": deviation,
+#               "magic": magic,
+#               "tp": change_tp,
+#               "sl":sl,
+#               "comment": "python script close",
+#               "type_time": mt5.ORDER_TIME_GTC,
+#               "type_filling": mt5.ORDER_FILLING_IOC,
+#           }
 #
-#        result = mt5.order_send(request)
-#        print(request)
-#    #    print('保有ポジションの評価がマイナスのため決済を行いません')
-#    #    Line_bot('保有ポジションの評価がマイナスのため決済を行いません')
+        result = mt5.order_send(request)
+        print(request)
+    #    print('保有ポジションの評価がマイナスのため決済を行いません')
+    #    Line_bot('保有ポジションの評価がマイナスのため決済を行いません')
         return False
 
 # オーダー判定関数
@@ -318,10 +319,11 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
                 del positions_backtest[i]  # 対象のポジションのリストを削除
             i += 1
         position_types_count = len(position_types)
-
     # 保有ポジションがない場合 → 保有ポジション数 = 0
     else:
         position_types_count = 0
+
+    print("positions", positions)
 
   #使わない  if order_flag == False:
   #使わない      print("order_flag:False")
@@ -344,7 +346,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
             time = "{0:%Y-%m-%d %H:%M}".format(time)
 
             with open(backtest_log, mode="a", encoding="shift_jis")as f:
-                f.write(str(time) + ",ポジションを持っている\n")
+                f.write(str(time) + ",ポジションを上限まで保有中\n")
 
     # ポジション数が1以上、max_positions未満→magicナンバー判定を行う
     # ※ magicナンバーが一致 → オーダーしない

@@ -59,17 +59,18 @@ def EA(bktest_orbit=0):
             print('csvファイルダウンロード完了')
             time.sleep(3)
 
-        df, MACD, MACD_signal, MACD_Cross = predict.create_train_data(get_csv_name, bktest_orbit)  # 取ってきたcsvからdfを作成
-        predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir,bktest_orbit)  # 値を予測
-        MACD_judge, Cross_judge = predict.MACD_sign(MACD, MACD_signal, MACD_Cross)
         lot = 0.1  # ロット数
-
         if backtest == True:  # バックテスト
             tp_point = MT5.backtest_tp
             sl_point = MT5.backtest_sl
         elif backtest == False:  # 本番
             tp_point = 21
             sl_point = 10
+
+        df, MACD, MACD_signal, MACD_Cross = predict.create_train_data(get_csv_name, bktest_orbit)  # 取ってきたcsvからdfを作成
+        predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir,bktest_orbit)  # 値を予測
+        MACD_judge, Cross_judge = predict.MACD_sign(MACD, MACD_signal, MACD_Cross)  # MACDの判定
+#        predict.VOLUME_judge(df, tp_point, sl_point)
 
         # 予測値が一定以上の場合→買い注文
         if 0.12 <= float(diff) and MACD_judge == MT5.NARIYUKI_BUY:
@@ -305,10 +306,10 @@ if __name__ == '__main__':
             os.remove(MT5.backtest_log)
             with open(MT5.backtest_log, mode="a", encoding="shift_jis")as f:
                 f.write("売買した時刻," + "利益," + "0が買い注文、1が売り注文," + "tp," + "sl," + "現時点の買い価格(buy)," +
-                        "現時点の売り価格(sell)," + "high注文後~," + "low注文後~," + "\n")
+                        "現時点の売り価格(sell)," + "high注文後~5分後まで," + "low注文後~5分後まで," + "\n")
         print('バックテスト')
       #  for i in range(915 ,1200):
-        for i in range(2, 140):
+        for i in range(2, 287):
             EA(i)
         print('**************終了***********************')
         print('総計',MT5.profit_all)

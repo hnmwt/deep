@@ -144,6 +144,9 @@ def pred(df, syukai_flag, pred30m, next_time, model_dir, scalar_dir, backtest_co
     syukai_flag = True
     return syukai_flag, float(pred30m), diff_30m, pred_after_time
 
+#def VOLUME_judge(df, tp_point, sl_point):
+#    volume = df.iat[]
+
 # デバッグ用
 if __name__ == '__main__':
     syukai_flag = False
