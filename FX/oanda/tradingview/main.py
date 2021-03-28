@@ -168,11 +168,11 @@ def EA(bktest_orbit=0):
 
         if not os.path.isfile(log_name): # ログファイルが無い時はヘッダーを書き込む
             with open(log_name, mode="a", encoding="shift_jis") as head:
-                header = "現在時刻,予測時刻,オーダー,MACD_judge,現在価格,tp,sl\n"
+                header = "現在時刻,予測時刻,オーダー,予測値,MACD_judge,現在価格,tp,sl\n"
                 head.write(header)
 
         with open(log_name, mode="a", encoding="shift_jis") as f:  # ログ内容書き込み
-            log = str(dt_now) + ',' + str(pred_after_time) + ',' + str(order_name) + ',' + str(MACD_judge) + ',' + \
+            log = str(dt_now) + ',' + str(pred_after_time) + ',' + str(order_name) + ',' + str(predict.pred30m) + ',' + str(MACD_judge) + ',' + \
                   str(MT5.log_price) + ',' + str(MT5.log_tp) + ',' + str(MT5.log_sl)
             f.write(log + "\n")
 
@@ -189,7 +189,7 @@ def EA(bktest_orbit=0):
         message = traceback.print_tb(tb)
         print(message, t, v)
         if backtest == False:  # 本番
-            Line_bot_error("エラー発生" + str(tb))
+            Line_bot_error("エラー発生" + str(message))
 
 def work_interval_30m():
     minute = 30  # minuteの間隔で動作

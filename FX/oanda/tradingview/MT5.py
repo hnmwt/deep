@@ -24,7 +24,7 @@ log_price = 0
 log_tp = 0
 log_sl = 0
 
-backtest_tp = 30
+backtest_tp = 20
 backtest_sl = 10
 if backtest == True:  # バックテスト
     positions = []
