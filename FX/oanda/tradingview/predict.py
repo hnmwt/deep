@@ -47,16 +47,21 @@ def read_model(model_dir, scalar_dir, df, hour, column_start, column_end):
     X_train_columns = len(df.columns) - 1  # 特徴量のカラム数を計算
     time = df.iloc[column_start, 0]        # 時間[行, 列]
     df = df.loc[:, 'open':'time(weekday)']  # [行 , 列名称(始まり):列名称(終わり)]
-    df = X_train_save_scaler.transform(df)  # 予測結果の正規化
-    X_train = df.copy()                           # 最終行から2番目のみ抜き出す
+
+    #***21.03.30追加start
+    df = df[-300: -1]  # dfの行数を300にする
+    # ***21.03.30追加end
+
+    df = X_train_save_scaler.transform(df)  # 正規化
+    X_train = df.copy()                           # dfをコピー
 
     X_train = np.array(X_train).reshape(-1, X_train_columns, 1)  # 特徴量の形状(3次元)
     pred = model(X_train)  # 予測
     pred = y_train_save_scaler.inverse_transform(pred)  # 予測結果の正規化をデコード
 
-    a = pd.DataFrame(pred)
+    pred_csv = pd.DataFrame(pred)
    # df['predict'] = int(a)
-    a.to_csv(pred_data_name, index=False)
+    pred_csv.to_csv(pred_data_name, index=False)  # 予測結果をcsv化
 
     pred = pred[column_start:column_end]  # 対象の行を抜き出す
     pred = "{:.3f}".format(float(pred))  # 書式編集

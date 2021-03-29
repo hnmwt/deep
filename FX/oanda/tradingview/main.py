@@ -328,7 +328,7 @@ if __name__ == '__main__':
                     "予測値tp:" + str(MT5.backtest_tp) + "予測値sl:" + str(MT5.backtest_sl) + "\n")
         print('バックテスト')
       #  for i in range(915 ,1200):
-        for i in range(2, 145):
+        for i in range(989, 1080):
             EA(i)
         print('**************終了***********************')
         print('総計',MT5.profit_all)
