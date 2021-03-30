@@ -23,10 +23,12 @@ password = 'hnm4264wtr@'
 chromedriver_path = "C://driver/chromedriver.exe"
 mm = preprocessing.MinMaxScaler()  # 正規化エンコード、デコード
 DF = pd.DataFrame()
-url = "https://jp.tradingview.com/chart/dcnISB2x/#signin"
-get_csv_name = r".\OANDA_USDJPY, 5.csv"
+url = "https://jp.tradingview.com/chart/BtgoDHOz/#signin"
+get_csv_name = r".\OANDA_USDJPY, 15.csv"
+#get_csv_name = r".\OANDA_USDJPY, 5.csv"  # 5分足
 if backtest == True:
-    get_csv_name = r".\OANDA_USDJPY, 5_test.csv"
+#    get_csv_name = r".\OANDA_USDJPY, 5_test.csv"  # 5分足
+    get_csv_name = r".\OANDA_USDJPY, 15_test.csv"
 
 csv_time = 5
 symbol = "USDJPY"#"GBPJPY"
@@ -291,8 +293,8 @@ if __name__ == '__main__':
 
     if backtest == False:  # 本番
     #    job_start_time = work_interval_30m()
-    #    job_start_time = work_interval_15m()
-        job_start_time = work_interval_5m()
+        job_start_time = work_interval_15m()
+    #    job_start_time = work_interval_5m()
 
         # 初回
         driver_1 = TradingView.open_browser(chromedriver_path)

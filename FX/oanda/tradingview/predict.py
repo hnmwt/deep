@@ -8,7 +8,8 @@ import math
 import backtest_variable
 backtest = backtest_variable.backtest
 #get_csv_name = r".\FX_GBPJPY, 30.csv"
-get_csv_name = r".\OANDA_USDJPY, 5.csv"
+#get_csv_name = r".\OANDA_USDJPY, 5.csv"
+get_csv_name = r".\OANDA_USDJPY, 15.csv"
 train_data_name = r".\Intermediate\predict.py中間ファイル.csv"
 pred_data_name = r".\Intermediate\predict.py予測ファイル.csv"
 
