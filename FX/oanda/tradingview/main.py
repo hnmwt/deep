@@ -30,7 +30,8 @@ if backtest == True:
 #    get_csv_name = r".\OANDA_USDJPY, 5_test.csv"  # 5分足
     get_csv_name = r".\OANDA_USDJPY, 15_test.csv"
 
-csv_time = 5
+#csv_time = 5
+csv_time = 15  # 15min
 symbol = "USDJPY"#"GBPJPY"
 model_dir = '.\model'
 scalar_dir = '.\dump'
@@ -70,8 +71,8 @@ def EA(bktest_orbit=0):
             tp_point = MT5.backtest_tp
             sl_point = MT5.backtest_sl
         elif backtest == False:  # 本番
-            tp_point = 21
-            sl_point = 10
+            tp_point = 40
+            sl_point = 100
 
         df, MACD, MACD_signal, MACD_Cross = predict.create_train_data(get_csv_name, bktest_orbit)  # 取ってきたcsvからdfを作成
         predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir,bktest_orbit)  # 値を予測
@@ -313,8 +314,8 @@ if __name__ == '__main__':
             if job_start_time <= datetime.datetime.now():  # 指定時間 <= 現在時刻の時に処理をスタートする
                 EA()
     #            job_start_time = work_interval_30m()  # 処理終了後に指定時間を更新する
-    #            job_start_time = work_interval_15m()
-                job_start_time = work_interval_5m()
+                job_start_time = work_interval_15m()
+            #    job_start_time = work_interval_5m()
                 print("次回時刻" + str(job_start_time))
             time.sleep(1)
 
