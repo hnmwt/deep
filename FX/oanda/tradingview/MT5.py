@@ -7,7 +7,10 @@ import time
 import pandas as pd
 import numpy as np
 import datetime
+import param
 
+account_ID = param.account_ID
+password = param.password
 backtest = backtest_variable.backtest
 positions_backtest= []
 NARIYUKI_BUY = mt5.ORDER_TYPE_BUY  # 買い指値注文
@@ -19,6 +22,7 @@ today = datetime.datetime.today().strftime("%Y-%m-%d-%H-%M-%S")
 today = today + "バックテスト.csv"
 backtest_log = "./バックテスト/" + today
 #backtest_log = "./バックテスト/取引ログ.csv"
+deviation = param.deviation
 
 log_price = 0
 log_tp = 0
@@ -206,7 +210,7 @@ def settlement_position(position, MACD_judge, price_ask, price_bid):
         change_tp = price_open + 0.005
         settle_flag = True
 
-    deviation = 20
+
 
 #    if 0 < profit:
     print("settle_flag:",settle_flag)
@@ -303,8 +307,8 @@ def settlement_position(position, MACD_judge, price_ask, price_bid):
 
 # オーダー判定関数
 def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df,order_flag=True):
-    account_ID = 900006047
-    password = "Hnm4264wtr"
+#    account_ID = 900006047
+#    password = "Hnm4264wtr"
     #order_flag = True
     max_positions = 1  # 指定した数値が保有できる最大ポジション数になる
     global positions
