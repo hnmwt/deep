@@ -23,7 +23,11 @@ backtest_log = "./バックテスト/" + today
 log_price = 0
 log_tp = 0
 log_sl = 0
-
+act = False  # 決済処理を行うかフラグ　False→決済処理を行わない
+if act == False:
+    print("決済処理をおこないません")
+elif act == True:
+    print("決済処理をおこないます")
 backtest_tp = 21
 backtest_sl = 10
 if backtest == True:  # バックテスト
@@ -208,43 +212,46 @@ def settlement_position(position, MACD_judge, price_ask, price_bid):
     print("settle_flag:",settle_flag)
     if settle_flag == True:  # MACDのシグナルに保有ポジションが該当している(トレンドが変わったら現在価格で損切りする)
         if backtest == False :  # 本番
-#            Line_bot("settle_flag:" + str(settle_flag))
+
+            global act  # `決済処理を行うかフラグ False→決済処理を行わない
+            if act == False:  # 決済処理を行わない
+                return True
             # 決済リクエストを作成する
            # position_id = result.order
            # price = mt5.symbol_info_tick(symbol).bid
+            elif act == True:         # 決済処理を行う
+                request = {
+                    "action": mt5.TRADE_ACTION_DEAL,
+                    "symbol": symbol,
+                    "volume": lot,
+                    "type": type,
+                    "position": position_id,
+                    "price": price_current,
+                    "deviation": deviation,
+                    "magic": magic,
+                    "comment": "python script close",
+                    "type_time": mt5.ORDER_TIME_GTC,
+                    "type_filling": mt5.ORDER_FILLING_IOC,
+                }
+                result = mt5.order_send(request)
 
-            request = {
-                "action": mt5.TRADE_ACTION_DEAL,
-                "symbol": symbol,
-                "volume": lot,
-                "type": type,
-                "position": position_id,
-                "price": price_current,
-                "deviation": deviation,
-                "magic": magic,
-                "comment": "python script close",
-                "type_time": mt5.ORDER_TIME_GTC,
-                "type_filling": mt5.ORDER_FILLING_IOC,
-            }
-            result = mt5.order_send(request)
-
-            # リクエスト完了以外→End
-            if result.retcode != mt5.TRADE_RETCODE_DONE:
-                message = "2. order_send failed, retcode={}".format(result.retcode)
-                print(message)
-                print(result.comment)
-                Line_bot(message)
-                return False
-            # リクエスト完了
-            else:
-                # 結果をディクショナリとしてリクエストし、要素ごとに表示する
-                result_dict = result._asdict()
-                for field in result_dict.keys():
-                    print("   {}={}".format(field, result_dict[field]))
-                #print("リクエスト送信完了")
-                Line_bot("settle_flag:" + str(settle_flag) + "決済リクエスト送信完了\n利益：" + str(profit)
-                         + "\nオープン価格：" + str(price_open)+ "\n現在価格：" + str(price_current))
-                return True  #
+                # リクエスト完了以外→End
+                if result.retcode != mt5.TRADE_RETCODE_DONE:
+                    message = "2. order_send failed, retcode={}".format(result.retcode)
+                    print(message)
+                    print(result.comment)
+                    Line_bot(message)
+                    return False
+                # リクエスト完了
+                else:
+                    # 結果をディクショナリとしてリクエストし、要素ごとに表示する
+                    result_dict = result._asdict()
+                    for field in result_dict.keys():
+                        print("   {}={}".format(field, result_dict[field]))
+                    #print("リクエスト送信完了")
+                    Line_bot("settle_flag:" + str(settle_flag) + "決済リクエスト送信完了\n利益：" + str(profit)
+                             + "\nオープン価格：" + str(price_open)+ "\n現在価格：" + str(price_current))
+                    return True  #
 
         if backtest == True :  # バックテスト
             global profit_all
