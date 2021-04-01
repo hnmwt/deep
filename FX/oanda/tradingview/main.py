@@ -319,7 +319,7 @@ if __name__ == '__main__':
                 job_start_time = work_interval_15m()
             #    job_start_time = work_interval_5m()
                 print("次回時刻" + str(job_start_time))
-            if up_down_act == 30:   #  30カウントに一度処理を行う(約30秒?)
+            if up_down_act == 10:   #  30カウントに一度処理を行う(約30秒?)
                 order_stop.order_up_down_settle()
                 up_down_act = 0
             up_down_act += 1

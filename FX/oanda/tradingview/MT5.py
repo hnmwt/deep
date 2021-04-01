@@ -29,9 +29,9 @@ log_tp = 0
 log_sl = 0
 act = False  # 決済処理を行うかフラグ　False→決済処理を行わない
 if act == False:
-    print("決済処理をおこないません")
+    print("settlementpositionをおこないません")
 elif act == True:
-    print("決済処理をおこないます")
+    print("settlementpositionをおこないます")
 backtest_tp = 21
 backtest_sl = 10
 if backtest == True:  # バックテスト

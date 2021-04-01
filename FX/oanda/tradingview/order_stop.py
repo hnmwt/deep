@@ -16,15 +16,16 @@ def order_up_down_settle():
         authorized = mt5.login(account_ID, password=password)
         positions = mt5.positions_get(symbol=symbol)
     #    print("保有しているポジション数" ,len(positions))
-
+        print("identifers_list:", identifers_list)
         for position in positions:  # 保有ポジションのうち利益がしきい値以上のものを識別子リストに追加
             profit = position[15]  # 利益
   #          profit = 200
             if threshold_profit <= profit:  # 利益がしきい値以上の時
                 identifier = position[7]
-                identifers_list.append(identifier)  # 識別子(identifier)を識別子リストに追加
+                if not identifier in identifers_list: # 識別子が識別子リストに含まれていないとき
+                    identifers_list.append(identifier)  # 識別子(identifier)を識別子リストに追加
     #            print(position)
-                print("identifers_list:",identifers_list)
+
 
         for position in positions:  # 保有ポジションの数だけ判定を行う
             identifier = position[7]  # 保有ポジションの識別子
@@ -60,12 +61,12 @@ def order_up_down_settle():
                             print("order_send.py"+ message)
 
 
-                            print(request)
+                            print("updownsettle",request)
     #                        print(result.comment)
                         #    Line_bot("order_send.py" + message)
 
 
-            print("identifer_list:",identifers_list)
+  #          print("identifers_list:",identifers_list)
 
               ##
 if __name__ == '__main__':
