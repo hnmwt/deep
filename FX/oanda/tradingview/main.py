@@ -13,6 +13,7 @@ from Line_bot import Line_bot_error
 import pandas as pd
 import backtest_variable
 import param
+import order_stop
 backtest = backtest_variable.backtest
 
 
@@ -297,7 +298,7 @@ if __name__ == '__main__':
     #    job_start_time = work_interval_30m()
         job_start_time = work_interval_15m()
     #    job_start_time = work_interval_5m()
-
+        up_down_act = 0
         # 初回
         driver_1 = TradingView.open_browser(chromedriver_path)
         driver_2 = TradingView.site_login(username, password, url, driver_1)
@@ -318,6 +319,10 @@ if __name__ == '__main__':
                 job_start_time = work_interval_15m()
             #    job_start_time = work_interval_5m()
                 print("次回時刻" + str(job_start_time))
+            if up_down_act == 30:   #  30カウントに一度処理を行う(約30秒?)
+                order_stop.order_up_down_settle()
+                up_down_act = 0
+            up_down_act += 1
             time.sleep(1)
 
 
