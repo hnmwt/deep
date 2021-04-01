@@ -5,7 +5,7 @@ account_ID = param.account_ID
 password = param.password
 symbol = param.symbol
 threshold_profit = 200
-settlement_profit = 50
+settlement_profit = 30
 deviation = param.deviation
 lot = param.lot
 magic = 1111111
@@ -33,7 +33,7 @@ def order_up_down_settle():
                 if identifier == identifer_list: # 保有ポジションの識別子としきい値以上の時の識別子が一致したとき == 決済確認対象になる
                     profit = position[15]  # 利益
  #                   profit = 40
-                    if profit <= settlement_profit: # 利益が決済しきい値を下回るとき即決済する
+                    if 0 < profit <= settlement_profit: # 利益が決済しきい値を下回るとき即決済する
 
                         position_type = position[5]
                         if position_type == 0:
@@ -64,7 +64,8 @@ def order_up_down_settle():
                             print("updownsettle",request)
     #                        print(result.comment)
                         #    Line_bot("order_send.py" + message)
-
+        if not position: # 保有ポジションがないとき
+            identifers_list = []  # 識別子リストを空にする
 
   #          print("identifers_list:",identifers_list)
 
