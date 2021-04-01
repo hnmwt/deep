@@ -13,6 +13,7 @@ magic = 1111111
 identifers_list = []  # 利益がしきい値以上の時の識別子リスト
 def order_up_down_settle():
     if mt5.initialize():
+        global identifers_list
         authorized = mt5.login(account_ID, password=password)
         positions = mt5.positions_get(symbol=symbol)
     #    print("保有しているポジション数" ,len(positions))
