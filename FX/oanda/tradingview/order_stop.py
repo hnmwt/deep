@@ -4,8 +4,8 @@ import param
 account_ID = param.account_ID
 password = param.password
 symbol = param.symbol
-threshold_profit = 200
-settlement_profit = 30
+threshold_profit = 180
+settlement_profit = 40
 deviation = param.deviation
 lot = param.lot
 magic = 1111111
@@ -65,7 +65,7 @@ def order_up_down_settle():
                             print("updownsettle",request)
     #                        print(result.comment)
                         #    Line_bot("order_send.py" + message)
-        if not position: # 保有ポジションがないとき
+        if not positions: # 保有ポジションがないとき
             identifers_list = []  # 識別子リストを空にする
 
   #          print("identifers_list:",identifers_list)
