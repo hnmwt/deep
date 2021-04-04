@@ -74,7 +74,7 @@ def EA(bktest_orbit=0):
             sl_point = MT5.backtest_sl
         elif backtest == False:  # 本番
             tp_point = 40
-            sl_point = 100
+            sl_point = 115
 
         df, MACD, MACD_signal, MACD_Cross = predict.create_train_data(get_csv_name, bktest_orbit)  # 取ってきたcsvからdfを作成
         predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir,bktest_orbit)  # 値を予測
@@ -306,7 +306,7 @@ if __name__ == '__main__':
         print("次回時刻" + str(job_start_time))
 
         today = datetime.datetime.today().strftime("%Y%m%d")
-        today = today + ".log"
+        today = today + ".csv"
         log_name = "./注文log/" + today
         with open(log_name, mode="a", encoding="utf-8") as f:
             f.write("取引開始")
