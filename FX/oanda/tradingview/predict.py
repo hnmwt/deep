@@ -6,6 +6,7 @@ import time
 import pickle
 import math
 import backtest_variable
+import param
 backtest = backtest_variable.backtest
 #get_csv_name = r".\FX_GBPJPY, 30.csv"
 #get_csv_name = r".\OANDA_USDJPY, 5.csv"

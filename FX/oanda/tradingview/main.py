@@ -1,6 +1,7 @@
 import TradingView
 import predict
 import MT5
+import MetaTrader5 as mt5
 import time
 from sklearn import preprocessing
 import datetime
@@ -298,7 +299,7 @@ if __name__ == '__main__':
     #    job_start_time = work_interval_30m()
         job_start_time = work_interval_15m()
     #    job_start_time = work_interval_5m()
-        up_down_act = 0
+        act = 0
         # 初回
         driver_1 = TradingView.open_browser(chromedriver_path)
         driver_2 = TradingView.site_login(username, password, url, driver_1)
@@ -310,6 +311,7 @@ if __name__ == '__main__':
         log_name = "./注文log/" + today
         with open(log_name, mode="a", encoding="utf-8") as f:
             f.write("取引開始")
+        authorized = mt5.login(param.account_ID, password=param.password)  # ログイン
 
         # 2回目以降
         while True:
@@ -319,10 +321,16 @@ if __name__ == '__main__':
                 job_start_time = work_interval_15m()
             #    job_start_time = work_interval_5m()
                 print("次回時刻" + str(job_start_time))
-            if up_down_act == 10:   #  30カウントに一度処理を行う(約30秒?)
-                order_stop.order_up_down_settle()
-                up_down_act = 0
-            up_down_act += 1
+
+            if act % 10 == 0:   #  余りが0の時 (10カウントに一度処理を行う(約10秒?))
+                positions = mt5.positions_get(symbol=symbol)
+                order_stop.order_up_down_settle(positions)
+
+            if act % 60 == 0: #  余りが0の時 (60カウントに一度処理を行う(約60秒?))
+                order_stop.rapid_change(positions)
+                act = 0
+
+            act += 1
             time.sleep(1)
 
 
