@@ -53,7 +53,7 @@ def MACD_Cross_judge(Cross_judge, order, tp_point):  # macdによるシグナル
         order = MT5.NARIYUKI_SELL
         tp_point = 40
 #        Line_bot("売りシグナル")
-    return order ,tp_point
+    return order, tp_point
 
 def EA(bktest_orbit=0):
     try:
@@ -74,7 +74,7 @@ def EA(bktest_orbit=0):
             sl_point = MT5.backtest_sl
         elif backtest == False:  # 本番
             tp_point = 40
-            sl_point = 115
+            sl_point = 79
 
         df, MACD, MACD_signal, MACD_Cross = predict.create_train_data(get_csv_name, bktest_orbit)  # 取ってきたcsvからdfを作成
         predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir,bktest_orbit)  # 値を予測
@@ -82,7 +82,7 @@ def EA(bktest_orbit=0):
 #        predict.VOLUME_judge(df, tp_point, sl_point)
 
         # 予測値が一定以上の場合→買い注文
-        if 0.12 <= float(diff):# and MACD_judge == MT5.NARIYUKI_BUY:
+        if 0.12 <= float(diff) and MACD_judge == MT5.NARIYUKI_BUY:
             order = MT5.NARIYUKI_BUY  # 指値買い注文
         #    sl_point = 40
         #    tp_point = 50
@@ -92,7 +92,7 @@ def EA(bktest_orbit=0):
             order_name = "買い注文"
 
         # 予測値が一定以上の場合→買い注文(少)
-        elif 0.02 < float(diff) < 0.12:# and MACD_judge == MT5.NARIYUKI_BUY:
+        elif 0.02 < float(diff) < 0.12 and MACD_judge == MT5.NARIYUKI_BUY:
             order = MT5.NARIYUKI_BUY  # 指値買い注文
            # sl_point = 70
             #tp_point = 30
@@ -102,7 +102,7 @@ def EA(bktest_orbit=0):
             order_name = "買い注文(少)"
 
         # 予測値が一定以上の場合→買い注文(少)
-        elif 0 < float(diff) <= 0.02:# and MACD_judge == MT5.NARIYUKI_BUY:
+        elif 0 < float(diff) <= 0.02 and MACD_judge == MT5.NARIYUKI_BUY:
             order = MT5.NARIYUKI_BUY  # 指値買い注文
           #  sl_point = 70
             magic = 234001
@@ -111,7 +111,7 @@ def EA(bktest_orbit=0):
             order_name = "買い注文(極少)"
 
         # 予測値が一定以下の場合→売り注文
-        elif float(diff) <= -0.12 :#and MACD_judge == MT5.NARIYUKI_SELL:
+        elif float(diff) <= -0.12 and MACD_judge == MT5.NARIYUKI_SELL:
             order = MT5.NARIYUKI_SELL  # 指値売り注文
         #    sl_point = 40
         #    tp_point = 50
@@ -121,7 +121,7 @@ def EA(bktest_orbit=0):
             order_name = "売り注文"
 
         # 予測値が一定以下の場合→売り注文(少)
-        elif -0.12 < float(diff) < -0.02 :#and MACD_judge == MT5.NARIYUKI_SELL:
+        elif -0.12 < float(diff) < -0.02 and MACD_judge == MT5.NARIYUKI_SELL:
             order = MT5.NARIYUKI_SELL  # 指値売り注文
            # sl_point = 70
            # tp_point = 30
@@ -131,7 +131,7 @@ def EA(bktest_orbit=0):
             order_name = "売り注文(少)"
 
         # 予測値が一定以下の場合→売り注文(少)
-        elif -0.02 <= float(diff) < 0:# and MACD_judge == MT5.NARIYUKI_SELL:
+        elif -0.02 <= float(diff) < 0 and MACD_judge == MT5.NARIYUKI_SELL:
             order = MT5.NARIYUKI_SELL  # 指値売り注文
           #  sl_point = 70
             magic = 235000

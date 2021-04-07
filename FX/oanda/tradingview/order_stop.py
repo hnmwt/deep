@@ -4,7 +4,7 @@ import param
 account_ID = param.account_ID
 password = param.password
 symbol = param.symbol
-threshold_profit = 180
+threshold_profit = 200
 settlement_profit = 40
 deviation = param.deviation
 lot = param.lot
@@ -17,7 +17,7 @@ def order_up_down_settle():
         authorized = mt5.login(account_ID, password=password)
         positions = mt5.positions_get(symbol=symbol)
     #    print("保有しているポジション数" ,len(positions))
-        print("identifers_list:", identifers_list)
+   #     print("identifers_list:", identifers_list)
         for position in positions:  # 保有ポジションのうち利益がしきい値以上のものを識別子リストに追加
             profit = position[15]  # 利益
   #          profit = 200
