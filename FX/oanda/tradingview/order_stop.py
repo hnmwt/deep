@@ -73,9 +73,10 @@ def order_up_down_settle(positions):
   #          print("up_down_identifers_list:",up_down_identifers_list)
 
 def rapid_change(positions):
+    price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 ※askは朝方スプレッドが広がるためbidにする
+    global min1_price_bid
     if positions:
-        price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 ※askは朝方スプレッドが広がるためbidにする
-        if abs(price_bid - min1_price_bid) > 0.018:  # 価格が指定した値以上変化していた場合
+        if abs(price_bid - min1_price_bid) > 0.016:  # 価格が指定した値以上変化していた場合
             global rapid_change_identifiers
             for position in positions:  # 保有ポジション分処理を回す
                 profit = position[15]  # 利益
@@ -97,9 +98,11 @@ def rapid_change(positions):
                         comment = "rapid_change"
                         message = request(settle_type=settle_type, identifier=identifier, price=price, sl=sl, tp=tp, magic=magic, comment=comment)
                         print(message)
+
     if not positions:  # 保有ポジションがないとき
         rapid_change_identifiers = []  # 識別子リストを空にする
-                    
+
+    min1_price_bid = price_bid
 
 
 def request(settle_type, identifier, price, sl, tp, magic, comment):
