@@ -75,7 +75,7 @@ def EA(bktest_orbit=0):
             sl_point = MT5.backtest_sl
         elif backtest == False:  # 本番
             tp_point = 40
-            sl_point = 79
+            sl_point = 105
 
         df, MACD, MACD_signal, MACD_Cross = predict.create_train_data(get_csv_name, bktest_orbit)  # 取ってきたcsvからdfを作成
         predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir,bktest_orbit)  # 値を予測
@@ -83,7 +83,7 @@ def EA(bktest_orbit=0):
 #        predict.VOLUME_judge(df, tp_point, sl_point)
 
         # 予測値が一定以上の場合→買い注文
-        if 0.12 <= float(diff) and MACD_judge == MT5.NARIYUKI_BUY:
+        if 0.12 <= float(diff):# and MACD_judge == MT5.NARIYUKI_BUY:
             order = MT5.NARIYUKI_BUY  # 指値買い注文
         #    sl_point = 40
         #    tp_point = 50
@@ -93,7 +93,7 @@ def EA(bktest_orbit=0):
             order_name = "買い注文"
 
         # 予測値が一定以上の場合→買い注文(少)
-        elif 0.02 < float(diff) < 0.12 and MACD_judge == MT5.NARIYUKI_BUY:
+        elif 0.02 < float(diff) < 0.12:# and MACD_judge == MT5.NARIYUKI_BUY:
             order = MT5.NARIYUKI_BUY  # 指値買い注文
            # sl_point = 70
             #tp_point = 30
@@ -103,7 +103,7 @@ def EA(bktest_orbit=0):
             order_name = "買い注文(少)"
 
         # 予測値が一定以上の場合→買い注文(少)
-        elif 0 < float(diff) <= 0.02 and MACD_judge == MT5.NARIYUKI_BUY:
+        elif 0 < float(diff) <= 0.02:# and MACD_judge == MT5.NARIYUKI_BUY:
             order = MT5.NARIYUKI_BUY  # 指値買い注文
           #  sl_point = 70
             magic = 234001
@@ -112,7 +112,7 @@ def EA(bktest_orbit=0):
             order_name = "買い注文(極少)"
 
         # 予測値が一定以下の場合→売り注文
-        elif float(diff) <= -0.12 and MACD_judge == MT5.NARIYUKI_SELL:
+        elif float(diff) <= -0.1:#2 and MACD_judge == MT5.NARIYUKI_SELL:
             order = MT5.NARIYUKI_SELL  # 指値売り注文
         #    sl_point = 40
         #    tp_point = 50
@@ -122,7 +122,7 @@ def EA(bktest_orbit=0):
             order_name = "売り注文"
 
         # 予測値が一定以下の場合→売り注文(少)
-        elif -0.12 < float(diff) < -0.02 and MACD_judge == MT5.NARIYUKI_SELL:
+        elif -0.12 < float(diff) < -0.02:# and MACD_judge == MT5.NARIYUKI_SELL:
             order = MT5.NARIYUKI_SELL  # 指値売り注文
            # sl_point = 70
            # tp_point = 30
@@ -132,7 +132,7 @@ def EA(bktest_orbit=0):
             order_name = "売り注文(少)"
 
         # 予測値が一定以下の場合→売り注文(少)
-        elif -0.02 <= float(diff) < 0 and MACD_judge == MT5.NARIYUKI_SELL:
+        elif -0.02 <= float(diff) < 0:# and MACD_judge == MT5.NARIYUKI_SELL:
             order = MT5.NARIYUKI_SELL  # 指値売り注文
           #  sl_point = 70
             magic = 235000
@@ -311,7 +311,9 @@ if __name__ == '__main__':
         log_name = "./注文log/" + today
         with open(log_name, mode="a", encoding="utf-8") as f:
             f.write("取引開始")
+        mt5.initialize()
         authorized = mt5.login(param.account_ID, password=param.password)  # ログイン
+        order_stop.min1_price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 ※askは朝方スプレッドが広がるためbidにする
 
         # 2回目以降
         while True:
@@ -326,7 +328,7 @@ if __name__ == '__main__':
                 positions = mt5.positions_get(symbol=symbol)
                 order_stop.order_up_down_settle(positions)
 
-            if act % 60 == 0: #  余りが0の時 (60カウントに一度処理を行う(約60秒?))
+            if act % 40 == 0: #  余りが0の時 (40カウントに一度処理を行う(約40秒?))
                 order_stop.rapid_change(positions)
                 act = 0
 
