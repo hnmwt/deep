@@ -93,13 +93,14 @@ def rapid_change(positions):
                             price = price_bid
                             sl = position[12] + 0.003  # 対象のポジションのtpを新しくオーダーするslにする
                             #tp = position[11] + 0.003  # 対象のポジションのslを新しくオーダーするtpにする
-                            tp = price + 0.01
+                            tp = price + 0.007
                         elif position_type == 1:
                             settle_type = 0  # 送信するオーダータイプ
                             price = mt5.symbol_info_tick(symbol).ask
                             sl = position[12] - 0.003  # 対象のポジションのtpを新しくオーダーするslにする
                             #tp = position[11] - 0.003  # 対象のポジションのslを新しくオーダーするtpにする
-                            tp = price - 0.01
+                            tp = price - 0.007
+
                         magic = 222222
                         comment = "rapid_change"
                         message = request(settle_type=settle_type,  price=price, sl=sl, tp=tp, magic=magic, comment=comment)
