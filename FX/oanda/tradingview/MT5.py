@@ -32,8 +32,8 @@ if act == False:
     print("settlementpositionをおこないません")
 elif act == True:
     print("settlementpositionをおこないます")
-backtest_tp = 21
-backtest_sl = 10
+backtest_tp = 40
+backtest_sl = 105
 if backtest == True:  # バックテスト
     positions = []
 

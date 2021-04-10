@@ -82,77 +82,50 @@ def EA(bktest_orbit=0):
         MACD_judge, Cross_judge = predict.MACD_sign(MACD, MACD_signal, MACD_Cross)  # MACDの判定
 #        predict.VOLUME_judge(df, tp_point, sl_point)
 
-        # 予測値が一定以上の場合→買い注文
-        if 0.12 <= float(diff):# and MACD_judge == MT5.NARIYUKI_BUY:
-            order = MT5.NARIYUKI_BUY  # 指値買い注文
-        #    sl_point = 40
-        #    tp_point = 50
-            magic = 234000
-            order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
-            order_name = "買い注文"
+        volume = df["Volume"]  # カラム抜き出し
+        volume_ma = df["Volume MA"]  # カラム抜き出し
+        volume_last = volume[-1:]  # 最終行を抜き出し
+        volume_ma_last = volume_ma[-1:] # 最終行を抜き出し
+        volume_last =volume_last.to_numpy()  # ifで計算するためnumpyに変換
+        volume_ma_last =volume_ma_last.to_numpy()  # ifで計算するためnumpyに変換
+        if volume_last < volume_ma_last:  # 取引量 < 平均取引量  追加21.04.10
+   #     if True:  # 追加21.04.10
 
-        # 予測値が一定以上の場合→買い注文(少)
-        elif 0.02 < float(diff) < 0.12:# and MACD_judge == MT5.NARIYUKI_BUY:
-            order = MT5.NARIYUKI_BUY  # 指値買い注文
-           # sl_point = 70
-            #tp_point = 30
-            magic = 234001
-            order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
-            order_name = "買い注文(少)"
+            # 予測値が一定以上の場合→買い注文(少)
+            if 0 < float(diff) :# and MACD_judge == MT5.NARIYUKI_BUY:
+                order = MT5.NARIYUKI_BUY  # 指値買い注文
+              #  sl_point = 70
+                magic = 234001
+                order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
+                MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
+                order_name = "買い注文"
 
-        # 予測値が一定以上の場合→買い注文(少)
-        elif 0 < float(diff) <= 0.02:# and MACD_judge == MT5.NARIYUKI_BUY:
-            order = MT5.NARIYUKI_BUY  # 指値買い注文
-          #  sl_point = 70
-            magic = 234001
-            order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
-            order_name = "買い注文(極少)"
-
-        # 予測値が一定以下の場合→売り注文
-        elif float(diff) <= -0.1:#2 and MACD_judge == MT5.NARIYUKI_SELL:
-            order = MT5.NARIYUKI_SELL  # 指値売り注文
-        #    sl_point = 40
-        #    tp_point = 50
-            magic = 235000
-            order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
-            order_name = "売り注文"
-
-        # 予測値が一定以下の場合→売り注文(少)
-        elif -0.12 < float(diff) < -0.02:# and MACD_judge == MT5.NARIYUKI_SELL:
-            order = MT5.NARIYUKI_SELL  # 指値売り注文
-           # sl_point = 70
-           # tp_point = 30
-            magic = 235000
-            order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
-            order_name = "売り注文(少)"
-
-        # 予測値が一定以下の場合→売り注文(少)
-        elif -0.02 <= float(diff) < 0:# and MACD_judge == MT5.NARIYUKI_SELL:
-            order = MT5.NARIYUKI_SELL  # 指値売り注文
-          #  sl_point = 70
-            magic = 235000
-            order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
-            MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
-            order_name = "売り注文(極少)"
+            # 予測値が一定以下の場合→売り注文(少)
+            elif float(diff) < 0:# and MACD_judge == MT5.NARIYUKI_SELL:
+                order = MT5.NARIYUKI_SELL  # 指値売り注文
+              #  sl_point = 70
+                magic = 235000
+                order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
+                MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
+                order_name = "売り注文"
 
 
 
-        # 予測値が条件に当てはまらないとき
+            # 予測値が条件に当てはまらないとき
+            else:
+                order = MT5.NARIYUKI_SELL  # 指値売り注文
+                lot = 0 # ロット数
+                sl_point = 0
+                tp_point = 0
+                magic = 000000
+                if backtest == True: # バックテストの時のみ下記の処理に入る
+                    MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df,order_flag=False)
+                order_name = "注文無し"
+
         else:
-            order = MT5.NARIYUKI_SELL  # 指値売り注文
-            lot = 0 # ロット数
-            sl_point = 0
-            tp_point = 0
-            magic = 000000
-            if backtest == True: # バックテストの時のみ下記の処理に入る
-                MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df,order_flag=False)
+            print(dt_now,":取引量が大きいので売買無し")
             order_name = "注文無し"
-
+    
         message = str(dt_now) + \
         '\n予測時刻:' + str(pred_after_time) + \
         '\n予測値:' + str(predict.pred30m) + \
@@ -347,7 +320,7 @@ if __name__ == '__main__':
                     "予測値tp:" + str(MT5.backtest_tp) + "予測値sl:" + str(MT5.backtest_sl) + "\n")
         print('バックテスト')
       #  for i in range(915 ,1200):
-        for i in range(989, 1080):
+        for i in range(50, 1080):
             EA(i)
         print('**************終了***********************')
         print('総計',MT5.profit_all)
