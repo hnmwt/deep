@@ -87,7 +87,8 @@ def rapid_change(positions):
             global rapid_change_identifiers
             for position in positions:  # 保有ポジション分処理を回す
                 profit = position[15]  # 利益
-                if profit < -200: # 利益が-200以下の場合
+                magicNo = position[6]  # マジックナンバー
+                if profit < -200 and magicNo == 222222: # 利益が-200以下の場合かつマジックナンバーが222222以外
                     identifier = position[7]  # 識別子
                     if not identifier in rapid_change_identifiers: # 識別子が配列の中にない場合(処理をまだ行っていない)
                     #    rapid_change_identifiers.append(identifier) # 識別子を追加
