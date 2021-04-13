@@ -302,7 +302,7 @@ if __name__ == '__main__':
                 order_stop.order_up_down_settle(positions)
 
             if act % 40 == 0: #  余りが0の時 (40カウントに一度処理を行う(約40秒?))
-            #    order_stop.rapid_change(positions)
+                order_stop.rapid_change(positions)
                 act = 0
 
             act += 1

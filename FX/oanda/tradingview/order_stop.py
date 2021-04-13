@@ -14,6 +14,11 @@ lot = param.lot
 up_down_identifers_list = []  # 利益がしきい値以上の時の識別子リスト
 min1_price_bid = 0
 rapid_change_identifiers = []
+
+#  ***** def order_up_down_settle(positions)の役割 *******
+#  1.ポジションが「上がる→下がる」とき決済する
+#  2.rapid_changeで注文したポジションがプラスの時決済する
+#
 def order_up_down_settle(positions):
     if positions:
         mt5.initialize()
@@ -35,48 +40,43 @@ def order_up_down_settle(positions):
 
         for position in positions:  # 保有ポジションの数だけ判定を行う
             identifier = position[7]  # 保有ポジションの識別子
+            profit = position[15]  # 利益
+            price = position[13] # 価格
+            position_type = position[5] # オーダータイプ
             for identifer_list in up_down_identifers_list:  # 保有ポジションの識別子リストに識別子がある物の中から利益が決済しきい値以下のものを決済する
                 if identifier == identifer_list: # 保有ポジションの識別子としきい値以上の時の識別子が一致したとき == 決済確認対象になる
-                    profit = position[15]  # 利益
  #                   profit = 50
                     if 0 < profit <= settlement_profit:  # 利益が決済しきい値を下回るとき即決済する
-                        magic = 1111111
-                        position_type = position[5]
                         if position_type == 0:
                             settle_type = 1  # 送信するオーダータイプ
                         elif position_type == 1:
                             settle_type = 0  # 送信するオーダータイプ
                         comment = "python up down settle"
-                        price = position[13]
+                        magic = 111111
 
-                        #request(settle_type, price, sl, tp, magic, comment)
+                        message = prompt_request(settle_type, price, magic, comment)  # 即決済する
 
-                        request = {
-                            "action": mt5.TRADE_ACTION_DEAL,
-                            "symbol": symbol,
-                            "volume": lot,
-                            "type": settle_type,
-                            "position": identifier,
-                            "price": price,  # 現在の価格,
-                            "deviation": deviation,
-                            "magic": magic,
-                            "comment": comment,
-                            "type_time": mt5.ORDER_TIME_GTC,
-                            "type_filling": mt5.ORDER_FILLING_IOC,
-                        }
-                        result = mt5.order_send(request)
-                        up_down_identifers_list.remove(identifier)  # 利益がしきい値以上の時の識別子リストから要素を取り出す
-                        if result.retcode != mt5.TRADE_RETCODE_DONE:
-                            message = "2. order_send failed, retcode={}".format(result.retcode)
-                            print("order_send.py"+ message)
-                            print("updownsettle",request)
-    #                        print(result.comment)
-                        #    Line_bot("order_send.py" + message)
+            if identifier == 222222:  # rapid_changeの注文識別子の時
+                if profit > 0:  # 利益が0以上
+                    if position_type == 0:
+                        settle_type = 1  # 送信するオーダータイプ
+                    elif position_type == 1:
+                        settle_type = 0  # 送信するオーダータイプ
+                    comment = "rapid_change_settle"
+                    magic = 333333
+                    message = prompt_request(settle_type, price, magic, comment)  # 即決済する
+
+
+
     if not positions: # 保有ポジションがないとき
         up_down_identifers_list = []  # 識別子リストを空にする
 
   #          print("up_down_identifers_list:",up_down_identifers_list)
 
+#  ***** def rapid_change(positions)の役割 *******
+#  1.ポジションが一定以上変化&マイナス評価の時逆の注文をする
+#  2.rapid_changeで注文したポジションがプラスの時決済する
+#
 def rapid_change(positions):
     mt5.initialize()
     price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 ※askは朝方スプレッドが広がるためbidにする
@@ -86,7 +86,7 @@ def rapid_change(positions):
             global rapid_change_identifiers
             for position in positions:  # 保有ポジション分処理を回す
                 profit = position[15]  # 利益
-                if profit < -200: # 利益が-200以下の場合
+                if profit < 0: # 利益が0以下の場合
                     identifier = position[7]  # 識別子
                     if not identifier in rapid_change_identifiers: # 識別子が配列の中にない場合(処理をまだ行っていない)
                     #    rapid_change_identifiers.append(identifier) # 識別子を追加
@@ -125,7 +125,7 @@ def request(settle_type, price, sl, tp, magic, comment):
         "type": settle_type,
 #        "position": identifier,
         "price": price,  # 現在の価格,
-        "sl": sl,  # 逆指値注文価格 ※100*0.001=0.1
+#        "sl": sl,  # 逆指値注文価格 ※100*0.001=0.1
         "tp": tp,  # 指値注文価格
         "deviation": deviation,
         "magic": magic,
@@ -134,12 +134,36 @@ def request(settle_type, price, sl, tp, magic, comment):
         "type_filling": mt5.ORDER_FILLING_IOC,
     }
     result = mt5.order_send(request)
-    print(request)
+    print(comment, request)
     if result.retcode != mt5.TRADE_RETCODE_DONE:
         message = "2. order_send failed, retcode={}".format(result.retcode)
     else:
         message = "rapid_changeリクエスト送信完了"
     return message
+
+def prompt_request(settle_type, price, magic, comment):
+    request = {
+        "action": mt5.TRADE_ACTION_DEAL,
+        "symbol": symbol,
+        "volume": lot,
+        "type": settle_type,
+        "position": identifier,
+        "price": price,  # 現在の価格,
+        "deviation": deviation,
+        "magic": magic,
+        "comment": comment,
+        "type_time": mt5.ORDER_TIME_GTC,
+        "type_filling": mt5.ORDER_FILLING_IOC,
+    }
+    result = mt5.order_send(request)
+    print(comment, request)
+    if result.retcode != mt5.TRADE_RETCODE_DONE:
+        message = "2. order_send failed, retcode={}".format(result.retcode)
+    else:
+        message = comment + "リクエスト送信完了"
+    return message
+
+
 
 if __name__ == '__main__':
     order_up_down_settle()
