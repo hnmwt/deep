@@ -58,7 +58,7 @@ def order_up_down_settle(positions):
                         message = prompt_request(settle_type, price, magic, comment)  # 即決済する
 
             if magic == 222222:  # rapid_changeの注文識別子の時
-                if 30 < profit :  # 利益が30以上
+                if 40 < profit :  # 利益が40以上
                     if position_type == 0:
                         settle_type = 1  # 送信するオーダータイプ
                     elif position_type == 1:
@@ -87,7 +87,7 @@ def rapid_change(positions):
             global rapid_change_identifiers
             for position in positions:  # 保有ポジション分処理を回す
                 profit = position[15]  # 利益
-                if profit < 0: # 利益が0以下の場合
+                if profit < -200: # 利益が-200以下の場合
                     identifier = position[7]  # 識別子
                     if not identifier in rapid_change_identifiers: # 識別子が配列の中にない場合(処理をまだ行っていない)
                     #    rapid_change_identifiers.append(identifier) # 識別子を追加
