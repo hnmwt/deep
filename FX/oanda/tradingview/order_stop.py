@@ -43,6 +43,7 @@ def order_up_down_settle(positions):
             profit = position[15]  # 利益
             price = position[13] # 価格
             position_type = position[5] # オーダータイプ
+            magic = position[6] # マジックナンバー
             for identifer_list in up_down_identifers_list:  # 保有ポジションの識別子リストに識別子がある物の中から利益が決済しきい値以下のものを決済する
                 if identifier == identifer_list: # 保有ポジションの識別子としきい値以上の時の識別子が一致したとき == 決済確認対象になる
  #                   profit = 50
@@ -56,8 +57,8 @@ def order_up_down_settle(positions):
 
                         message = prompt_request(settle_type, price, magic, comment)  # 即決済する
 
-            if identifier == 222222:  # rapid_changeの注文識別子の時
-                if profit > 0:  # 利益が0以上
+            if magic == 222222:  # rapid_changeの注文識別子の時
+                if 30 < profit :  # 利益が30以上
                     if position_type == 0:
                         settle_type = 1  # 送信するオーダータイプ
                     elif position_type == 1:
