@@ -85,33 +85,38 @@ def rapid_change(positions):
     if positions:
         if abs(price_bid - min1_price_bid) > rapid_change_threshold:  # 価格が指定した値以上変化していた場合
             global rapid_change_identifiers
-            for position in positions:  # 保有ポジション分処理を回す
-                profit = position[15]  # 利益
-                magicNo = position[6]  # マジックナンバー
-                if profit < -200 and magicNo == 222222: # 利益が-200以下の場合かつマジックナンバーが222222以外
-                    identifier = position[7]  # 識別子
-                    if not identifier in rapid_change_identifiers: # 識別子が配列の中にない場合(処理をまだ行っていない)
-                    #    rapid_change_identifiers.append(identifier) # 識別子を追加
+            magicNo_flag = False
+            for position in positions:
+                if position[6] == 222222:  # マジックナンバーが222222のリストが１つでもあったときは無駄なリクエストを送信しないようにする
+                    magicNo_flag = True  # 222222所持フラグをtrueにする
+            if magicNo_flag == False:   # 222222所持フラグがFalseの時に処理をする
+                for position in positions:  # 保有ポジション分処理を回す
+                    profit = position[15]  # 利益
+                    magicNo = position[6]  # マジックナンバー
+                    if profit < -200 and magicNo != 222222: # 利益が-200以下の場合かつマジックナンバーが222222以外
+                        identifier = position[7]  # 識別子
+                        if not identifier in rapid_change_identifiers: # 識別子が配列の中にない場合(処理をまだ行っていない)
+                        #    rapid_change_identifiers.append(identifier) # 識別子を追加
 
-                        position_type = position[5]  # 対象のポジションのオーダータイプ
-                        if position_type == 0:
-                            settle_type = 1  # 送信するオーダータイプ
-                            price = price_bid
-                           # sl = position[12] + 0.003  # 対象のポジションのtpを新しくオーダーするslにする
-                            #tp = position[11] + 0.003  # 対象のポジションのslを新しくオーダーするtpにする
-                            tp = price - 0.01
-                            sl = price + 0.05
-                        elif position_type == 1:
-                            settle_type = 0  # 送信するオーダータイプ
-                            price = mt5.symbol_info_tick(symbol).ask
-                           # sl = position[12] - 0.003  # 対象のポジションのtpを新しくオーダーするslにする
-                            #tp = position[11] - 0.003  # 対象のポジションのslを新しくオーダーするtpにする
-                            tp = price + 0.01
-                            sl = price - 0.05
-                        magic = 222222
-                        comment = "rapid_change"
-                        message = request(settle_type=settle_type,  price=price, sl=sl, tp=tp, magic=magic, comment=comment)
-                        print("rapid_change:",message)
+                            position_type = position[5]  # 対象のポジションのオーダータイプ
+                            if position_type == 0:
+                                settle_type = 1  # 送信するオーダータイプ
+                                price = price_bid
+                               # sl = position[12] + 0.003  # 対象のポジションのtpを新しくオーダーするslにする
+                                #tp = position[11] + 0.003  # 対象のポジションのslを新しくオーダーするtpにする
+                                tp = price - 0.01
+                                sl = price + 0.05
+                            elif position_type == 1:
+                                settle_type = 0  # 送信するオーダータイプ
+                                price = mt5.symbol_info_tick(symbol).ask
+                               # sl = position[12] - 0.003  # 対象のポジションのtpを新しくオーダーするslにする
+                                #tp = position[11] - 0.003  # 対象のポジションのslを新しくオーダーするtpにする
+                                tp = price + 0.01
+                                sl = price - 0.05
+                            magic = 222222
+                            comment = "rapid_change"
+                            message = request(settle_type=settle_type,  price=price, sl=sl, tp=tp, magic=magic, comment=comment)
+                            print("rapid_change:",message)
 
     if not positions:  # 保有ポジションがないとき
         rapid_change_identifiers = []  # 識別子リストを空にする
