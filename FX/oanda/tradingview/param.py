@@ -1,5 +1,5 @@
-#LIVE = True # 本番口座
-LIVE = False # デモ口座
+LIVE = True # 本番口座
+#LIVE = False # デモ口座
 if LIVE == True:
     account_ID = 900006047
     password = "Hnm4264wtr"

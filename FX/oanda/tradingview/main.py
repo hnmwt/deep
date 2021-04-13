@@ -74,7 +74,7 @@ def EA(bktest_orbit=0):
             tp_point = MT5.backtest_tp
             sl_point = MT5.backtest_sl
         elif backtest == False:  # 本番
-            tp_point = 40
+            tp_point = 80
             sl_point = 105
 
         df, MACD, MACD_signal, MACD_Cross = predict.create_train_data(get_csv_name, bktest_orbit)  # 取ってきたcsvからdfを作成
@@ -88,7 +88,7 @@ def EA(bktest_orbit=0):
         volume_ma_last = volume_ma[-1:] # 最終行を抜き出し
         volume_last =volume_last.to_numpy()  # ifで計算するためnumpyに変換
         volume_ma_last =volume_ma_last.to_numpy()  # ifで計算するためnumpyに変換
-        if volume_last < volume_ma_last:  # 取引量 < 平均取引量  追加21.04.10
+        if volume_last < (volume_ma_last * 1.2):  # 取引量 < 平均取引量  追加21.04.10
    #     if True:  # 追加21.04.10
 
             # 予測値が一定以上の場合→買い注文(少)
@@ -302,7 +302,7 @@ if __name__ == '__main__':
                 order_stop.order_up_down_settle(positions)
 
             if act % 40 == 0: #  余りが0の時 (40カウントに一度処理を行う(約40秒?))
-                order_stop.rapid_change(positions)
+            #    order_stop.rapid_change(positions)
                 act = 0
 
             act += 1
