@@ -335,13 +335,13 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
         position_types = []  # 保有ポジションタイプのリスト
         i = 0
         for position in positions:
-            resultsettlement_position = settlement_position(position, MACD_judge,price_ask,price_bid)  # 保有ポジションがプラス収支の場合に決済する関数
-            if resultsettlement_position == False:  # 保有ポジションの決済を行っていないとき　→　ポジションを保有しているので
-                magic_nums.append(position[6])  # 全ての保有ポジションmagicナンバーを取り出してリストに追加
-                if order_type == position[5]:  # これからオーダーしようとしているのオーダータイプと保有ポジションのオーダータイプが同じとき
-                    position_types.append(position[5])  # ポジションタイプを追加(所持しているポジション数を把握したい)
-            if resultsettlement_position == True and backtest == True:  # バックテストかつポジションの決済が完了したとき
-                del positions_backtest[i]  # 対象のポジションのリストを削除
+ #21.04.16廃止           resultsettlement_position = settlement_position(position, MACD_judge,price_ask,price_bid)  # 保有ポジションがプラス収支の場合に決済する関数
+ # 21.04.16廃止  if resultsettlement_position == False:  # 保有ポジションの決済を行っていないとき　→　ポジションを保有しているので
+            magic_nums.append(position[6])  # 全ての保有ポジションmagicナンバーを取り出してリストに追加
+            if order_type == position[5]:  # これからオーダーしようとしているのオーダータイプと保有ポジションのオーダータイプが同じとき
+                position_types.append(position[5])  # ポジションタイプを追加(所持しているポジション数を把握したい)
+        if resultsettlement_position == True and backtest == True:  # バックテストかつポジションの決済が完了したとき
+            del positions_backtest[i]  # 対象のポジションのリストを削除
             i += 1
         position_types_count = len(position_types)
     # 保有ポジションがない場合 → 保有ポジション数 = 0
