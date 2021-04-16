@@ -339,7 +339,10 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
  # 21.04.16廃止  if resultsettlement_position == False:  # 保有ポジションの決済を行っていないとき　→　ポジションを保有しているので
             magic_nums.append(position[6])  # 全ての保有ポジションmagicナンバーを取り出してリストに追加
             if order_type == position[5]:  # これからオーダーしようとしているのオーダータイプと保有ポジションのオーダータイプが同じとき
-                position_types.append(position[5])  # ポジションタイプを追加(所持しているポジション数を把握したい)
+                if position[6] != 222221:
+                    if position[6] != 222222:
+                        position_types.append(position[5])  # ポジションタイプを追加(所持しているポジション数を把握したい)
+        resultsettlement_position = False
         if resultsettlement_position == True and backtest == True:  # バックテストかつポジションの決済が完了したとき
             del positions_backtest[i]  # 対象のポジションのリストを削除
             i += 1

@@ -57,7 +57,7 @@ def order_up_down_settle(positions):
 
                         message = prompt_request(settle_type, price, magic, comment, identifier)  # 即決済する
 
-            if magicNo == 222222:  # rapid_changeの注文識別子の時
+            if magicNo == 222222 or 222221:  # rapid_changeの注文識別子の時
                 if 40 < profit :  # 利益が40以上
                     if position_type == 0:
                         settle_type = 1  # 送信するオーダータイプ
@@ -91,6 +91,7 @@ def rapid_change(positions):
             for position in positions:
                 if position[6] == 222222:  # マジックナンバーが222221,222222のリストが１つでもあったときは無駄なリクエストを送信しないようにする
                     magicNo_flag_222222 = True  # 222222所持フラグをtrueにする
+                if position[6] == 222221:  # マジックナンバーが222221,222222のリストが１つでもあったときは無駄なリクエストを送信しないようにする
                     magicNo_flag_222221 = True  # 222221所持フラグをtrueにする
 
             #***************************
@@ -100,7 +101,7 @@ def rapid_change(positions):
                 for position in positions:  # 保有ポジション分処理を回す
                     profit = position[15]  # 利益
                     magicNo = position[6]  # マジックナンバー
-                    if profit < -100 and magicNo != 222222:  # 利益が-100以下の場合かつ保有ポジションのマジックナンバーが222222以外の時
+                    if profit < 0 and magicNo != 222222:  # 利益が-100以下の場合かつ保有ポジションのマジックナンバーが222222以外の時
                         identifier = position[7]  # 識別子
                         if not identifier in rapid_change_identifiers:  # 識別子が配列の中にない場合(処理をまだ行っていない)
                         #    rapid_change_identifiers.append(identifier) # 識別子を配列に追加。識別子が配列にある間は下記の処理を行わない
@@ -127,10 +128,10 @@ def rapid_change(positions):
                 for position in positions:  # 保有ポジション分処理を回す
                     profit = position[15]  # 利益
                     magicNo = position[6]  # マジックナンバー
-                    if profit < -100 and magicNo != 222221:  # 利益が-100以下の場合かつ保有ポジションのマジックナンバーが222222以外の時
+                    if profit < 0 and magicNo != 222221:  # 利益が-100以下の場合かつ保有ポジションのマジックナンバーが222222以外の時
                         identifier = position[7]  # 識別子
                         if not identifier in rapid_change_identifiers:  # 識別子が配列の中にない場合(処理をまだ行っていない)
-                        position_type = position[5]  # 対象のポジションのオーダータイプ
+                            position_type = position[5]  # 対象のポジションのオーダータイプ
                             if position_type == 1:
                                 settle_type = 0  # 送信するオーダータイプ(買い)
                                 price = mt5.symbol_info_tick(symbol).ask
