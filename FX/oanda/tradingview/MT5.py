@@ -81,7 +81,7 @@ def order_send(order_type, sl_point, tp_point, lot, magic, symbol, price_ask, pr
             "volume": lot,                           # ロット単位でのリクエストされた取引量。
             "type": order_type,                      # 注文の種類。
             "price": price,                          # 注文実行価格。
-           # "sl": sl,                                # 逆指値注文価格 ※100*0.001=0.1
+            "sl": sl,                                # 逆指値注文価格 ※100*0.001=0.1
             "tp": tp,                                # 指値注文価格
             "deviation": deviation,                  # リクエストされた価格からの最大許容偏差(ポイント単位)
             "magic": magic,                          # EAのID。取引注文の分析処理を調整できるようにします。各EAは、取引リクエストを送信するときに一意のIDを設定できます。
