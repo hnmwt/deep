@@ -75,7 +75,7 @@ def EA(bktest_orbit=0):
             sl_point = MT5.backtest_sl
         elif backtest == False:  # 本番
             tp_point = 80
-            sl_point = 250
+            sl_point = 100
 
         df, MACD, MACD_signal, MACD_Cross = predict.create_train_data(get_csv_name, bktest_orbit)  # 取ってきたcsvからdfを作成
         predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir,bktest_orbit)  # 値を予測
@@ -95,7 +95,7 @@ def EA(bktest_orbit=0):
             if 0 < float(diff) :# and MACD_judge == MT5.NARIYUKI_BUY:
                 order = MT5.NARIYUKI_BUY  # 指値買い注文
               #  sl_point = 70
-                magic = 234001
+                magic = 234000
                 order, tp_point = MACD_Cross_judge(Cross_judge, order, tp_point)
                 MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
                 order_name = "買い注文"
