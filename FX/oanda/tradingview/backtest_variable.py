@@ -1,3 +1,3 @@
-#backtest = True
-backtest = False
+backtest = True
+#backtest = False
 Line_bot = False

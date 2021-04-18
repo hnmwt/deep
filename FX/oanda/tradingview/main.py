@@ -18,7 +18,10 @@ import order_stop
 backtest = backtest_variable.backtest
 
 
-
+syukai_flag = predict.syukai_flag
+pred_close = predict.pred_close
+pred_high = predict.pred_high
+pred_low = predict.pred_low
 
 username = 'hnmwtr999'
 password = 'hnm4264wtr@'
@@ -76,7 +79,15 @@ def EA(bktest_orbit=0):
         lot = 0.1  # ロット数
 
         df, MACD, MACD_signal, MACD_Cross = predict.create_train_data(get_csv_name, bktest_orbit)  # 取ってきたcsvからdfを作成
-        predict.syukai_flag, predict.pred30m, diff, pred_after_time = predict.pred(df, predict.syukai_flag, predict.pred30m, csv_time, model_dir, scalar_dir,bktest_orbit)  # 値を予測
+
+        global syukai_flag
+        global pred_close
+        global pred_high
+        global pred_low
+
+        syukai_flag, pred_close, diff_close, pred_high, diff_high, pred_low, diff_low, pred_after_time =\
+            predict.summarize(df, syukai_flag, pred_close, pred_high, pred_low, csv_time, bktest_orbit)  # 値を予測
+
         MACD_judge, Cross_judge = predict.MACD_sign(MACD, MACD_signal, MACD_Cross)  # MACDの判定
 #        predict.VOLUME_judge(df, tp_point, sl_point)
 
@@ -90,16 +101,16 @@ def EA(bktest_orbit=0):
    #     if True:  # 追加21.04.10
 
 
-        if backtest == True:  # バックテスト
-            tp_point = MT5.backtest_tp
-            sl_point = MT5.backtest_sl
-        elif backtest == False:  # 本番
-            tp_point = 80
-       #     sl_point = 100
-            sl_point = calc_ATR(df)
+            if backtest == True:  # バックテスト
+                tp_point = MT5.backtest_tp
+                sl_point = MT5.backtest_sl
+            elif backtest == False:  # 本番
+                tp_point = 80
+        #     sl_point = 100
+                sl_point = calc_ATR(df)
 
             # 予測値が一定以上の場合→買い注文(少)
-            if 0 < float(diff) :# and MACD_judge == MT5.NARIYUKI_BUY:
+            if 0 < float(diff_close) and 0 < float(diff_high) and 0 < float(diff_low):# and MACD_judge == MT5.NARIYUKI_BUY:
                 order = MT5.NARIYUKI_BUY  # 指値買い注文
               #  sl_point = 70
                 magic = 234000
@@ -108,7 +119,7 @@ def EA(bktest_orbit=0):
                 order_name = "買い注文"
 
             # 予測値が一定以下の場合→売り注文(少)
-            elif float(diff) < 0:# and MACD_judge == MT5.NARIYUKI_SELL:
+            elif float(diff_close) < 0 and float(diff_high) < 0 and float(diff_low) < 0:# and MACD_judge == MT5.NARIYUKI_SELL:
                 order = MT5.NARIYUKI_SELL  # 指値売り注文
               #  sl_point = 70
                 magic = 235000
@@ -135,8 +146,8 @@ def EA(bktest_orbit=0):
     
         message = str(dt_now) + \
         '\n予測時刻:' + str(pred_after_time) + \
-        '\n予測値:' + str(predict.pred30m) + \
-        '\n前回予測との差額:' + str(diff) + \
+        '\n予測値 close:' + str(pred_close) + 'high:' + str(pred_high) + 'low:' + str(pred_low) +\
+        '\n前回予測との差額 close:' + str(diff_close) + 'high:' + str(diff_high) + 'low:' + str(diff_low) +\
         '\nオーダー:' + str(order_name) + \
         '\nMACD_judge:' + str(MACD_judge) + "・0がbuy・1がsell"
 
@@ -158,7 +169,7 @@ def EA(bktest_orbit=0):
                 head.write(header)
 
         with open(log_name, mode="a", encoding="shift_jis") as f:  # ログ内容書き込み
-            log = str(dt_now) + ',' + str(pred_after_time) + ',' + str(order_name) + ',' + str(predict.pred30m) + ',' + str(MACD_judge) + ',' + \
+            log = str(dt_now) + ',' + str(pred_after_time) + ',' + str(order_name) + ',' + str(pred_close) + ',' + str(MACD_judge) + ',' + \
                   str(MT5.log_price) + ',' + str(MT5.log_tp) + ',' + str(MT5.log_sl)
             f.write(log + "\n")
 
