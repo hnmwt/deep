@@ -45,10 +45,10 @@ lot = param.lot  # ロット数
 
 
 def calc_ATR(df):
-    ATR = df["volume"]
-    ATR_last = volume[-1:]  # 最終行を抜き出し
-    ATR_value = ATR_last * 3
-    return ATR_value
+    ATR = df["ATR"]
+    ATR_last = ATR[-1:]  # 最終行を抜き出し
+    ATR_value = ATR_last * 3 *1000
+    return float(ATR_value)
 
 def MACD_Cross_judge(Cross_judge, order, tp_point):  # macdによるシグナル発生で注文を強制的に変更
     if Cross_judge == 9:
@@ -97,13 +97,14 @@ def EA(bktest_orbit=0):
         volume_ma_last = volume_ma[-1:] # 最終行を抜き出し
         volume_last =volume_last.to_numpy()  # ifで計算するためnumpyに変換
         volume_ma_last =volume_ma_last.to_numpy()  # ifで計算するためnumpyに変換
-        if volume_last < (volume_ma_last * 2):  # 取引量 < 平均取引量  追加21.04.10
+        if volume_last < (volume_ma_last * 10):  # 取引量 < 平均取引量  追加21.04.10
    #     if True:  # 追加21.04.10
 
 
             if backtest == True:  # バックテスト
                 tp_point = MT5.backtest_tp
                 sl_point = MT5.backtest_sl
+                sl_point = calc_ATR(df)
             elif backtest == False:  # 本番
                 tp_point = 80
         #     sl_point = 100
@@ -320,7 +321,7 @@ if __name__ == '__main__':
                 order_stop.order_up_down_settle(positions)
 
             if act % 40 == 0: #  余りが0の時 (40カウントに一度処理を行う(約40秒?))
-                order_stop.rapid_change(positions)
+            #    order_stop.rapid_change(positions)
                 act = 0
 
             act += 1
