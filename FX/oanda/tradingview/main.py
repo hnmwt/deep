@@ -111,7 +111,7 @@ def EA(bktest_orbit=0):
                 sl_point = calc_ATR(df)
 
             # 予測値が一定以上の場合→買い注文(少)
-            if 0 < float(diff_close) and 0 < float(diff_high) and 0 < float(diff_low):# and MACD_judge == MT5.NARIYUKI_BUY:
+            if 0 < float(diff_close):# and 0 < float(diff_high) and 0 < float(diff_low):# and MACD_judge == MT5.NARIYUKI_BUY:
                 order = MT5.NARIYUKI_BUY  # 指値買い注文
               #  sl_point = 70
                 magic = 234000
@@ -120,7 +120,7 @@ def EA(bktest_orbit=0):
                 order_name = "買い注文"
 
             # 予測値が一定以下の場合→売り注文(少)
-            elif float(diff_close) < 0 and float(diff_high) < 0 and float(diff_low) < 0:# and MACD_judge == MT5.NARIYUKI_SELL:
+            elif float(diff_close) < 0 :#and float(diff_high) < 0 and float(diff_low) < 0:# and MACD_judge == MT5.NARIYUKI_SELL:
                 order = MT5.NARIYUKI_SELL  # 指値売り注文
               #  sl_point = 70
                 magic = 235000
