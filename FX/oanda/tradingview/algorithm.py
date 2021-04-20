@@ -2,9 +2,11 @@ import datetime
 import MetaTrader5 as mt5
 import pandas as pd
 import req
+import param
 
 sell = 1
 buy = 0
+symbol = param.symbol
 
 def Spread(spread):
     if spread[-1] <= 3:
@@ -60,6 +62,24 @@ def mom_Buy(open, close, high, low, spread):
                     req.normal_request(settle_type, price, magic, comment)
                     return True
 
+def settlement():
+    positions = mt5.positions_get(symbol=symbol)
+    if positions:
+        for position in positions:
+            identifier = position[7]  # 保有ポジションの識別子
+            price = position[13]  # 価格
+            position_type = position[5]  # オーダータイプ
+            magic = position[6]  # マジックナンバー
+            comment = "range_settlement"
+
+            if position_type == buy and magic == 555555:
+                settle_type = sell  # 送信するオーダータイプ
+                req.settlement_request(settle_type, price, magic, comment, identifier)
+            elif position_type == sell and magic == 555555:
+                settle_type = buy  # 送信するオーダータイプ
+                req.settlement_request(settle_type, price, magic, comment, identifier)
+
+
 
 def range_price():
     mt5.initialize()
@@ -85,22 +105,29 @@ def range_price():
     flag = False
 
     if Sell(open, close, high, low, spread):
+        settlement()
         print('Sell')
         flag = True
     if Buy(open, close, high, low, spread):
+        settlement()
         print('Buy')
         flag = True
     if mom_Sell(open, close, high, low, spread):
+        settlement()
         print('mom_Sell')
         flag = True
     if mom_Buy(open, close, high, low, spread):
+        settlement()
         print('mom_Buy')
         flag = True
 
     if flag == False:
         print("レンジ帯：該当のパターン無し")
 
-range_price()
+
+if __name__ == '__main__':
+    settlement()
+    range_price()
 
 
 
