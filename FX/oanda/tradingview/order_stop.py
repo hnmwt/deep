@@ -5,7 +5,7 @@ account_ID = param.account_ID
 password = param.password
 symbol = param.symbol
 threshold_profit = 200
-settlement_profit = 120
+settlement_profit = 100
 rapid_change_threshold = 0.008
 deviation = param.deviation
 lot = param.lot
@@ -29,12 +29,13 @@ def order_up_down_settle(positions):
    #     print("up_down_identifers_list:", up_down_identifers_list)
         for position in positions:  # 保有ポジションのうち利益がしきい値以上のものを識別子リストに追加
             profit = position[15]  # 利益
-  #          profit = 140
+            #profit = 300
+          #  print('利益が閾値未満',up_down_identifers_list)
             if threshold_profit <= profit:  # 利益がしきい値以上の時
                 identifier = position[7] # 識別子
                 if not identifier in up_down_identifers_list: # 識別子が識別子リストに含まれていないとき
                     up_down_identifers_list.append(identifier)  # 識別子(identifier)を識別子リストに追加
-                    print('up_down_identifers_list', up_down_identifers_list)
+        print('up_down_identifers_list', up_down_identifers_list)
     #            print(position)
 
 
@@ -45,7 +46,7 @@ def order_up_down_settle(positions):
             position_type = position[5] # オーダータイプ
             magicNo = position[6] # マジックナンバー
             for identifer_list in up_down_identifers_list:  # 保有ポジションの識別子リストに識別子がある物の中から利益が決済しきい値以下のものを決済する
-                if identifier == identifer_list: # 保有ポジションの識別子としきい値以上の時の識別子が一致したとき == 決済確認対象になる
+                if identifier == identifer_list: # 保有ポジションの識別子としきい値以上の時の識別子が一致したとき → 決済確認対象になる
  #                   profit = 50
                     if 0 < profit <= settlement_profit:  # 利益が決済しきい値を下回るとき即決済する
                         if position_type == 0:
@@ -54,8 +55,8 @@ def order_up_down_settle(positions):
                             settle_type = 0  # 送信するオーダータイプ
                         comment = "python up down settle"
                         magic = 111111
-
                         message = prompt_request(settle_type, price, magic, comment, identifier)  # 即決済する
+                        up_down_identifers_list = []  # 識別子リストを空にする
 
             if magicNo == 222222 or 222221 or 234000 or 235000:  # rapid_changeの注文識別子の時
                 if 40 < profit :  # 利益が40以上
@@ -65,12 +66,13 @@ def order_up_down_settle(positions):
                         settle_type = 0  # 送信するオーダータイプ
                     comment = "rapid_change_settle"
                     magic = 333333
-                    message = prompt_request(settle_type, price, magic, comment, identifier)  # 即決済する
+                #    message = prompt_request(settle_type, price, magic, comment, identifier)  # 即決済する
 
 
 
     if not positions: # 保有ポジションがないとき
-        up_down_identifers_list = []  # 識別子リストを空にする
+     #   up_down_identifers_list = []  # 識別子リストを空にする
+        print('not positions', up_down_identifers_list)
 
   #          print("up_down_identifers_list:",up_down_identifers_list)
 
