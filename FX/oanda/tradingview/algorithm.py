@@ -74,21 +74,31 @@ def range_price():
     df['time'] = pd.to_datetime(df['time'].astype(int), unit='s')  # unix→標準
     df["time"] = df["time"] + pd.tseries.offsets.Hour(9)  # utc→9時間後
 
-    print(df)
+  #  print(df)
   #  print(df.info())
     open = df["open"].tolist()
     close = df["close"].tolist()
     high = df["high"].tolist()
     low = df["low"].tolist()
     spread = df["spread"].tolist()
+
+    flag = False
+
     if Sell(open, close, high, low, spread):
         print('Sell')
+        flag = True
     if Buy(open, close, high, low, spread):
         print('Buy')
+        flag = True
     if mom_Sell(open, close, high, low, spread):
         print('mom_Sell')
+        flag = True
     if mom_Buy(open, close, high, low, spread):
         print('mom_Buy')
+        flag = True
+
+    if flag == False:
+        print("レンジ帯：該当のパターン無し")
 
 range_price()
 

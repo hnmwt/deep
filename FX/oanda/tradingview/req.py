@@ -13,6 +13,7 @@ def normal_request(settle_type, price, magic, comment):
         "type": settle_type,
        # "position": identifier,
         "price": price,  # 現在の価格,
+        "tp": 40,  # --------------------後で廃止
         "deviation": deviation,
         "magic": magic,
         "comment": comment,

@@ -15,6 +15,8 @@ import pandas as pd
 import backtest_variable
 import param
 import order_stop
+import algorithm
+
 backtest = backtest_variable.backtest
 
 
@@ -291,16 +293,17 @@ if __name__ == '__main__':
     #    job_start_time = work_interval_5m()
         act = 0
         # 初回
-        driver_1 = TradingView.open_browser(chromedriver_path)
-        driver_2 = TradingView.site_login(username, password, url, driver_1)
-        EA(0)
-        print("次回時刻" + str(job_start_time))
+        if param.EA == True:   # フラグがtrueの時にtradingview→AI予測を行う
+            driver_1 = TradingView.open_browser(chromedriver_path)
+            driver_2 = TradingView.site_login(username, password, url, driver_1)
+            EA(0)
+            print("次回時刻" + str(job_start_time))
 
-        today = datetime.datetime.today().strftime("%Y%m%d")
-        today = today + ".csv"
-        log_name = "./注文log/" + today
-        with open(log_name, mode="a", encoding="utf-8") as f:
-            f.write("取引開始")
+            today = datetime.datetime.today().strftime("%Y%m%d")
+            today = today + ".csv"
+            log_name = "./注文log/" + today
+            with open(log_name, mode="a", encoding="utf-8") as f:
+                f.write("取引開始")
         mt5.initialize()
         authorized = mt5.login(param.account_ID, password=param.password)  # ログイン
         order_stop.min1_price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 ※askは朝方スプレッドが広がるためbidにする
@@ -308,7 +311,9 @@ if __name__ == '__main__':
         # 2回目以降
         while True:
             if job_start_time <= datetime.datetime.now():  # 指定時間 <= 現在時刻の時に処理をスタートする
-                EA()
+                if param.EA == True:      # フラグがtrueの時にtradingview→AI予測を行う 
+                    EA()
+                algorithm.range_price()
     #            job_start_time = work_interval_30m()  # 処理終了後に指定時間を更新する
                 job_start_time = work_interval_15m()
             #    job_start_time = work_interval_5m()
