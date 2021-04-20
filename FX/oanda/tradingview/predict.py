@@ -55,7 +55,7 @@ def create_df(df, column_start, X_train_save_scaler):  # df作成関数
     time = df.iloc[column_start, 0]        # 時間[行, 列]
     df = df.loc[:, 'open':'time(weekday)']  # [行 , 列名称(始まり):列名称(終わり)]
     #***21.03.30追加start
-    df = df[-30: -1]  # dfの行数を30にする
+    df = df[-30:]  # dfの行数を30にする
     # ***21.03.30追加end
     df = X_train_save_scaler.transform(df)  # 正規化
     X_train = df.copy()                           # dfをコピー
@@ -65,7 +65,7 @@ def create_df(df, column_start, X_train_save_scaler):  # df作成関数
 def PRED(X_train, y_train_save_scalar, column_start, column_end, model):# 予測関数
     pred = model(X_train)  # 予測
     pred = y_train_save_scalar.inverse_transform(pred)  # 予測結果の正規化をデコード
-    pred = pred[column_start:column_end]  # 対象の行を抜き出す
+    pred = pred[column_end:]  # 対象の行を抜き出す
     pred = "{:.3f}".format(float(pred))  # 書式編集
     return pred
 
@@ -103,7 +103,7 @@ def MACD_sign(MACD, MACD_signal, MACD_Cross):
     MACD_last = MACD[-2]  # 最終の値
     MACD_last2 = MACD[-3]
     MACD_last3 = MACD[-4]
-    MACD_Cross_last = MACD_Cross[-2:-1]
+    MACD_Cross_last = MACD_Cross[-1:]
 
     MACD_last_diff = abs(MACD_last - MACD_last2)  # MACDの差額
     MACD_last_diff_threshold = 0.003              # MACDの差額の閾値

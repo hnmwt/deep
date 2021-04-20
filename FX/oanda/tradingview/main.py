@@ -128,8 +128,6 @@ def EA(bktest_orbit=0):
                 MT5.order(order, sl_point,tp_point, lot, magic, symbol, MACD_judge, Cross_judge,df)
                 order_name = "売り注文"
 
-
-
             # 予測値が条件に当てはまらないとき
             else:
                 order = MT5.NARIYUKI_SELL  # 指値売り注文
