@@ -4,14 +4,15 @@ import param
 account_ID = param.account_ID
 password = param.password
 symbol = param.symbol
-threshold_profit = 200
-settlement_profit = 100
+
 rapid_change_threshold = 0.008
 deviation = param.deviation
 lot = param.lot
 
 
-up_down_identifers_list = []  # 利益がしきい値以上の時の識別子リスト
+up_down_identifers_list_200_100 = []  # 利益がしきい値以上の時の識別子リスト
+up_down_identifers_list_400_200 = []
+
 min1_price_bid = 0
 rapid_change_identifiers = []
 
@@ -19,10 +20,10 @@ rapid_change_identifiers = []
 #  1.ポジションが「上がる→下がる」とき決済する
 #  2.rapid_changeで注文したポジションがプラスの時決済する
 #
-def order_up_down_settle(positions):
+def order_up_down_settle(positions, up_down_identifers_list, threshold_profit, settlement_profit):
     if positions:
         mt5.initialize()
-        global up_down_identifers_list
+      #  global up_down_identifers_list
 
     # 21.04.07廃止   positions = mt5.positions_get(symbol=symbol)
     #    print("保有しているポジション数" ,len(positions))
@@ -37,7 +38,6 @@ def order_up_down_settle(positions):
                     up_down_identifers_list.append(identifier)  # 識別子(identifier)を識別子リストに追加
        # print('up_down_identifers_list', up_down_identifers_list)
     #            print(position)
-
 
         for position in positions:  # 保有ポジションの数だけ判定を行う
             identifier = position[7]  # 保有ポジションの識別子
@@ -68,12 +68,9 @@ def order_up_down_settle(positions):
                     magic = 333333
                 #    message = prompt_request(settle_type, price, magic, comment, identifier)  # 即決済する
 
-
-
     if not positions: # 保有ポジションがないとき
         up_down_identifers_list = []  # 識別子リストを空にする
      #   print('not positions', up_down_identifers_list)
-
   #          print("up_down_identifers_list:",up_down_identifers_list)
 
 #  ***** def rapid_change(positions)の役割 *******

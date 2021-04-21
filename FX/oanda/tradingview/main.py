@@ -19,6 +19,8 @@ import algorithm
 
 backtest = backtest_variable.backtest
 
+up_down_identifers_list_200_100 = order_stop.up_down_identifers_list_200_100
+up_down_identifers_list_400_200 = order_stop.up_down_identifers_list_400_200
 
 syukai_flag = predict.syukai_flag
 pred_close = predict.pred_close
@@ -287,6 +289,8 @@ def work_interval_5m():
 
 if __name__ == '__main__':
 
+ #   global up_down_identifers_list_200_100
+
     if backtest == False:  # 本番
     #    job_start_time = work_interval_30m()
         job_start_time = work_interval_15m()
@@ -308,6 +312,7 @@ if __name__ == '__main__':
         authorized = mt5.login(param.account_ID, password=param.password)  # ログイン
         order_stop.min1_price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 ※askは朝方スプレッドが広がるためbidにする
         algorithm.range_price()
+
         # 2回目以降
         while True:
             if job_start_time <= datetime.datetime.now():  # 指定時間 <= 現在時刻の時に処理をスタートする
@@ -321,7 +326,11 @@ if __name__ == '__main__':
 
             if act % 10 == 0:   #  余りが0の時 (10カウントに一度処理を行う(約10秒?))
                 positions = mt5.positions_get(symbol=symbol)
-                order_stop.order_up_down_settle(positions)
+
+                up_down_identifers_list_400_200 = order_stop.order_up_down_settle(positions,up_down_identifers_list_400_200, 400,200)
+
+                up_down_identifers_list_200_100 = order_stop.order_up_down_settle(positions, up_down_identifers_list_200_100, 200, 100)
+
 
             if act % 40 == 0: #  余りが0の時 (40カウントに一度処理を行う(約40秒?))
             #    order_stop.rapid_change(positions)

@@ -69,8 +69,8 @@ def mom_Buy(open, close, high, low, spread):
                     req.normal_request(settle_type, price, magic, comment)
                     return True
 
-def settlement():
-    positions = mt5.positions_get(symbol=symbol)
+def settlement(order_type):
+    positions = mt5.positions_get(symbol=symbol, order_type)
     if positions:
         for position in positions:
             identifier = position[7]  # 保有ポジションの識別子
@@ -79,56 +79,54 @@ def settlement():
             magic = position[6]  # マジックナンバー
             comment = "range_settlement"
 
-            if position_type == buy and magic == 555555:
-                settle_type = sell  # 送信するオーダータイプ
-                req.settlement_request(settle_type, price, magic, comment, identifier)
-            elif position_type == sell and magic == 555555:
-                settle_type = buy  # 送信するオーダータイプ
-                req.settlement_request(settle_type, price, magic, comment, identifier)
+            if not position_type == order_type:  # 保有ポジションのタイプとこれからオーダーするポジションのタイプがダブらないようにする
+                if position_type == buy and magic == 555555:
+                    settle_type = sell  # 送信するオーダータイプ
+                    req.settlement_request(settle_type, price, magic, comment, identifier)
+                elif position_type == sell and magic == 555555:
+                    settle_type = buy  # 送信するオーダータイプ
+                    req.settlement_request(settle_type, price, magic, comment, identifier)
 
 
 
 def range_price():
     mt5.initialize()
     dt_now = datetime.datetime.now()
-    time_from = dt_now - datetime.timedelta(hours=3) # 3時間前の東京時間
-    time_to = dt_now
+    time_from = dt_now - datetime.timedelta(hours=9) # 3時間前の東京時間
+    time_to = dt_now# - datetime.timedelta(hours=6) # 3時間前の東京時間
     # 2020.01.10 00:00-2020.01.11 13:00 UTCでUSDJPY M15からバーを取得する
-    rates = mt5.copy_rates_range("USDJPY", mt5.TIMEFRAME_M15, time_from, time_to)
-
+ #   rates = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_M15, time_from, time_to)
+    rates = mt5.copy_rates_from_pos("USDJPY", mt5.TIMEFRAME_M15, 0, 10)
     df = pd.DataFrame(rates)
 
     df['time'] = pd.to_datetime(df['time'].astype(int), unit='s')  # unix→標準
     df["time"] = df["time"] + pd.tseries.offsets.Hour(9)  # utc→9時間後
-    print(mt5.symbol_info_tick(symbol).ask)
-    print(df)
-    print(df["close"])
-    print(df.columns)
-    df.to_csv('a.csv', 'w', encoding='shift_jis')
-  #  print(df"tim.info())
+
+    #print(df)
+#    print(df["close"])
+
     open = df["open"].tolist()
     close = df["close"].tolist()
     high = df["high"].tolist()
     low = df["low"].tolist()
     spread = df["spread"].tolist()
-    print(close)
 
     flag = False
-    time.sleep(100)
+
     if Sell(open, close, high, low, spread):
-        settlement()
+        settlement(Sell)
         print('Sell')
         flag = True
     if Buy(open, close, high, low, spread):
-        settlement()
+        settlement(Buy)
         print('Buy')
         flag = True
     if mom_Sell(open, close, high, low, spread):
-        settlement()
+        settlement(Sell)
         print('mom_Sell')
         flag = True
     if mom_Buy(open, close, high, low, spread):
-        settlement()
+        settlement(Buy)
         print('mom_Buy')
         flag = True
 
