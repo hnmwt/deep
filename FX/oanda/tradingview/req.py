@@ -7,6 +7,7 @@ symbol = param.symbol
 
 
 def normal_request(settle_type, price, magic, comment):  # tp,sl指定なし新規注文
+ #   mt5.initialize()
     request = {
         "action": mt5.TRADE_ACTION_DEAL,
         "symbol": symbol,
@@ -14,7 +15,7 @@ def normal_request(settle_type, price, magic, comment):  # tp,sl指定なし新�
         "type": settle_type,
        # "position": identifier,
         "price": price,  # 現在の価格,
-        "tp": 40,  # --------------------後で廃止
+  #      "tp": 40,  # --------------------後で廃止
         "deviation": deviation,
         "magic": magic,
         "comment": comment,

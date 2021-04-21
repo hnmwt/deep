@@ -307,7 +307,7 @@ if __name__ == '__main__':
         mt5.initialize()
         authorized = mt5.login(param.account_ID, password=param.password)  # ログイン
         order_stop.min1_price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 ※askは朝方スプレッドが広がるためbidにする
-
+        algorithm.range_price()
         # 2回目以降
         while True:
             if job_start_time <= datetime.datetime.now():  # 指定時間 <= 現在時刻の時に処理をスタートする

@@ -3,6 +3,13 @@ import MetaTrader5 as mt5
 import pandas as pd
 import req
 import param
+import time
+
+#現在の最大表示列数の出力
+pd.get_option("display.max_columns")
+
+#最大表示列数の指定（ここでは50列を指定）
+pd.set_option('display.max_columns', 50)
 
 sell = 1
 buy = 0
@@ -16,7 +23,7 @@ def Spread(spread):
 def Sell(open, close, high, low, spread):
     if close[-4] < close[-3]:
         if close[-1] < close[-2] < close[-3]:
-            if spread == True:
+            if Spread(spread) == True:
                 settle_type = sell
                 price =  mt5.symbol_info_tick(symbol).bid
                 magic = 555555
@@ -28,7 +35,7 @@ def Sell(open, close, high, low, spread):
 def Buy(open, close, high, low, spread):
     if close[-3] < close[-4]:
         if close[-3] < close[-2] < close[-1]:
-            if spread == True:
+            if Spread(spread) == True:
                 settle_type = buy
                 price =  mt5.symbol_info_tick(symbol).ask
                 magic = 555555
@@ -41,7 +48,7 @@ def mom_Sell(open, close, high, low, spread):
     if close[-3] < close[-2]:
         if close[-1] < close[-2]:
             if high[-1] - open[-1] <= 0.005:
-                if spread == True:
+                if Spread(spread) == True:
                     settle_type = sell
                     price = mt5.symbol_info_tick(symbol).bid
                     magic = 555555
@@ -52,9 +59,9 @@ def mom_Sell(open, close, high, low, spread):
 # パターン2買い注文(勢いがあるとき)
 def mom_Buy(open, close, high, low, spread):
     if close[-2] < close[-3]:
-        if close[-2] < close[-3]:
+        if close[-2] < close[-1]:
             if open[-1] - low[-1] <= 0.005:
-                if spread == True:
+                if Spread(spread) == True:
                     settle_type = buy
                     price = mt5.symbol_info_tick(symbol).ask
                     magic = 555555
@@ -93,17 +100,21 @@ def range_price():
 
     df['time'] = pd.to_datetime(df['time'].astype(int), unit='s')  # unix→標準
     df["time"] = df["time"] + pd.tseries.offsets.Hour(9)  # utc→9時間後
-
-  #  print(df)
-  #  print(df.info())
+    print(mt5.symbol_info_tick(symbol).ask)
+    print(df)
+    print(df["close"])
+    print(df.columns)
+    df.to_csv('a.csv', 'w', encoding='shift_jis')
+  #  print(df"tim.info())
     open = df["open"].tolist()
     close = df["close"].tolist()
     high = df["high"].tolist()
     low = df["low"].tolist()
     spread = df["spread"].tolist()
+    print(close)
 
     flag = False
-
+    time.sleep(100)
     if Sell(open, close, high, low, spread):
         settlement()
         print('Sell')
