@@ -70,7 +70,7 @@ def mom_Buy(open, close, high, low, spread):
                     return True
 
 def settlement(order_type):
-    positions = mt5.positions_get(symbol=symbol, order_type)
+    positions = mt5.positions_get(symbol=symbol)
     if positions:
         for position in positions:
             identifier = position[7]  # 保有ポジションの識別子
