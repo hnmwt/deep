@@ -16,13 +16,13 @@ buy = 0
 symbol = param.symbol
 
 def Spread(spread):
-    if spread[-1] <= 3:
+    if spread[-2] <= 3:
         return True
 
 # パターン１売り注文
 def Sell(open, close, high, low, spread):
-    if close[-4] < close[-3]:
-        if close[-1] < close[-2] < close[-3]:
+    if close[-5] < close[-4]:
+        if close[-2] < close[-3] < close[-4]:
             if Spread(spread) == True:
                 settle_type = sell
                 price =  mt5.symbol_info_tick(symbol).bid
@@ -33,8 +33,8 @@ def Sell(open, close, high, low, spread):
 
 # パターン１買い注文
 def Buy(open, close, high, low, spread):
-    if close[-3] < close[-4]:
-        if close[-3] < close[-2] < close[-1]:
+    if close[-4] < close[-5]:
+        if close[-4] < close[-3] < close[-2]:
             if Spread(spread) == True:
                 settle_type = buy
                 price =  mt5.symbol_info_tick(symbol).ask
@@ -45,9 +45,9 @@ def Buy(open, close, high, low, spread):
 
 # パターン2売り注文(勢いがあるとき)
 def mom_Sell(open, close, high, low, spread):
-    if close[-3] < close[-2]:
-        if close[-1] < close[-2]:
-            if high[-1] - open[-1] <= 0.005:
+    if close[-4] < close[-3]:
+        if close[-2] < close[-3]:
+            if high[-2] - open[-2] <= 0.005:
                 if Spread(spread) == True:
                     settle_type = sell
                     price = mt5.symbol_info_tick(symbol).bid
@@ -58,9 +58,9 @@ def mom_Sell(open, close, high, low, spread):
 
 # パターン2買い注文(勢いがあるとき)
 def mom_Buy(open, close, high, low, spread):
-    if close[-2] < close[-3]:
-        if close[-2] < close[-1]:
-            if open[-1] - low[-1] <= 0.005:
+    if close[-3] < close[-4]:
+        if close[-3] < close[-2]:
+            if open[-2] - low[-2] <= 0.005:
                 if Spread(spread) == True:
                     settle_type = buy
                     price = mt5.symbol_info_tick(symbol).ask
@@ -100,9 +100,9 @@ def range_price():
     df = pd.DataFrame(rates)
 
     df['time'] = pd.to_datetime(df['time'].astype(int), unit='s')  # unix→標準
-    df["time"] = df["time"] + pd.tseries.offsets.Hour(9)  # utc→9時間後
+    df["time"] = df["time"] + pd.tseries.offsets.Hour(6)  # utc→9時間後
 
-    #print(df)
+    print(df)
 #    print(df["close"])
 
     open = df["open"].tolist()
@@ -135,7 +135,7 @@ def range_price():
 
 
 if __name__ == '__main__':
-    settlement()
+ #   settlement()
     range_price()
 
 
