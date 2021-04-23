@@ -20,7 +20,7 @@ def Spread(spread):
         return True
 
 # パターン１売り注文
-def Sell(open, close, high, low, spread):
+def Sell(open, close, high, low, spread, value):
     if close[-5] < close[-4]:
         if close[-2] < close[-3] < close[-4]:
             if Spread(spread) == True:
@@ -28,11 +28,11 @@ def Sell(open, close, high, low, spread):
                 price =  mt5.symbol_info_tick(symbol).bid
                 magic = 555555
                 comment = "pat1_sell"
-                req.normal_request(settle_type, price, magic, comment)
+                req.normal_request(settle_type, price, magic, comment, value)
                 return True
 
 # パターン１買い注文
-def Buy(open, close, high, low, spread):
+def Buy(open, close, high, low, spread, value):
     if close[-4] < close[-5]:
         if close[-4] < close[-3] < close[-2]:
             if Spread(spread) == True:
@@ -40,11 +40,11 @@ def Buy(open, close, high, low, spread):
                 price =  mt5.symbol_info_tick(symbol).ask
                 magic = 555555
                 comment = "pat1_buy"
-                req.normal_request(settle_type, price, magic, comment)
+                req.normal_request(settle_type, price, magic, comment, value)
                 return True
 
 # パターン2売り注文(勢いがあるとき)
-def mom_Sell(open, close, high, low, spread):
+def mom_Sell(open, close, high, low, spread, value):
     if close[-4] < close[-3]:
         if close[-2] < close[-3]:
             if high[-2] - open[-2] <= 0.005:
@@ -53,11 +53,11 @@ def mom_Sell(open, close, high, low, spread):
                     price = mt5.symbol_info_tick(symbol).bid
                     magic = 555555
                     comment = "pat2_mom_sell"
-                    req.normal_request(settle_type, price, magic, comment)
+                    req.normal_request(settle_type, price, magic, comment, value)
                     return True
 
 # パターン2買い注文(勢いがあるとき)
-def mom_Buy(open, close, high, low, spread):
+def mom_Buy(open, close, high, low, spread, value):
     if close[-3] < close[-4]:
         if close[-3] < close[-2]:
             if open[-2] - low[-2] <= 0.005:
@@ -66,7 +66,7 @@ def mom_Buy(open, close, high, low, spread):
                     price = mt5.symbol_info_tick(symbol).ask
                     magic = 555555
                     comment = "pat2_mom_buy"
-                    req.normal_request(settle_type, price, magic, comment)
+                    req.normal_request(settle_type, price, magic, comment, value)
                     return True
 
 def settlement(order_type):
@@ -77,19 +77,26 @@ def settlement(order_type):
             price = position[13]  # 価格
             position_type = position[5]  # オーダータイプ
             magic = position[6]  # マジックナンバー
+            profit = position[15]  # 利益
             comment = "range_settlement"
 
-            if not position_type == order_type:  # 保有ポジションのタイプとこれからオーダーするポジションのタイプがダブらないようにする
+        #    if position_type != order_type:  # 保有ポジションのタイプとこれからオーダーするポジションのタイプがダブらないようにする
+            if 600 < profit :
+                print("position_type;",position_type)
+                print("order_type:", order_type)
                 if position_type == buy and magic == 555555:
                     settle_type = sell  # 送信するオーダータイプ
-                    req.settlement_request(settle_type, price, magic, comment, identifier)
+              #      req.settlement_request(settle_type, price, magic, comment, identifier)
                 elif position_type == sell and magic == 555555:
                     settle_type = buy  # 送信するオーダータイプ
-                    req.settlement_request(settle_type, price, magic, comment, identifier)
+             #       req.settlement_request(settle_type, price, magic, comment, identifier)
 
 
 
 def range_price():
+    time.sleep(1)
+    value = 0.08
+
     mt5.initialize()
     dt_now = datetime.datetime.now()
     time_from = dt_now - datetime.timedelta(hours=9) # 3時間前の東京時間
@@ -113,19 +120,19 @@ def range_price():
 
     flag = False
 
-    if Sell(open, close, high, low, spread):
+    if Sell(open, close, high, low, spread, value):
         settlement(Sell)
         print('Sell')
         flag = True
-    if Buy(open, close, high, low, spread):
+    if Buy(open, close, high, low, spread, value):
         settlement(Buy)
         print('Buy')
         flag = True
-    if mom_Sell(open, close, high, low, spread):
+    if mom_Sell(open, close, high, low, spread, value):
         settlement(Sell)
         print('mom_Sell')
         flag = True
-    if mom_Buy(open, close, high, low, spread):
+    if mom_Buy(open, close, high, low, spread, value):
         settlement(Buy)
         print('mom_Buy')
         flag = True

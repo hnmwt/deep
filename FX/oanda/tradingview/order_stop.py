@@ -36,7 +36,7 @@ def order_up_down_settle(positions, up_down_identifers_list, threshold_profit, s
                 identifier = position[7] # 識別子
                 if not identifier in up_down_identifers_list: # 識別子が識別子リストに含まれていないとき
                     up_down_identifers_list.append(identifier)  # 識別子(identifier)を識別子リストに追加
-       # print('up_down_identifers_list', up_down_identifers_list)
+    #    print('up_down_identifers_list', up_down_identifers_list)
     #            print(position)
 
         for position in positions:  # 保有ポジションの数だけ判定を行う
@@ -71,9 +71,9 @@ def order_up_down_settle(positions, up_down_identifers_list, threshold_profit, s
 
     if not positions: # 保有ポジションがないとき
         up_down_identifers_list = []  # 識別子リストを空にする
-     #   print('not positions', up_down_identifers_list)
+  #      print('not positions', up_down_identifers_list)
   #          print("up_down_identifers_list:",up_down_identifers_list)
-
+    return up_down_identifers_list
 #  ***** def rapid_change(positions)の役割 *******
 #  1.ポジションが一定以上変化&マイナス評価の時逆の注文をする
 #  2.rapid_changeで注文したポジションがプラスの時決済する

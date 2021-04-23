@@ -5,9 +5,20 @@ deviation = param.deviation
 lot = param.lot
 symbol = param.symbol
 
+Buy = 0
+Sell = 1
 
-def normal_request(settle_type, price, magic, comment):  # tp,sl指定なし新規注文
+def set_tp(price, order_type, value):
+    if order_type == Buy:
+        tp = price + value
+    elif order_type == Sell:
+        tp = price - value
+    return tp
+
+def normal_request(settle_type, price, magic, comment, value):  # 新規注文
  #   mt5.initialize()
+    value = 0.08
+    tp = set_tp(price, settle_type, value)
     request = {
         "action": mt5.TRADE_ACTION_DEAL,
         "symbol": symbol,
@@ -15,7 +26,7 @@ def normal_request(settle_type, price, magic, comment):  # tp,sl指定なし新�
         "type": settle_type,
        # "position": identifier,
         "price": price,  # 現在の価格,
-  #      "tp": 40,  # --------------------後で廃止
+        "tp": tp,  # --------------------後で廃止
         "deviation": deviation,
         "magic": magic,
         "comment": comment,
