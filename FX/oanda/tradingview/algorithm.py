@@ -14,6 +14,9 @@ pd.set_option('display.max_columns', 50)
 sell = 1
 buy = 0
 symbol = param.symbol
+trend_flag = False
+occurrence_trend_date = '0'
+order_trend_type = 9
 
 def Spread(spread):
     if spread[-2] <= 3:
@@ -43,7 +46,7 @@ def Buy(open, close, high, low, spread, value):
                 req.normal_request(settle_type, price, magic, comment, value)
                 return True
 
-# パターン2売り注文(勢いがあるとき)
+# パターン2売り注文(勢いがあるとき(highとopenが近い))
 def mom_Sell(open, close, high, low, spread, value):
     if close[-4] < close[-3]:
         if close[-2] < close[-3]:
@@ -56,7 +59,7 @@ def mom_Sell(open, close, high, low, spread, value):
                     req.normal_request(settle_type, price, magic, comment, value)
                     return True
 
-# パターン2買い注文(勢いがあるとき)
+# パターン2買い注文(勢いがあるとき(lowとopenが近い))
 def mom_Buy(open, close, high, low, spread, value):
     if close[-3] < close[-4]:
         if close[-3] < close[-2]:
@@ -69,6 +72,36 @@ def mom_Buy(open, close, high, low, spread, value):
                     req.normal_request(settle_type, price, magic, comment, value)
                     return True
 
+# パターン3 トレンド発生時に一度だけ注文を行う
+def order_trend(open, close, spread, value, time):
+    if trend_flag == True and occurrence_trend_date != time[-2]:
+        if Spread(spread) == True:
+            settle_type = order_trend_type
+            price = mt5.symbol_info_tick(symbol).ask
+            magic = 666666
+            comment = "trend"
+            req.normal_request(settle_type, price, magic, comment, value)
+
+
+# トレンド発生判断
+def judge_trend(time, close):
+    global trend_flag
+    global occurrence_trend_date
+    global order_trend_type
+    if close[-5] < close[-4] < close[-3] < close[-2] and trend_flag == False:
+        trend_flag = True
+        occurrence_trend_date = time[-2]
+        order_trend_type = 0
+    elif close[-2] < close[-3] < close[-4] < close[-5] and trend_flag == False:
+        trend_flag = True
+        occurrence_trend_date = time[-2]
+        order_trend_type = 1
+    else:
+        trend_flag = False
+
+
+
+# 決済処理
 def settlement(order_type):
     positions = mt5.positions_get(symbol=symbol)
     if positions:
@@ -94,6 +127,7 @@ def settlement(order_type):
 
 
 def range_price():
+    import time
     time.sleep(1)
     value = 0.08
 
@@ -111,33 +145,38 @@ def range_price():
 
     print(df)
 #    print(df["close"])
-
+    time = df['time'].tolist()
     open = df["open"].tolist()
     close = df["close"].tolist()
     high = df["high"].tolist()
     low = df["low"].tolist()
     spread = df["spread"].tolist()
 
-    flag = False
+    order_flag = False
+
+    judge_trend(time, close)
 
     if Sell(open, close, high, low, spread, value):
         settlement(Sell)
         print('Sell')
-        flag = True
+        order_flag = True
     if Buy(open, close, high, low, spread, value):
         settlement(Buy)
         print('Buy')
-        flag = True
+        order_flag = True
     if mom_Sell(open, close, high, low, spread, value):
         settlement(Sell)
         print('mom_Sell')
-        flag = True
+        order_flag = True
     if mom_Buy(open, close, high, low, spread, value):
         settlement(Buy)
         print('mom_Buy')
-        flag = True
+        order_flag = True
 
-    if flag == False:
+    if order_trend(open, close, spread, value, time):
+        print('trend')
+
+    if order_flag == False:
         print("レンジ帯：該当のパターン無し")
 
 
