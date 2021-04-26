@@ -24,16 +24,18 @@ def order_up_down_settle(positions, up_down_identifers_list, threshold_profit, s
     if positions:
         mt5.initialize()
       #  global up_down_identifers_list
+        threshold_profit = threshold_profit * (lot * 10)
+        settlement_profit = settlement_profit * (lot * 10)
 
     # 21.04.07廃止   positions = mt5.positions_get(symbol=symbol)
     #    print("保有しているポジション数" ,len(positions))
    #     print("up_down_identifers_list:", up_down_identifers_list)
         for position in positions:  # 保有ポジションのうち利益がしきい値以上のものを識別子リストに追加
-            profit = position[15]  # 利益
+            profit = position[15] * (lot * 10)  # 利益
             #profit = 300
           #  print('利益が閾値未満',up_down_identifers_list)
             if threshold_profit <= profit:  # 利益がしきい値以上の時
-                identifier = position[7] # 識別子
+                identifier = position[7]  # 識別子
                 if not identifier in up_down_identifers_list: # 識別子が識別子リストに含まれていないとき
                     up_down_identifers_list.append(identifier)  # 識別子(identifier)を識別子リストに追加
     #    print('up_down_identifers_list', up_down_identifers_list)
@@ -41,10 +43,10 @@ def order_up_down_settle(positions, up_down_identifers_list, threshold_profit, s
 
         for position in positions:  # 保有ポジションの数だけ判定を行う
             identifier = position[7]  # 保有ポジションの識別子
-            profit = position[15]  # 利益
-            price = position[13] # 価格
+            profit = position[15] * (lot * 10)  # 利益
+            price = position[13]  # 価格
             position_type = position[5] # オーダータイプ
-            magicNo = position[6] # マジックナンバー
+            magicNo = position[6]  # マジックナンバー
             if up_down_identifers_list:
                 for identifer_list in up_down_identifers_list:  # 保有ポジションの識別子リストに識別子がある物の中から利益が決済しきい値以下のものを決済する
                     if identifier == identifer_list: # 保有ポジションの識別子としきい値以上の時の識別子が一致したとき → 決済確認対象になる
