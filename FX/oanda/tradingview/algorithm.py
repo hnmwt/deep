@@ -48,24 +48,49 @@ def Buy(open, close, high, low, spread, value):
 
 # パターン2売り注文(勢いがあるとき(highとopenが近い))
 def mom_Sell(open, close, high, low, spread, value):
+    settle_type = sell
     if close[-4] < close[-3]:
         if close[-2] < close[-3]:
-            if high[-2] - open[-2] <= 0.005:
+           # if high[-2] - open[-2] <= 0.005:
+           if True ==calc_mom(open, close, high, low, settle_type):
                 if Spread(spread) == True:
-                    settle_type = sell
                     price = mt5.symbol_info_tick(symbol).bid
                     magic = 555555
                     comment = "pat2_mom_sell"
                     req.normal_request(settle_type, price, magic, comment, value)
                     return True
 
+# high_lowに占めるopen_closeの割合が大きいか確かめる関数(勢いの見極め)
+def calc_mom(open, close, high, low, settle_type):
+    percentage = 15  # しきい値
+    high_percentage = 100  # 初期値
+    low_percentage = 100  # 初期値
+
+    open_close = abs(open[-2] - close[-2])
+    high_low = abs(high[-2] - low[-2])
+    if settle_type == buy:
+        open_low = abs(open[-2] - low[-2])
+        close_high = abs(close[-2] - high[-2])
+        high_percentage = high_low / close_high * 100
+        low_percentage = high_low / open_low * 100
+
+    elif settle_type == sell:
+        open_high = abs(open[-2] -high[-2])
+        close_low = abs(close[-2] - low[-2])
+        high_percentage = high_low / open_high * 100
+        low_percentage = high_low / close_low * 100
+
+    if high_percentage < percentage and low_percentage < percentage:
+        return True
+
 # パターン2買い注文(勢いがあるとき(lowとopenが近い))
 def mom_Buy(open, close, high, low, spread, value):
+    settle_type = buy
     if close[-3] < close[-4]:
         if close[-3] < close[-2]:
-            if open[-2] - low[-2] <= 0.005:
+          #  if open[-2] - low[-2] <= 0.005:
+          if True == calc_mom(open, close, high, low, settle_type):
                 if Spread(spread) == True:
-                    settle_type = buy
                     price = mt5.symbol_info_tick(symbol).ask
                     magic = 555555
                     comment = "pat2_mom_buy"
