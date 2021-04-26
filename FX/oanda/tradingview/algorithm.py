@@ -74,7 +74,7 @@ def mom_Buy(open, close, high, low, spread, value):
 
 # パターン3 トレンド発生時に一度だけ注文を行う
 def order_trend(open, close, spread, value, time):
-    if trend_flag == True and occurrence_trend_date != time[-2]:
+    if trend_flag == True and occurrence_trend_date == time[-2]:
         if Spread(spread) == True:
             settle_type = order_trend_type
             price = mt5.symbol_info_tick(symbol).ask
@@ -98,6 +98,7 @@ def judge_trend(time, close):
         order_trend_type = 1
     else:
         trend_flag = False
+        occurrence_trend_date = time[-2]
 
 
 
