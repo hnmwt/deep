@@ -49,18 +49,22 @@ def order_up_down_settle(positions, up_down_identifers_list, threshold_profit, s
             magicNo = position[6]  # マジックナンバー
             if up_down_identifers_list:
                 for identifer_list in up_down_identifers_list:  # 保有ポジションの識別子リストに識別子がある物の中から利益が決済しきい値以下のものを決済する
-                    if identifier == identifer_list: # 保有ポジションの識別子としきい値以上の時の識別子が一致したとき → 決済確認対象になる
- #                       profit = 50
-                        if 0 < profit <= settlement_profit:  # 利益が決済しきい値を下回るとき即決済する
-                            if position_type == 0:
-                                settle_type = 1  # 送信するオーダータイプ
-                            elif position_type == 1:
-                                settle_type = 0  # 送信するオーダータイプ
-                            comment = "python up down settle"
-                            magic = 111111
-                            message = prompt_request(settle_type, price, magic, comment, identifier)  # 即決済する
-                        #    up_down_identifers_list = []  # 識別子リストを空にする
-                
+                    if magicNo != 999999:  # 識別子999999は1日に一度だけ注文するため対象から外す
+                        if identifier == identifer_list: # 保有ポジションの識別子としきい値以上の時の識別子が一致したとき → 決済確認対象になる
+ #                           profit = 50
+                            if 0 < profit <= settlement_profit:  # 利益が決済しきい値を下回るとき即決済する
+                                if position_type == 0:
+                                    settle_type = 1  # 送信するオーダータイプ
+                                elif position_type == 1:
+                                    settle_type = 0  # 送信するオーダータイプ
+                                comment = "python up down settle"
+                                magic = 111111
+                                message = prompt_request(settle_type, price, magic, comment, identifier)  # 即決済する
+                            #    up_down_identifers_list = []  # 識別子リストを空にする
+
+                #******
+                # 決済が細かすぎても赤字だったため下記の処理は今は使っていない
+                #******
                 if magicNo == 222222 or 222221 or 234000 or 235000:  # rapid_changeの注文識別子の時
                     if 40 < profit :  # 利益が40以上
                         if position_type == 0:

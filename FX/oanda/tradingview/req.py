@@ -8,6 +8,7 @@ symbol = param.symbol
 Buy = 0
 Sell = 1
 
+
 def set_tp(price, order_type, value):
     if order_type == Buy:
         tp = price + value
@@ -15,16 +16,17 @@ def set_tp(price, order_type, value):
         tp = price - value
     return tp
 
-def normal_request(settle_type, price, magic, comment, value):  # 新規注文
- #   mt5.initialize()
-    value = 0.08
+
+def normal_request(settle_type, price, magic, comment, value=0.08):  # 新規注文
+    #   mt5.initialize()
+    #   value = 0.08
     tp = set_tp(price, settle_type, value)
     request = {
         "action": mt5.TRADE_ACTION_DEAL,
         "symbol": symbol,
         "volume": lot,
         "type": settle_type,
-       # "position": identifier,
+        # "position": identifier,
         "price": price,  # 現在の価格,
         "tp": tp,  # --------------------後で廃止
         "deviation": deviation,
@@ -39,7 +41,9 @@ def normal_request(settle_type, price, magic, comment, value):  # 新規注文
         message = "2. order_send failed, retcode={}".format(result.retcode)
     else:
         message = comment + "リクエスト送信完了"
+    print(message)
     return message
+
 
 def settlement_request(settle_type, price, magic, comment, identifier):  # 決済
     request = {

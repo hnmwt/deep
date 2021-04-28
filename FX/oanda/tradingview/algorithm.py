@@ -37,10 +37,36 @@ def Sell(open, close, high, low, spread, value):
                 return True
 
 
+# 条件変更(4点判定から3点判定)→momとほぼ同じため使わない
+def Sell_0428(open, close, high, low, spread, value):
+    if close[-4] < close[-3]:
+        if close[-2] < close[-3]:
+            if Spread(spread) == True:
+                settle_type = sell
+                price = mt5.symbol_info_tick(symbol).bid
+                magic = 555555
+                comment = "pat1_sell"
+                req.normal_request(settle_type, price, magic, comment, value)
+                return True
+
+
 # パターン１買い注文
 def Buy(open, close, high, low, spread, value):
     if close[-4] < close[-5]:
         if close[-4] < close[-3] < close[-2]:
+            if Spread(spread) == True:
+                settle_type = buy
+                price = mt5.symbol_info_tick(symbol).ask
+                magic = 555555
+                comment = "pat1_buy"
+                req.normal_request(settle_type, price, magic, comment, value)
+                return True
+
+
+# 条件変更(4点判定から3点判定)→momとほぼ同じため使わない
+def Buy_0428(open, close, high, low, spread, value):
+    if close[-3] < close[-4]:
+        if close[-3] < close[-2]:
             if Spread(spread) == True:
                 settle_type = buy
                 price = mt5.symbol_info_tick(symbol).ask
@@ -67,7 +93,7 @@ def mom_Sell(open, close, high, low, spread, value):
 
 # high_lowに占めるopen_closeの割合が大きいか確かめる関数(勢いの見極め)
 def calc_mom(open, close, high, low, settle_type):
-    percentage = 17  # しきい値
+    percentage = 10  # しきい値
     high_percentage = 100  # 初期値
     low_percentage = 100  # 初期値
 
@@ -114,6 +140,7 @@ def order_trend(open, close, spread, value, time):
                 magic = 666666
                 comment = "trend"
                 req.normal_request(settle_type, price, magic, comment, value)
+                return True
 
 
 # トレンド発生判断
@@ -121,18 +148,20 @@ def judge_trend(time, close):
     global trend_flag
     global occurrence_trend_date
     global order_trend_type
-    if close[-5] < close[-4] < close[-3] < close[-2]:
-        if not trend_flag:
+
+    if not trend_flag:
+        if close[-5] < close[-4] < close[-3] < close[-2]:
             trend_flag = True
             occurrence_trend_date = time[-2]
-            order_trend_type = 0
-    elif close[-2] < close[-3] < close[-4] < close[-5]:
-        if not trend_flag:
+            order_trend_type = req.Buy
+    elif not trend_flag:
+        if close[-2] < close[-3] < close[-4] < close[-5]:
             trend_flag = True
             occurrence_trend_date = time[-2]
-            order_trend_type = 1
+            order_trend_type = req.Sell
     else:
         trend_flag = False
+    print('trend_flag:',trend_flag)
        # occurrence_trend_date = time[-2]
 
 
@@ -163,7 +192,7 @@ def settlement(order_type):
 def range_price():
     import time
     time.sleep(1)
-    value = 0.08
+    value = 0.01
 
     mt5.initialize()
     dt_now = datetime.datetime.now()
@@ -171,7 +200,7 @@ def range_price():
     time_to = dt_now  # - datetime.timedelta(hours=6) # 3時間前の東京時間
     # 2020.01.10 00:00-2020.01.11 13:00 UTCでUSDJPY M15からバーを取得する
     #   rates = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_M15, time_from, time_to)
-    rates = mt5.copy_rates_from_pos("USDJPY", mt5.TIMEFRAME_M15, 0, 10)
+    rates = mt5.copy_rates_from_pos("USDJPY", mt5.TIMEFRAME_M15, 0, 20)
     df = pd.DataFrame(rates)
 
     df['time'] = pd.to_datetime(df['time'].astype(int), unit='s')  # unix→標準
@@ -191,10 +220,12 @@ def range_price():
     judge_trend(time, close)
 
     if Sell(open, close, high, low, spread, value):
+    #if Sell_0428(open, close, high, low, spread, value):  # 4点判定から3点判定
         settlement(Sell)
         print('Sell')
         order_flag = True
     if Buy(open, close, high, low, spread, value):
+    #if Buy_0428(open, close, high, low, spread, value):  # 4点判定から3点判定
         settlement(Buy)
         print('Buy')
         order_flag = True
@@ -214,6 +245,37 @@ def range_price():
         print("レンジ帯：該当のパターン無し")
 
 
+# ポジションを一定時間保有している場合に強制的に決済する
+def force_settlement():
+    mt5.initialize()
+    positions = mt5.positions_get(symbol=symbol)
+    for position in positions:
+        unix_time_utc = position[1]  # 注文時刻
+        magic = position[6]  # マジックナンバー
+        normal_time_utc = datetime.datetime.fromtimestamp(unix_time_utc)  # ポジションの注文時刻(ロンドン時間)
+        normal_time_jst = normal_time_utc + datetime.timedelta(hours=9)  # ポジションの注文時刻(日本時間)
+        dt_now = datetime.datetime.now()  # 現在時刻
+        diff_time_day = dt_now.day - normal_time_jst.day  # 日付の差
+        diff_time_hour = dt_now.hour - normal_time_jst.hour  # 時間の差
+        #print(diff_time_day)
+        #print(diff_time_hour)
+        if 1 <= diff_time_hour:  # 保有時間が1時間を過ぎている場合に決済
+            if magic != 999999:
+                position_type = position[5]  # オーダータイプ
+                identifier = position[7]  # 保有ポジションの識別子
+                price = position[13]  # 価格
+                position_type = position[5]  # オーダータイプ
+                profit = position[15]  # 利益
+                comment = "1hour_over"
+
+                if position_type == buy:
+                    settle_type = sell  # 送信するオーダータイプ
+                    req.settlement_request(settle_type, price, magic, comment, identifier)
+                elif position_type == sell:
+                    settle_type = buy  # 送信するオーダータイプ
+                    req.settlement_request(settle_type, price, magic, comment, identifier)
+
 if __name__ == '__main__':
     #   settlement()
-    range_price()
+    #   range_price()
+    force_settlement()

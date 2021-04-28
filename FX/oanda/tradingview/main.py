@@ -16,6 +16,7 @@ import backtest_variable
 import param
 import order_stop
 import algorithm
+import req
 
 backtest = backtest_variable.backtest
 up_down_identifers_list_100_10 = []#order_stop.up_down_identifers_list_400_200
@@ -317,16 +318,21 @@ if __name__ == '__main__':
 
 # 2回目以降
         while True:
-            if job_start_time <= datetime.datetime.now():  # 指定時間 <= 現在時刻の時に処理をスタートする
+            dt_now = datetime.datetime.now()
+            if job_start_time <= dt_now:  # 指定時間 <= 現在時刻の時に処理をスタートする
+
+            #    algorithm.force_settlement()  # 一定時間以上経っているとき強制決済
+                algorithm.range_price()  # アルゴリズムによる自動売買
+
                 if param.EA == True:      # フラグがtrueの時にtradingview→AI予測を行う 
                     EA()
-                algorithm.range_price()
-    #            job_start_time = work_interval_30m()  # 処理終了後に指定時間を更新する
+
+               # job_start_time = work_interval_30m()  # 処理終了後に指定時間を更新する
                 job_start_time = work_interval_15m()
-            #    job_start_time = work_interval_5m()
+               # job_start_time = work_interval_5m()
                 print("次回時刻" + str(job_start_time))
 
-            if act % 4 == 0:   #  余りが0の時 (10カウントに一度処理を行う(約10秒?))
+            if act % 2 == 0:   #  余りが0の時 (10カウントに一度処理を行う(約10秒?))
                 positions = mt5.positions_get(symbol=symbol)
                 up_down_identifers_list_600_500 = order_stop.order_up_down_settle(positions,up_down_identifers_list_600_500, 600,500)
                 up_down_identifers_list_500_400 = order_stop.order_up_down_settle(positions,up_down_identifers_list_500_400, 500,400)
@@ -336,9 +342,21 @@ if __name__ == '__main__':
                 up_down_identifers_list_100_10 = order_stop.order_up_down_settle(positions,up_down_identifers_list_100_10, 100,10)
                 algorithm.settlement(1)
 
-            if act % 40 == 0: #  余りが0の時 (40カウントに一度処理を行う(約40秒?))
+            if act % 60 == 0: #  余りが0の時 (60カウントに一度処理を行う(約40秒?))
             #    order_stop.rapid_change(positions)
-                act = 0
+                act = 0  # カウンタ初期化
+
+                # 1日に一度だけ注文する
+                if dt_now.hour == param.day_of_order_time_hour:
+                    if dt_now.minute == param.day_of_order_time_minute:
+                        magic = 999999
+                        value = 0.1
+                        comment = "day_of_one_buy"
+                        price = mt5.symbol_info_tick(symbol).ask
+                        req.normal_request(req.Buy, price, magic, comment, value)  # 新規注文(買い)
+                        comment = "day_of_one_sell"
+                        price = mt5.symbol_info_tick(symbol).bid
+                        req.normal_request(req.Sell, price, magic, comment, value)  # 新規注文(売り)
 
             act += 1
             time.sleep(1)
