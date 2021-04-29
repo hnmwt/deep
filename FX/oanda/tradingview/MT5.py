@@ -326,7 +326,7 @@ def order(order_type, sl_point, tp_point, lot, magic, symbol, MACD_judge, Cross_
             price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 bid=売り注文の価格
        #     print(positions)
     elif backtest == True:  # バックテスト
-        price_ask = df.iat[-2,1]  # 最終行から2つ目(現在)のopen価格
+        price_ask = df.iat[-2, 1]  # 最終行から2つ目(現在)のopen価格
         price_bid = price_ask -0.003
 
     # 保有ポジションがある場合 → 保有ポジションの決済処理 & 保有ポジションのmagicナンバーを取り出してリストに格納

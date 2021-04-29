@@ -339,7 +339,7 @@ if __name__ == '__main__':
                 up_down_identifers_list_400_200 = order_stop.order_up_down_settle(positions,up_down_identifers_list_400_200, 400,300)
                 up_down_identifers_list_300_200 = order_stop.order_up_down_settle(positions,up_down_identifers_list_300_200, 300,200)
                 up_down_identifers_list_200_100 = order_stop.order_up_down_settle(positions, up_down_identifers_list_200_100, 200, 100)
-                up_down_identifers_list_100_10 = order_stop.order_up_down_settle(positions,up_down_identifers_list_100_10, 100,10)
+           #     up_down_identifers_list_100_10 = order_stop.order_up_down_settle(positions,up_down_identifers_list_100_10, 100,10)
                 algorithm.settlement(1)
 
             if act % 60 == 0: #  余りが0の時 (60カウントに一度処理を行う(約40秒?))
