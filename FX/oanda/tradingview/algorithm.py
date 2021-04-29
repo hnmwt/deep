@@ -231,7 +231,7 @@ def range_price():
     time_to = dt_now  # - datetime.timedelta(hours=6) # 3時間前の東京時間
     # 2020.01.10 00:00-2020.01.11 13:00 UTCでUSDJPY M15からバーを取得する
     #   rates = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_M15, time_from, time_to)
-    rates = mt5.copy_rates_from_pos("USDJPY", mt5.TIMEFRAME_, 0, 20)
+    rates = mt5.copy_rates_from_pos("USDJPY", mt5.TIMEFRAME_M15, 0, 20)
     df = pd.DataFrame(rates)
 
     df['time'] = pd.to_datetime(df['time'].astype(int), unit='s')  # unix→標準

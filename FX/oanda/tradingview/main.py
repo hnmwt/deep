@@ -17,6 +17,7 @@ import param
 import order_stop
 import algorithm
 import req
+import Indicator
 
 backtest = backtest_variable.backtest
 up_down_identifers_list_100_10 = []#order_stop.up_down_identifers_list_400_200
@@ -311,11 +312,12 @@ if __name__ == '__main__':
             log_name = "./注文log/" + today
             with open(log_name, mode="a", encoding="utf-8") as f:
                 f.write("取引開始")
+
         mt5.initialize()
         authorized = mt5.login(param.account_ID, password=param.password)  # ログイン
         order_stop.min1_price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 ※askは朝方スプレッドが広がるためbidにする
         algorithm.range_price()
-
+        Indicator.ichimoku_order()
 # 2回目以降
         while True:
             dt_now = datetime.datetime.now()
@@ -323,6 +325,7 @@ if __name__ == '__main__':
 
             #    algorithm.force_settlement()  # 一定時間以上経っているとき強制決済
                 algorithm.range_price()  # アルゴリズムによる自動売買
+                Indicator.ichimoku_order()
 
                 if param.EA == True:      # フラグがtrueの時にtradingview→AI予測を行う 
                     EA()
