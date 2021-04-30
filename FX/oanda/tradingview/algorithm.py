@@ -253,24 +253,19 @@ def range_price():
     if Sell(open, close, high, low, spread, value):
     #if Sell_0428(open, close, high, low, spread, value):  # 4点判定から3点判定
         settlement(Sell)
-        print('Sell')
         order_flag = True
     if Buy(open, close, high, low, spread, value):
     #if Buy_0428(open, close, high, low, spread, value):  # 4点判定から3点判定
         settlement(Buy)
-        print('Buy')
         order_flag = True
     if mom_Sell(open, close, high, low, spread, value):
         settlement(Sell)
-        print('mom_Sell')
         order_flag = True
     if mom_Buy(open, close, high, low, spread, value):
         settlement(Buy)
-        print('mom_Buy')
         order_flag = True
-    if order_trend(open, close, spread, value, time):
-        print('trend')
-        order_flag = True
+    #if order_trend(open, close, spread, value, time):
+    #    order_flag = True
 
     if order_flag == False:
         print("レンジ帯：該当のパターン無し")

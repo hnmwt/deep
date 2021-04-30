@@ -16,11 +16,18 @@ def set_tp(price, order_type, value):
         tp = price - value
     return tp
 
+def set_sl(price, order_type, value):
+    if order_type == Buy:
+        sl = price - value
+    elif order_type == Sell:
+        sl = price + value
+    return sl
 
-def normal_request(settle_type, price, magic, comment, value=0.08):  # 新規注文
+
+def normal_request(settle_type, price, magic, comment, tp=0.08, sl=0.5):  # 新規注文
     #   mt5.initialize()
     #   value = 0.08
-    tp = set_tp(price, settle_type, value)
+    tp = set_tp(price, settle_type, tp)
     request = {
         "action": mt5.TRADE_ACTION_DEAL,
         "symbol": symbol,
@@ -29,6 +36,7 @@ def normal_request(settle_type, price, magic, comment, value=0.08):  # 新規注
         # "position": identifier,
         "price": price,  # 現在の価格,
         "tp": tp,  # --------------------後で廃止
+        "sl": sl,
         "deviation": deviation,
         "magic": magic,
         "comment": comment,

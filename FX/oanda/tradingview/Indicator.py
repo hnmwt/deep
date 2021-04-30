@@ -11,18 +11,21 @@ pd.get_option("display.max_columns")
 # 最大表示列数の指定（ここでは50列を指定）
 pd.set_option('display.max_columns', 50)
 
-status_ago = 9
-status_now = 9
-change_status = 9
+status_ago_M15 = 9
+status_now_M15 = 9
+change_status_M15 = 9
+
+status_ago_M5 = 9
+status_now_M5 = 9
+change_status_M5 = 9
+
+symbol = param.symbol
 
 
-def ichimoku_order():
-    global status_ago
-    global status_now
-    global change_status
+def ichimoku_order(TIMEFRAME, status_ago, status_now, change_status, tp):
 
     mt5.initialize()
-    rates = mt5.copy_rates_from_pos("USDJPY", mt5.TIMEFRAME_M15, 0, 78)
+    rates = mt5.copy_rates_from_pos(symbol, TIMEFRAME, 0, 78)
     df = pd.DataFrame(rates)
     df['time'] = pd.to_datetime(df['time'].astype(int), unit='s')  # unix→標準
     df["time"] = df["time"] + pd.tseries.offsets.Hour(6)  # 6時間後
@@ -62,18 +65,20 @@ def ichimoku_order():
 
 
     tien_span = df['close'].iloc[-1]  # 遅延スパン
-    print("転換線：", tenkan, ",基準線：", kijun, ",先行スパン1：", senkou_span1, ",先行スパン2：", senkou_span2, ",遅延スパン：", tien_span)
+    print(TIMEFRAME, "分足・・・転換線：", tenkan, ",基準線：", kijun, ",先行スパン1：", senkou_span1, ",先行スパン2：", senkou_span2, ",遅延スパン：", tien_span)
 
 
     if kijun < tenkan:  # 転換線が基準線より上の場合
         status_now = req.Buy
     elif tenkan < kijun:  # 転換線が基準線より下の場合
         status_now = req.Sell
+    elif tenkan == kijun:
+        status_now = 3
 
-    if status_ago == 0 and status_now == 1:  # 転換線が基準線を下抜けしたとき(売り注文)
+    if status_ago == 0 and status_now == 1 or status_ago == 3 and status_now == 1 :  # 転換線が基準線を下抜けしたとき(売り注文)
         change_status = req.Sell
         print('転換線が基準線を下抜け')
-    elif status_ago == 1 and status_now == 0:  # 転換線が基準線を上抜けしたとき(買い注文)
+    elif status_ago == 1 and status_now == 0 or status_ago == 3 and status_now == 0:  # 転換線が基準線を上抜けしたとき(買い注文)
         change_status = req.Buy
         print('転換線が基準線を上抜け')
     else:  # 当てはまらないとき
@@ -84,18 +89,20 @@ def ichimoku_order():
     if change_status == req.Sell:
         settle_type = change_status
         price = mt5.symbol_info_tick(symbol).bid
-        magic = 999999
-        value = 0.5
-        comment = "ichimoku_sell"
-        req.normal_request(settle_type, price, magic, comment, value)
+        magic = 999991
+        #tp = 0.1
+        sl = kijun
+        comment = "ichimoku_sell_"
+        req.normal_request(settle_type, price, magic, comment, tp, sl)
     elif change_status == req.Buy:
         settle_type = change_status
         price = mt5.symbol_info_tick(symbol).ask
-        magic = 999999
-        value = 0.5
-        comment = "ichimoku_buy"
-        req.normal_request(settle_type, price, magic, comment, value)
+        magic = 999991
+        #tp = 0.1
+        sl = kijun
+        comment = "ichimoku_buy_"
+        req.normal_request(settle_type, price, magic, comment, tp, sl)
 
-
+    return status_ago, status_now, change_status
 
 

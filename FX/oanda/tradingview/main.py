@@ -31,6 +31,15 @@ pred_close = predict.pred_close
 pred_high = predict.pred_high
 pred_low = predict.pred_low
 
+status_ago_M15 = Indicator.status_ago_M15
+status_now_M15 = Indicator.status_now_M15
+change_status_M15 = Indicator.change_status_M15
+
+status_ago_M5 = Indicator.status_ago_M5
+status_now_M5 = Indicator.status_now_M5
+change_status_M5 = Indicator.change_status_M5
+
+
 username = 'hnmwtr999'
 password = 'hnm4264wtr@'
 # You should download chromedriver and place it in a high hierarchy folder
@@ -293,12 +302,12 @@ def work_interval_5m():
 
 if __name__ == '__main__':
 
- #   global up_down_identifers_list_200_100
+
 
     if backtest == False:  # 本番
     #    job_start_time = work_interval_30m()
-        job_start_time = work_interval_15m()
-    #    job_start_time = work_interval_5m()
+    #    job_start_time = work_interval_15m()
+        job_start_time = work_interval_5m()
         act = 0
         # 初回
         if param.EA == True:   # フラグがtrueの時にtradingview→AI予測を行う
@@ -316,32 +325,52 @@ if __name__ == '__main__':
         mt5.initialize()
         authorized = mt5.login(param.account_ID, password=param.password)  # ログイン
         order_stop.min1_price_bid = mt5.symbol_info_tick(symbol).bid  # 指定したシンボルの最後のtick時の情報 ※askは朝方スプレッドが広がるためbidにする
+        ichimoku_tp_15M = 0.1
+        ichimoku_tp_5M = 0.04
+        status_ago_M15, status_now_M15, change_status_M15 = Indicator.ichimoku_order(mt5.TIMEFRAME_M15, status_ago_M15,
+                                                                                     status_now_M15, change_status_M15, ichimoku_tp_15M)
+        status_ago_M5, status_now_M5, change_status_M5 = Indicator.ichimoku_order(mt5.TIMEFRAME_M5, status_ago_M5,
+                                                                                    status_now_M5, change_status_M5, ichimoku_tp_5M)
+
         algorithm.range_price()
-        Indicator.ichimoku_order()
+
 # 2回目以降
+        count = 0
         while True:
             dt_now = datetime.datetime.now()
             if job_start_time <= dt_now:  # 指定時間 <= 現在時刻の時に処理をスタートする
-
+                print('*******START*******')
+                time.sleep(1)
+                count += 1
             #    algorithm.force_settlement()  # 一定時間以上経っているとき強制決済
-                algorithm.range_price()  # アルゴリズムによる自動売買
-                Indicator.ichimoku_order()
+                if count == 3:
+                    status_ago_M15, status_now_M15, change_status_M15 = Indicator.ichimoku_order(mt5.TIMEFRAME_M15,
+                                                                                         status_ago_M15,
+                                                                                         status_now_M15,
+                                                                                         change_status_M15, ichimoku_tp_15M)
+                    algorithm.range_price()  # アルゴリズムによる自動売買
+                    count = 0
+
+                status_ago_M5, status_now_M5, change_status_M5 = Indicator.ichimoku_order(mt5.TIMEFRAME_M5, status_ago_M5,
+                                                                                      status_now_M5, change_status_M5, ichimoku_tp_5M)
+
+
 
                 if param.EA == True:      # フラグがtrueの時にtradingview→AI予測を行う 
                     EA()
 
                # job_start_time = work_interval_30m()  # 処理終了後に指定時間を更新する
-                job_start_time = work_interval_15m()
-               # job_start_time = work_interval_5m()
+               # job_start_time = work_interval_15m()
+                job_start_time = work_interval_5m()
                 print("次回時刻" + str(job_start_time))
 
             if act % 2 == 0:   #  余りが0の時 (10カウントに一度処理を行う(約10秒?))
                 positions = mt5.positions_get(symbol=symbol)
-                up_down_identifers_list_600_500 = order_stop.order_up_down_settle(positions,up_down_identifers_list_600_500, 600,500)
-                up_down_identifers_list_500_400 = order_stop.order_up_down_settle(positions,up_down_identifers_list_500_400, 500,400)
-                up_down_identifers_list_400_200 = order_stop.order_up_down_settle(positions,up_down_identifers_list_400_200, 400,300)
-                up_down_identifers_list_300_200 = order_stop.order_up_down_settle(positions,up_down_identifers_list_300_200, 300,200)
-                up_down_identifers_list_200_100 = order_stop.order_up_down_settle(positions, up_down_identifers_list_200_100, 200, 100)
+                #     up_down_identifers_list_600_500 = order_stop.order_up_down_settle(positions,up_down_identifers_list_600_500, 600,500)
+                #     up_down_identifers_list_500_400 = order_stop.order_up_down_settle(positions,up_down_identifers_list_500_400, 500,400)
+                #    up_down_identifers_list_400_200 = order_stop.order_up_down_settle(positions,up_down_identifers_list_400_200, 400,300)
+                #    up_down_identifers_list_300_200 = order_stop.order_up_down_settle(positions,up_down_identifers_list_300_200, 300,200)
+                #    up_down_identifers_list_200_100 = order_stop.order_up_down_settle(positions, up_down_identifers_list_200_100, 200, 100)
            #     up_down_identifers_list_100_10 = order_stop.order_up_down_settle(positions,up_down_identifers_list_100_10, 100,10)
                 algorithm.settlement(1)
 
